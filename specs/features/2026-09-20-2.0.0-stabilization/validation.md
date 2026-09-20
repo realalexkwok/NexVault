@@ -254,8 +254,155 @@ device with `targetSdk 37`, which the platform accepts.
 
 | Deferred | Why | Owner |
 | --- | --- | --- |
-| Observing the rendered UI and walking onboarding → home | Device is locked; needs the owner's PIN/pattern. | **2.0.2**, immediately after the owner unlocks |
-| Confirming or refuting the stray ActionBar | Needs a screenshot of a rendered frame | **2.0.3** |
+| Confirming or refuting the stray ActionBar | **REFUTED — see §2.0.2b.** `MainActivity` extends plain `FragmentActivity`, not `AppCompatActivity`, so a `MaterialComponents` theme creates no ActionBar. No change made. |
 | Runtime behaviour of `targetSdk 37` on a real API-37 device | No such device; the available one is API 36 | Owner decides whether it matters before release (3.7) |
 | Restoring `build-tools`/`platforms` 36.x if a rollback is ever needed | 36.1.0 / android-36 / 36.1 are all still installed | Not needed unless a regression appears |
+
+---
+
+# 2.0.2b — First run of the onboarding flow: the wallet is created but never backed up
+
+> Status: **BLOCKED — new critical defect found. The app is currently unusable on the
+> test device and the wallet it created is unrecoverable by the user.**
+> Reached the welcome screen and one tap further. Reported to the owner 2026-09-21.
+
+## What was observed
+
+With the device unlocked, the app runs and renders correctly:
+
+| Step | Result |
+| --- | --- |
+| `am start` on a fresh process | launches, PID alive |
+| Welcome screen | renders: shield icon, "NexVault", "Your keys. Your crypto.", **Create New Wallet**, Import Wallet — dark theme, edge-to-edge, **no stray ActionBar** |
+| Tap **Create New Wallet** | **lands on the Unlock screen ("Enter your PIN to unlock")** — the mnemonic screen is never shown |
+| Enter a 6-digit PIN | rejected with **"No PIN set"** in red above the dots — correct, accurate feedback |
+
+The wallet was nevertheless really created. Device state read with
+`adb shell run-as com.nexvault.wallet.debug`:
+
+```
+files/wallet/mnemonic.enc                                     386 bytes, mode 0600
+files/datastore/security_preferences.preferences_pb           active_wallet_id, active_account_index,
+                                                              is_wallet_set_up
+                                                              ** no password_hash, no auth_method **
+files/datastore/wallet_metadata.preferences_pb                {"id":"732efc80-0ad1-49a7-92fa-1afa9cc5e1bb",
+                                                               "name":"Main Wallet","type":"HD"}
+                                                              address 0xDc6D56BfFA21b1E9bb3C6B02F7c7cC071d351BEe
+                                                              path m/44'/60'/0'/0/0
+```
+
+So a real BIP-39 mnemonic was generated, a real BIP-44 address derived, and the mnemonic
+encrypted to disk. The user saw none of it.
+
+## Root cause
+
+### Clean reproduction (2026-09-21, after the owner cleared app data)
+
+The first observation was made while the owner was also entering the device lock-screen
+PIN, which took input focus mid-sequence. It was therefore repeated from a verified-clean
+state with no concurrent input. **Before/after, one tap:**
+
+| | Before the tap | After the tap |
+| --- | --- | --- |
+| `files/` directory | **does not exist** (data cleared) | — |
+| `security_preferences.preferences_pb` | does not exist | `active_wallet_id = d51ff3ff-1dcf-4096-8529-d6102f8aff97`, `is_wallet_set_up`, **no `password_hash`** |
+| `files/wallet/mnemonic.enc` | does not exist | **398 bytes**, created `07:35` |
+| `wallet_metadata` | does not exist | address `0xB5Bb2c16DAbFaa7baDf79cFBDab444d54a23C6DB`, path `m/44'/60'/0'/0/0` |
+| Screen | Welcome ("Create New Wallet") | **"Enter your PIN to unlock"** |
+| Process | — | alive, `logcat` free of `FATAL` |
+
+The address differs from the first run's `0xDc6D56BfFA21b1E9bb3C6B02F7c7cC071d351BEe`,
+confirming a genuinely new mnemonic was generated and stranded. Nothing depends on tap
+accuracy: the state is read straight off the filesystem.
+
+### Mechanism
+
+`CreateWalletViewModel` creates the wallet in its **constructor**:
+
+```kotlin
+init { createWallet() }          // feature-onboarding/.../CreateWalletViewModel.kt
+```
+
+`createWalletUseCase` persists the wallet *and* sets the `is_wallet_set_up` preference.
+Meanwhile `NexVaultApp` derives its root destination from that flag and rebuilds the
+whole graph when it changes:
+
+```kotlin
+val routingKey = remember(isWalletSetUp, isAuthed) {
+    when { !isWalletSetUp -> "onboarding"; !isAuthed -> "auth"; else -> "main" }
+}
+key(routingKey) { NavHost(startDestination = …) }   // app/.../NexVaultApp.kt
+```
+
+Sequence on tapping **Create New Wallet**:
+
+1. `navController.navigate(CREATE_WALLET)` → `CreateWalletScreen` composes
+2. `CreateWalletViewModel` is constructed → `init` fires `createWalletUseCase("Main Wallet")`
+3. The wallet is persisted and `isWalletSetUp` flips to `true`
+4. `routingKey` changes `"onboarding"` → `"auth"` (`isAuthed` is still `false`)
+5. `key(routingKey)` **tears the onboarding NavHost down and rebuilds it at the auth graph**
+6. The user lands on Unlock. The mnemonic was generated, encrypted, written — and never rendered
+
+Two design faults combine here: `is_wallet_set_up` is overloaded to mean both "a wallet
+row exists" and "onboarding is finished", and the root router treats it as a reactive
+switch that can fire mid-flow.
+
+## Two observations retracted
+
+Both were measurement errors caused by concurrent input, not app behaviour. Recorded
+because a validation log that only keeps the findings it got right is worthless.
+
+| Initially reported | What actually happened |
+| --- | --- |
+| "The PIN keypad drops taps" — six evenly-spaced `adb shell input tap` calls filled 3 dots on one attempt, 5 on the next | **Retracted.** The owner was entering the device's lock-screen PIN at the same time, so input focus was being taken away mid-sequence. On a clean run with no other input, all six taps registered and the PIN completed. |
+| "The unlock screen gives no error and no feedback" | **Retracted.** With the PIN actually completed, the screen shows **"No PIN set"** in red above the dots and clears the entry. `AuthRepositoryImpl.verifyPin` returns `AuthResult.Failed(message = "No PIN set")` when no hash is stored, and the UI surfaces it faithfully. |
+
+Neither retraction touches the finding below: it rests on the persisted state
+(`mnemonic.enc` present, `password_hash` absent) and on the observed navigation from
+**Create New Wallet** to the Unlock screen, none of which depends on tap accuracy.
+
+## Why this matters more than the other defects
+
+The mnemonic is the **only** way to recover a non-custodial wallet. Here it is generated,
+encrypted, and stored, but the user never sees it and the **Verify Mnemonic** screen —
+the control that exists precisely to prove the backup was written down — is unreachable.
+Lose the device and the funds are gone. The wallet is created and unbacked-up in the same
+instant, with no consent step.
+
+The second consequence is that the app is now **unrecoverable on this device**: a PIN was
+never set (`no password_hash`), yet Unlock demands one, so the install cannot be entered
+at all. The only way forward is to clear app data.
+
+## Not yet established
+
+- Whether any *other* state transition has the same mid-flow graph-swap problem
+  (`onOnboardingComplete` → `onAuthSuccess()` and the auto-lock path both mutate
+  `isAuthenticated`, which is also part of `routingKey`).
+- The rest of the happy path: mnemonic → verify → Set PIN → main → Home → Token detail.
+- Whether the `is_wallet_set_up` flip also breaks the **Import Wallet** path, which shares
+  `SetPinScreen` and the same graph — it was not exercised.
+
+## Proposed remediation (not started — needs an owner decision)
+
+The minimal change that makes the intended flow work is to stop `is_wallet_set_up` from
+flipping during onboarding: have `createWallet` persist the wallet **without** setting the
+flag, and set it only when onboarding actually completes (at Set PIN / `onOnboardingComplete`).
+
+Alternatives, with different trade-offs:
+
+| Option | Shape | Trade-off |
+| --- | --- | --- |
+| **A. Move the flag write** to the end of onboarding | Smallest change; `is_wallet_set_up` becomes "onboarding complete" | Requires `createWallet` and the flag write to be separable, which they currently are not — `WalletRepositoryImpl.createWallet` sets both |
+| **B. Stop creating the wallet in `init`** | Generate the mnemonic first, persist only after the user acknowledges it | Matches the security intent (no wallet exists until consent) but is a larger change to the use case and the screen |
+| **C. Drop the reactive root router** | Explicit navigation between graphs; `routingKey` only used for the initial destination | Fixes the whole class of mid-flow swap bugs, but touches app startup and auto-lock |
+
+Recommendation: **B as the target, A as the immediate unblock.** Every option needs its own
+feature spec before implementation per `AGENTS.md`.
+
+## Immediate consequence for the test device
+
+The install must be reset (`adb shell pm clear com.nexvault.wallet.debug`, or uninstall +
+reinstall) before the flow can be retested. That destroys the wallet created above — which
+is currently worthless anyway, since its mnemonic was never captured.
+
 

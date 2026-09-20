@@ -37,6 +37,16 @@ without evidence.
 > test suite, a never-executed app, two red quality gates — is the exact substrate every
 > later item would be built on.
 
+> **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
+> onboarding creates the wallet without ever showing the mnemonic, leaving the app
+> unusable and the wallet unbacked-up. Nothing else in Phase 2.0 can be verified until
+> this is fixed, because no flow can get past the first screen.
+>
+> What the first run has already bought, beyond the two defects it found: the app is
+> confirmed to build, install, launch, and render on a Pixel 6a, and one prediction
+> (a stray ActionBar) was refuted rather than acted on — which is the whole argument for
+> running the thing instead of reasoning about it.
+
 ---
 
 ## Phase 0 — Historical: the prompt-driven era (retired)
@@ -79,7 +89,9 @@ the spec workflow — no prompt file will be authored for it.
 on a device, the security suite compiles and passes, the dead ends are gone, and both
 quality gates are green.
 
-Order within the phase is strict: 2.0.1 → 2.0.2 → 2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7.
+Order within the phase is strict: 2.0.1 → 2.0.2 → **2.0.2b** → 2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7.
+2.0.2b was inserted on 2026-09-21: 2.0.2's first real run exposed a critical defect that
+blocks every remaining step.
 
 ### 2.0.1 — Repair the `core-security` test suite `[~]`
 **Automatic half DONE 2026-09-21** — 61 tests, 0 failures, 1 skipped; the suite compiles
@@ -115,23 +127,54 @@ resolved symbol is traced to a real production API in `validation.md`. ✅ met
 
 ### 2.0.2 — First run on a device `[~]`
 **IN PROGRESS 2026-09-21.** Device: **Pixel 6a, Android 16 (API 36)**, adb over Wi-Fi.
-The app now builds, installs, launches and runs without crashing. The rendered UI is
-**not yet observed** — the device has a secure lock screen and needs the owner to unlock
-it. Evidence: `specs/features/2026-09-20-2.0.0-stabilization/validation.md` §2.0.2.
+Evidence: `specs/features/2026-09-20-2.0.0-stabilization/validation.md` §2.0.2 and §2.0.2b.
 
-**The blocker was a real bug, not a missing device:**
-`app/src/main/AndroidManifest.xml` declared **no `<activity>`** and no
-`android:name` on `<application>`. `monkey` reported *"No activities found to run"* —
-so **the app had no entry point and could never have been launched**, and
-`@HiltAndroidApp` was never registered either. Fixed (owner-approved): `.MainActivity`
-with a MAIN/LAUNCHER filter, and `.NexVaultApplication` on the application element. This,
-not the placeholder tabs, is the root cause of "the GUI is not quite working".
+Done:
 
-Steps: unlock the device → `:app:installDebug` → walk onboarding → PIN → unlock → home →
-token detail, and record what actually happens (crashes included) in `validation.md`.
+- `app/src/main/AndroidManifest.xml` declared **no `<activity>`** and no `android:name`
+  on `<application>`: `monkey` reported *"No activities found to run"*, so the app **had no
+  entry point and could never have been launched**, and `@HiltAndroidApp` was never
+  registered. Fixed — `.MainActivity` with a MAIN/LAUNCHER filter, `.NexVaultApplication`
+  on the application element. This, not the placeholder tabs, is why the GUI never worked.
+- Installed, launched, and rendered the Welcome screen on the device: dark theme,
+  edge-to-edge, no crash. The predicted stray ActionBar does **not** exist — `MainActivity`
+  extends plain `FragmentActivity`, so a `MaterialComponents` theme builds no ActionBar.
+  Item 4.14 is closed as refuted.
+- The SDK 37 toolchain and the `compileSdk` 37.2 / `targetSdk` 37 bump.
+
+Not done: the rest of the happy path. One tap past Welcome it hits **2.0.2b**.
 
 Exit criteria: the main happy path has been observed on a device, with screenshots or a
 written trace, and any crash is filed as its own roadmap item.
+
+### 2.0.2b — Repair the onboarding flow `[!]`
+**BLOCKER, found 2026-09-21 by the first real run.** The wallet is created but the user
+never sees the mnemonic, and the app is left unusable on the device.
+
+Tapping **Create New Wallet** lands on the Unlock screen instead of the mnemonic. The
+wallet really was created — `files/wallet/mnemonic.enc` (386 bytes) and a real BIP-44
+address `0xDc6D56BfFA21b1E9bb3C6B02F7c7cC071d351BEe` are on disk — but
+`security_preferences` holds **no `password_hash`**, so no PIN was ever set.
+
+Root cause: `CreateWalletViewModel` calls `createWalletUseCase` from its `init` block, which
+persists the wallet *and* flips `is_wallet_set_up`; `NexVaultApp` uses that flag in a
+`remember`-derived `routingKey` wrapped in `key(...)`, so the whole root NavHost is torn
+down and rebuilt at the auth graph mid-flow. The mnemonic screen and the **Verify
+Mnemonic** step are never reached.
+
+Why it outranks everything else here: the mnemonic is the only recovery path for a
+non-custodial wallet. It is generated, encrypted and stored, but never shown and never
+verified — the wallet is unbacked-up from birth, with no consent step. And the install is
+now unrecoverable: a PIN is demanded that was never set.
+
+Remediation options (A: move the flag write to the end of onboarding — smallest unblock;
+B: stop creating the wallet in `init` — matches the security intent; C: drop the reactive
+root router — kills the whole bug class). **Recommendation: B as the target, A as the
+immediate unblock.** Needs its own feature spec and an owner decision before any code is
+written.
+
+Exit criteria: with cleared app data, onboarding runs Welcome → mnemonic shown → verify →
+Set PIN → main, and the mnemonic that appears is the one that decrypts `mnemonic.enc`.
 
 ### 2.0.3 — Close the navigation dead ends `[ ]`
 `app/src/main/java/com/nexvault/wallet/ui/main/MainScreen.kt` wires Home → TokenDetail,
@@ -256,7 +299,7 @@ already in the version catalog for 3.5 and 3.1.
 | 4.11 | Fix the password-strength scale: `PasswordValidator.calculateStrength` can never exceed **75** while its `coerceIn(0, 100)` implies 100, so a strength meter would top out three-quarters of the way up its own bar. Found during 2.0.1; no production caller yet. |
 | 4.12 | Split `SecureUtils` / `SecurityUtils` — two unrelated objects in one file, one hosting extension functions. It caused three of the six 2.0.1 test defects by making the API surface guessable-but-wrong. |
 | 4.13 | Port the `@Ignore`d AndroidKeyStore tests from 2.0.1 to `app/src/androidTest` once 2.0.2 has established a device. |
-| 4.14 | Normalise the Android theme: `Theme.NexVault` extends `Theme.MaterialComponents.DayNight.DarkActionBar` while the app draws its own Compose Scaffold and calls `enableEdgeToEdge()`, so a stray platform ActionBar is likely above the Compose UI. Switch to `NoActionBar` — after confirming with a screenshot (2.0.3). |
+| 4.14 | ~~Normalise the Android theme~~ **REFUTED 2026-09-21** — the Welcome screen renders with no ActionBar: `MainActivity` extends plain `FragmentActivity`, not `AppCompatActivity`, so the `MaterialComponents` theme never builds one. The prediction was wrong; nothing to fix. |
 | 4.15 | Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36. |
 
 ---
