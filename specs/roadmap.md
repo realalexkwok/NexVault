@@ -1,0 +1,260 @@
+# NexVault — Roadmap
+
+> **Order is strict.** Execute items top to bottom; nothing gets skipped, reordered, or
+> started early without the owner's explicit approval. One roadmap item = one feature
+> spec directory = one branch.
+>
+> Re-measured **2026-09-20**. Every status line below carries evidence; none of it is
+> inherited from the `doc/prompts/` archive, which recorded *intent* and is now
+> read-only history.
+
+## Status legend
+
+| Mark | Meaning |
+| --- | --- |
+| `[x]` | **Verified** — a `validation.md` exists, the automatic half passed with recorded commands, and the owner's manual half passed. |
+| `[~]` | **Implemented, unverified** — code exists and compiles, but at least one half of verification is missing or failing. |
+| `[ ]` | **Not started.** |
+| `[!]` | **Blocked** — cannot proceed; the blocker is named inline. |
+
+A `[~]` item is *not* done. It may not be cited as working, may not be built upon
+without a compensating note in the new item's `requirements.md`, and cannot become `[x]`
+without evidence.
+
+## Branches
+
+- `main` is the trunk. There is **no `develop` branch**, despite `doc/01`'s branching
+  strategy section — that document describes an intention that was never implemented.
+- One branch per item: `feature/<item>-<slug>` (e.g. `feature/2.0.1-core-security-tests`).
+- Never stack a new branch on an unfinished feature branch.
+- Agents do not `git commit` or `git push`; changes stay in the working tree for the
+  owner. Merging into `main` is an owner action.
+
+## Current position
+
+> **The only open entry point is Phase 2.0.** Nothing in Phase 2 (remaining) or Phase 3
+> may start until Phase 2.0 closes, because the debt it clears — an unbuildable security
+> test suite, a never-executed app, two red quality gates — is the exact substrate every
+> later item would be built on.
+
+---
+
+## Phase 0 — Historical: the prompt-driven era (retired)
+
+Tasks 1.1–2.5 were implemented by feeding `doc/prompts/01…15` to an agent, one file per
+task, with no feature spec and no verification step. The code they produced is real and
+mostly sound — but **every item below is `[~]`, because not one of them was ever verified
+on a device and both quality gates they claimed to satisfy are red.**
+
+Evidence of the era's failure mode: `doc/04-IMPLEMENTATION-PLAN-PHASE1.md` ends with
+"All Phase 1 unit tests pass" and "Detekt and ktlint pass with zero issues" — both
+statements are false today, and there is no record they were ever true.
+
+| Item | Deliverable | Evidence in tree | Status |
+| --- | --- | --- | --- |
+| 1.1 Project scaffolding | Multi-module Gradle build, version catalog | `settings.gradle.kts` (20 modules), `gradle/libs.versions.toml` | `[~]` |
+| 1.2 Design system & theme | `core:core-ui` | 29 source files: `theme/` 6, `components/` 16, `animation/` 3, `util/` 2, `mapper/` + `preview/` 2 | `[~]` |
+| 1.3 Security module | `core:core-security` | 10 source + 5 test files (KeyStore, Tink, BIP-39/44, biometric, PIN validation) — **its 64 tests do not compile** | `[~]` |
+| 1.4 DataStore & preferences | `core:core-datastore` | 8 source + 4 test files; 27 tests pass | `[~]` |
+| 1.5 Domain models & repository interfaces | `domain` | 32 source files (7 models, 5 repository interfaces, 20 use cases) + 10 test files; 63 tests pass | `[~]` |
+| 1.6 Data layer | `data` | 11 source files: 5 repository impls + 5 mappers + `RepositoryModule`; 27 tests pass | `[~]` |
+| 1.7 Onboarding (parts 1–2) | `feature:feature-onboarding` | 12 source + 5 test files; 30 tests pass | `[~]` |
+| 1.8 Auth / unlock | `feature:feature-auth` | 3 source + 1 test file; 14 tests pass | `[~]` |
+| 1.9 Main scaffold & navigation shell | `app` | `MainScreen` with 5 tabs — **4 render `PlaceholderTabScreen`** | `[~]` |
+| 2.1 Network module | `core:core-network` | 19 files: CoinGecko + explorer APIs, Web3j provider, interceptors, adapters — **no tests** | `[~]` |
+| 2.2 Database module | `core:core-database` | 10 files: 4 entities, 4 DAOs, DB, DI; schema `1.json` — **no tests** | `[~]` |
+| 2.3 Chain management | Chain switching | 3 chain use cases, `ChainUiMapper`, `ChainSelectorDropdown`, `ChainBadge`, `ChainIconMapper` — **no tests** | `[~]` |
+| 2.4 Home dashboard | `feature:feature-home` | 4 files: `HomeScreen`, `HomeViewModel`, `HomeUiState`, `AddTokenDialog` — **no tests** | `[~]` |
+| 2.5 Token detail | `feature:feature-tokens` | 3 files: `TokenDetailScreen`, `TokenDetailViewModel`, `TokenDetailUiState` — **no tests** | `[~]` |
+
+Prompt files 16–29 (Send, Receive, History, default token list, all of Phase 3, unit
+tests, UI tests, performance pass) were **never written**. That work now flows through
+the spec workflow — no prompt file will be authored for it.
+
+---
+
+## Phase 2.0 — Stabilization & verification debt `← current gate`
+
+**Goal:** make the existing code true. No new features. Closes when the app has been run
+on a device, the security suite compiles and passes, the dead ends are gone, and both
+quality gates are green.
+
+Order within the phase is strict: 2.0.1 → 2.0.2 → 2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7.
+
+### 2.0.1 — Repair the `core-security` test suite `[ ]`
+64 tests exist and have never executed. `:core:core-security:compileDebugUnitTestKotlin`
+fails with:
+
+| File | Error |
+| --- | --- |
+| `EncryptionManagerTest.kt:10` | `Unresolved reference 'mockito'` — Mockito is not a dependency; the project uses MockK |
+| `MnemonicManagerTest.kt:61,68,69` | `No value passed for parameter 'passphrase'` |
+| `MnemonicManagerTest.kt:92,99,105` | `Unresolved reference 'suggestWords'` |
+| `SecurityUtilsTest.kt:15,112` | `Unresolved reference 'secureWipe'` |
+| `SecurityUtilsTest.kt:43` | `Unresolved reference 'toHex'` |
+| `SecurityUtilsTest.kt:42` | `Argument type mismatch: Int, but Byte was expected` |
+
+**For each one, decide explicitly whether the test or the implementation is wrong** and
+record the decision in `validation.md`. Changing production crypto to satisfy a stale
+test is forbidden — `passphrase` may well be a deliberate hardening that the test simply
+predates.
+
+Exit criteria: `:core:core-security:testDebugUnitTest` compiles and passes; every
+resolved symbol is traced to a real production API in `validation.md`.
+
+### 2.0.2 — First run on a device `[!]`
+**Blocker:** no emulator installed, no AVD, no physical device.
+
+The SDK has `platform-tools` (adb), `cmdline-tools/latest` (sdkmanager, avdmanager) and
+the `android-36.1;google_apis_playstore;arm64-v8a` system image — but **no `emulator`
+package**, `~/.android/avd` is empty, and `adb devices` lists nothing. The app has
+therefore never been launched. Every "the screen works" claim in the archive is
+unverified for this single reason.
+
+Steps: install the emulator package → create an AVD → `:app:installDebug` → walk
+onboarding → PIN → unlock → home → token detail, and record what actually happens
+(crashes included) in `validation.md`.
+
+Exit criteria: the main happy path has been observed on a device, with screenshots or a
+written trace, and any crash is filed as its own roadmap item.
+
+### 2.0.3 — Close the navigation dead ends `[ ]`
+`app/src/main/java/com/nexvault/wallet/ui/main/MainScreen.kt` wires Home → TokenDetail,
+but passes empty lambdas for send, receive, swap, and history. Combined with the four
+placeholder tabs, the app currently has no path to any Phase 2 feature.
+
+Exit criteria: either the callbacks navigate somewhere real, or the buttons that depend
+on them are disabled with a visible explanation. A click that silently does nothing is
+the defect — not the absence of the destination.
+
+### 2.0.4 — Decide the API-key strategy `[ ]`
+All five `local.properties` keys are `your_key_here`. Determine, per screen, what the
+correct behaviour without keys is (explicit "not configured" state vs. empty state vs.
+retry), and make the network-backed screens honour it. Faking data to make a screen look
+populated is forbidden.
+
+**Owner decision required:** supply real keys, or keep placeholders and treat
+key-absent degradation as the supported path for now. Either answer is acceptable; it
+must be written down.
+
+### 2.0.5 — Turn both quality gates green `[ ]`
+Current: **1656 ktlint violations across 178 of 221 Kotlin files**, and **75 detekt
+issues** against `maxIssues: 0`.
+
+The ktlint number is a style-vocabulary conflict, not 1656 independent mistakes: the
+code follows IntelliJ defaults while ktlint 1.x defaults disagree
+(`multiline-expression-wrapping` 468, `function-signature` 306,
+`argument-list-wrapping` 150, `trailing-comma-on-call-site` 113,
+`function-expression-body` 106, `annotation` 92, `function-naming` 76).
+
+**Two owner decisions required:**
+
+1. *ktlint* — (a) run `ktlintFormat` once and accept a reformat of ~178 files as an
+   isolated, no-logic-change commit, or (b) add an `.editorconfig` plus rule
+   configuration that codifies the style the code already has. (a) is the conventional
+   answer; (b) preserves history and is faster but leaves the codebase on a
+   non-standard dialect.
+2. *detekt* — (a) refactor the offenders (`TokenRepositoryImpl` 19/11 functions,
+   `WalletRepositoryImpl` 14/11, `AuthRepositoryImpl` 13/11, plus `MaxLineLength`), or
+   (b) raise the thresholds, or (c) introduce a baseline file. A baseline hides the debt
+   rather than clearing it and is the weakest option.
+
+Whichever options are chosen, formatting lands as its **own change**, separate from any
+logic edit, and must land **before** Phase 2 feature work resumes.
+
+### 2.0.6 — Build the TC traceability `[ ]`
+`doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
+TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). No test method references a TC id, so
+nobody can tell which specified behaviours are actually covered.
+
+Exit criteria: each TC id is mapped to a test method, or registered as an unimplemented
+roadmap item. The 10 TC-UI cases have no home at all today — the only instrumented test
+is the `ExampleInstrumentedTest` template stub.
+
+### 2.0.7 — Record and close `[ ]`
+Write `specs/features/2026-09-20-2.0.0-stabilization/validation.md` covering 2.0.1–2.0.6
+with commands, observed results, and absolute artifact paths; then flip the Phase 0 rows
+that earn it to `[x]`, and carry forward anything still deferred as a Handoff list.
+
+---
+
+## Phase 2 — Core features (remaining)
+
+Unblocked only after Phase 2.0 closes.
+
+| Item | Scope | Landing module | Acceptance | Status |
+| --- | --- | --- | --- | --- |
+| 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[ ]` |
+| 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[ ]` |
+| 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
+| 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[ ]` |
+
+**2.6 entry conditions (verified in code):** `GasEstimate`, `GasOption` and
+`SendTransactionParams` already exist in `domain/model/transaction/`, and
+`TransactionRepository` already declares `estimateGas`, `sendNativeTransaction`,
+`sendTokenTransaction`, `getTransactionHistory`, `refreshTransactionHistory`,
+`getRecentTransactionsForToken`, `getTransactionDetail`, `getPendingTransactions`,
+`updateTransactionStatus`. `TransactionRepositoryImpl` implements the read paths for real
+but returns `UnsupportedOperationException` for **all three write paths** and for
+`estimateGas` — so 2.6 is precisely: implement those three methods against
+`Web3jProvider`, then build the UI.
+
+**Known shortcuts inside 2.5/2.8 territory** to address while implementing:
+`getTransactionHistory` ignores its `page` / `pageSize` arguments (returns the full
+observed list), and `updateTransactionStatus` returns the cached entity without
+consulting the chain.
+
+---
+
+## Phase 3 — Advanced features
+
+| Item | Scope | Landing module | Acceptance | Status |
+| --- | --- | --- | --- | --- |
+| 3.1 WalletConnect v2 | Pairing via QR, session approval, `personal_sign` / `sendTransaction`, session list | `feature:feature-dapp` | `AC-3.1` | `[ ]` |
+| 3.2 NFT gallery | ERC-721/1155 list, metadata, attributes, IPFS images | `feature:feature-nft` | `AC-3.2` | `[ ]` |
+| 3.3 Token swap | Aggregator quote, ERC-20 approval, testnet execution | `feature:feature-swap` | `AC-3.3` | `[ ]` |
+| 3.4 Settings & network management | Security, network CRUD, address book, recovery-phrase export | `feature:feature-settings` | `AC-3.4` | `[ ]` |
+| 3.5 Background sync | WorkManager balance/pending-tx sync with constraints | `core:core-network` + `data` | `AC-3.5` | `[ ]` |
+| 3.6 Deep linking | `ethereum:` and `wc:` intent handling | `app` | `AC-3.6` | `[ ]` |
+| 3.7 Final polish | Icon, splash, edge-to-edge, i18n (EN + ZH), R8 release run | `app` | `AC-3.6`, Phase 3 checklist | `[ ]` |
+
+`NftEntity`/`NftDao` (2.2) and `AddressBookEntity`/`AddressBookDao` (2.2) already exist
+as storage for 3.2 and 3.4. WorkManager (2.11.1) and the WalletConnect BOM (1.35.2) are
+already in the version catalog for 3.5 and 3.1.
+
+---
+
+## Phase 4 — Tech debt & hardening
+
+| Item | Scope |
+| --- | --- |
+| 4.1 | Extract convention plugins into a `build-logic/` module (20 modules duplicate their config today) |
+| 4.2 | Decide `core:core-common`'s fate: populate it with the utilities it was meant to hold, or remove it from `app`/`data`/all features |
+| 4.3 | Add CI so the gates run automatically instead of only on demand |
+| 4.4 | Encrypt Room with SQLCipher (currently plaintext on disk) |
+| 4.5 | Decide `junit-jupiter` (catalog-only, unused): adopt JUnit 5 or delete the entry |
+| 4.6 | Configure Spotless with real formatters, or remove the plugin — today it is a no-op that implies coverage it does not provide |
+| 4.7 | Security hardening per `doc/08`: `FLAG_SECURE` on sensitive screens, private-key zeroing after signing |
+| 4.8 | Reach the `doc/08` code-quality bar: ≥70% coverage on `domain` + `data`, KDoc on all public API |
+| 4.9 | Clear the Gradle deprecation warnings blocking a Gradle 10 upgrade |
+| 4.10 | Decide the `androidx.biometric` alpha pin (`1.4.0-alpha05`) |
+
+---
+
+## Evidence appendix — baseline measured 2026-09-20
+
+Commands run from the repository root; `JAVA_HOME` set to the Android Studio JBR.
+
+| # | Command | Result |
+| --- | --- | --- |
+| E1 | `./gradlew :app:assembleDebug` | **PASS** → `/Users/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` |
+| E2 | `./gradlew testDebugUnitTest` | **162 pass, 0 fail** across `domain` 63, `feature-onboarding` 30, `core-datastore` 27, `data` 27, `feature-auth` 14, `app` 1 |
+| E3 | `./gradlew :core:core-security:compileDebugUnitTestKotlin` | **FAIL** — 16 compile errors (Mockito, `passphrase`, `suggestWords`, `secureWipe`, `toHex`, `Int`/`Byte`) |
+| E4 | `./gradlew detekt` | **FAIL** — 75 issues (`TooManyFunctions`, `MaxLineLength`), config `maxIssues: 0` |
+| E5 | `./gradlew ktlintCheck` | **FAIL** — 1656 violations in 178 of 221 Kotlin files |
+| E6 | `adb devices` / `ls $ANDROID_HOME/emulator` / `ls ~/.android/avd` | **empty / missing / empty** — no device, no emulator, no AVD |
+| E7 | `grep -r TODO\|FIXME --include=*.kt app core domain data feature` | **0** — the `doc/08` "no TODO/FIXME" criterion passes |
+| E8 | `find . -path "*src/androidTest*" -name "*.kt"` | **1 file** — the template stub only; no real instrumented coverage |
+
+These numbers are the reference point for every claim in this roadmap. Re-run them before
+asserting that anything has changed.
