@@ -8,8 +8,8 @@ plugins {
 android {
     namespace = "com.nexvault.wallet.core.datastore"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
+        version = release(37) {
+            minorApiLevel = 2
         }
     }
 

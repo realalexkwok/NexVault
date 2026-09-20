@@ -8,8 +8,8 @@ plugins {
 android {
     namespace = "com.nexvault.wallet.core.ui"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
+        version = release(37) {
+            minorApiLevel = 2
         }
     }
 
