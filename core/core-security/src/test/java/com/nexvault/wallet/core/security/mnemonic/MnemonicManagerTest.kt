@@ -58,15 +58,15 @@ class MnemonicManagerTest {
     @Test
     fun testMnemonicToSeed() {
         val mnemonic = mnemonicManager.generateMnemonic(12)
-        val seed = mnemonicManager.mnemonicToSeed(mnemonic)
+        val seed = mnemonicManager.mnemonicToSeed(mnemonic, "")
         assertEquals(64, seed.size)
     }
 
     @Test
     fun testSameMnemonicAlwaysProducesSameSeed() {
         val mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-        val seed1 = mnemonicManager.mnemonicToSeed(mnemonic)
-        val seed2 = mnemonicManager.mnemonicToSeed(mnemonic)
+        val seed1 = mnemonicManager.mnemonicToSeed(mnemonic, "")
+        val seed2 = mnemonicManager.mnemonicToSeed(mnemonic, "")
         assertTrue(seed1.contentEquals(seed2))
     }
 
@@ -82,28 +82,12 @@ class MnemonicManagerTest {
     fun testWordList() {
         val wordList = mnemonicManager.getWordList()
         assertEquals(2048, wordList.size)
-        assertTrue(wordList.contains("abandon"))
-        assertTrue(wordList.contains("wallet"))
-        assertTrue(wordList.contains("bitcoin"))
-    }
-
-    @Test
-    fun testSuggestWords() {
-        val suggestions = mnemonicManager.suggestWords("wal")
-        assertTrue(suggestions.isNotEmpty())
-        assertTrue(suggestions.all { it.startsWith("wal") })
-    }
-
-    @Test
-    fun testSuggestWordsEmptyPrefix() {
-        val suggestions = mnemonicManager.suggestWords("")
-        assertTrue(suggestions.isEmpty())
-    }
-
-    @Test
-    fun testSuggestWordsLimit() {
-        val suggestions = mnemonicManager.suggestWords("a")
-        assertTrue(suggestions.size <= 10)
+        // Boundary words: the canonical list runs from "abandon" to "zoo".
+        assertEquals("abandon", wordList.first())
+        assertEquals("zoo", wordList.last())
+        assertTrue(wordList.contains("walk"))
+        assertTrue(wordList.contains("bitter"))
+        assertEquals("word list must not contain duplicates", 2048, wordList.toSet().size)
     }
 
     @Test

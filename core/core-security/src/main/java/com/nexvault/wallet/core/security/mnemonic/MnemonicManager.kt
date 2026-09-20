@@ -44,25 +44,12 @@ class MnemonicManager @Inject constructor() {
         return MnemonicUtils.generateSeed(mnemonic, passphrase)
     }
 
-    fun getWordList(): List<String> {
-        // Web3j MnemonicUtils doesn't expose the word list directly in v5.0.2
-        // Using a standard BIP39 English word list
-        return BIP39_WORDLIST
-    }
-
-    companion object {
-        // Standard BIP39 English word list (first 100 words as example)
-        private val BIP39_WORDLIST = listOf(
-            "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse",
-            "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act",
-            "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit",
-            "adult", "advance", "advice", "aerobic", "affair", "afford", "afraid", "again", "age", "agent",
-            "agree", "ahead", "aim", "air", "airport", "aisle", "alarm", "album", "alcohol", "alert",
-            "alien", "all", "alley", "allow", "almost", "alone", "alpha", "already", "also", "alter",
-            "always", "amateur", "amazing", "among", "amount", "amused", "analyst", "anchor", "ancient", "anger",
-            "angle", "angry", "animal", "ankle", "announce", "annual", "another", "answer", "antenna", "antique",
-            "anxiety", "any", "apart", "apology", "appear", "apple", "approve", "april", "arch", "arctic",
-            "area", "arena", "argue", "arm", "armed", "armor", "army", "around", "arrange", "arrest"
-        )
-    }
+    /**
+     * Returns the canonical 2048-word BIP-39 English word list.
+     *
+     * Delegates to web3j instead of carrying a local copy: the same list backs
+     * [generateMnemonic] and [validateMnemonic], so any mnemonic this class produces is
+     * guaranteed to be expressible in the list it reports.
+     */
+    fun getWordList(): List<String> = MnemonicUtils.getWords()
 }

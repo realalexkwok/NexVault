@@ -1,5 +1,8 @@
 package com.nexvault.wallet.core.security.util
 
+import com.nexvault.wallet.core.security.util.SecureUtils.secureWipe
+import com.nexvault.wallet.core.security.util.SecurityUtils.hexToByteArray
+import com.nexvault.wallet.core.security.util.SecurityUtils.toHex
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,7 +42,7 @@ class SecurityUtilsTest {
 
     @Test
     fun testHexRoundTrip() {
-        val original = byteArrayOf(1, 2, 3, 4, 5, 255, 0, 128)
+        val original = byteArrayOf(1, 2, 3, 4, 5, 255.toByte(), 0, 128.toByte())
         val hex = original.toHex()
         val recovered = hex.hexToByteArray()
         assertArrayEquals(original, recovered)
@@ -109,7 +112,7 @@ class SecurityUtilsTest {
     @Test
     fun testCharArraySecureWipe() {
         val chars = charArrayOf('a', 'b', 'c', 'd')
-        SecureUtils.secureWipe(chars)
+        chars.secureWipe()
         assertTrue(chars.all { it == '\u0000' })
     }
 }

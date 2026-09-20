@@ -1,13 +1,15 @@
 package com.nexvault.wallet.core.security.encryption
 
 import com.nexvault.wallet.core.security.keystore.KeyStoreManager
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
-import org.mockito.Mockito
 import javax.crypto.SecretKey
 
 class EncryptionManagerTest {
@@ -17,10 +19,10 @@ class EncryptionManagerTest {
 
     @Before
     fun setup() {
-        // Create a mock KeyStoreManager that returns a dummy key for testing
-        // Since we're testing password-based encryption, the keystore operations
-        // won't be called in these tests
-        keyStoreManager = Mockito.mock(KeyStoreManager::class.java)
+        // Strict mock on purpose: the password-derived tests below never touch the
+        // keystore, so any accidental keystore call should fail loudly rather than
+        // silently return a stub.
+        keyStoreManager = mockk<KeyStoreManager>()
         encryptionManager = EncryptionManager(keyStoreManager)
     }
 
@@ -105,11 +107,17 @@ class EncryptionManagerTest {
         assertFalse(result1.key.encoded.contentEquals(result2.key.encoded))
     }
 
+    @Ignore(
+        "Requires a real AndroidKeyStore: encryptWithKeystore needs a hardware-backed AES " +
+            "key, which a JVM mock cannot provide. Port to app/src/androidTest once a " +
+            "device is available — see specs/features/2026-09-20-2.0.0-stabilization/ " +
+            "requirements.md (Handoff)."
+    )
     @Test
     fun testEncryptWithKeystore() {
         // Setup mock to return a proper key
-        val mockKey = Mockito.mock(SecretKey::class.java)
-        Mockito.`when`(keyStoreManager.getOrCreateMasterKey()).thenReturn(mockKey)
+        val mockKey = mockk<SecretKey>()
+        every { keyStoreManager.getOrCreateMasterKey() } returns mockKey
 
         // This test just verifies the method can be called
         // Full keystore encryption testing requires instrumented tests

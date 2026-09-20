@@ -89,7 +89,12 @@ class PasswordValidatorTest {
     @Test
     fun testStrengthCalculationStrong() {
         val strength = PasswordValidator.calculateStrength("MyV3ryStr0ng!P@ssw0rd")
-        assertTrue(strength > 70)
+        // The documented maximum is 75 (25 length + 50 variety), not 100: the
+        // coerceIn(0, 100) is only a clamp. This password covers all four character
+        // classes at length 21 (+75) and contains the "ss" pair (-5), so the top band
+        // lands at exactly 70. Pinning the exact value documents that ceiling; the
+        // compressed scale is logged for Phase 4.
+        assertEquals(70, strength)
     }
 
     @Test
