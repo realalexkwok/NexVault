@@ -36,24 +36,69 @@ build still works.
 | Item | Value |
 | --- | --- |
 | SDK root | `/Users/superguo/Library/Android/sdk` (from `local.properties` → `sdk.dir`) |
-| Installed platforms | `android-33`, `android-34`, `android-35`, `android-36`, `android-36.1` — compileSdk needs **36** ✅ |
-| Build tools | `35.0.0`, `36.0.0`, `36.1.0` ✅ |
-| Platform tools | present (`adb`, `fastboot`) |
+| Installed platforms | `android-33`, `android-34`, `android-35`, `android-36`, `android-36.1`, **`android-37.2`** — compileSdk needs **37.2** ✅ |
+| Build tools | `35.0.0`, `36.0.0`, `36.1.0`, **`37.0.0`** ✅ |
+| Platform tools | **37.0.1** (`adb` 1.0.41 / 37.0.1-15733141), `fastboot` |
 | Command-line tools | `cmdline-tools/latest/bin/{sdkmanager,avdmanager,apkanalyzer,retrace,…}` ✅ |
-| `emulator` package | ❌ **NOT INSTALLED** |
-| System images | `android-25;google_apis`, `android-29;default`, `android-30;{google_apis,aosp_atd,default,google_apis_playstore}`, `android-33;{google_apis,default,google_apis_playstore,android-desktop}`, **`android-36.1;google_apis_playstore;arm64-v8a`** |
-| Configured AVDs | ❌ none (`~/.android/avd` is empty) |
-| Connected devices | ❌ none (`adb devices` lists nothing) |
+| `emulator` package | ❌ not installed — **not required** (owner uses a physical device) |
+| System images | `android-25;google_apis`, `android-29;default`, `android-30;{google_apis,aosp_atd,default,google_apis_playstore}`, `android-33;{google_apis,default,google_apis_playstore,android-desktop}`, `android-36.1;google_apis_playstore;arm64-v8a` |
+| Configured AVDs | none (`~/.android/avd` is empty) — not required |
+| Connected device | ✅ **Pixel 6a** (`bluejay`), Android 16 / API 36, over adb Wi-Fi |
 
-## 3. The emulator gap — prerequisite for every manual verification
+Toolchain raised to SDK 37 on 2026-09-21 (owner-approved). The 36.x packages are still
+installed, so a rollback needs no download.
+
+**`targetSdk` 37 vs an API-36 device:** the project targets 37 but the only test device
+runs 36. That is legal and installs fine — it simply means Android 17's runtime behaviour
+changes are not exercised by anything here. Tracked as Phase 4 item 4.15.
+
+## 3. Device setup for the manual verification half
+
+**Owner decision 2026-09-21: use a physical Android device over USB, not the emulator.**
+Installing the emulator is therefore **not** a prerequisite and nothing needs downloading.
+
+**The device is currently LOCKED**, which is what still blocks the manual half:
+
+```
+$ adb shell dumpsys window | grep isKeyguardShowing
+    isKeyguardShowing=true
+$ adb shell dumpsys trust | grep trustState
+    trustState=UNTRUSTED, deviceLocked=1
+```
+
+`adb shell input keyevent KEYCODE_WAKEUP` turns the screen on and
+`adb shell wm dismiss-keyguard` does **not** clear a secure lock. The owner must enter
+their PIN/pattern; `screencap` returns an all-black frame until then.
+
+To confirm the device is usable:
+
+```bash
+SDK=/Users/superguo/Library/Android/sdk
+"$SDK/platform-tools/adb" devices        # must list the device as "device", not "unauthorized"
+"$SDK/platform-tools/adb" shell dumpsys window | grep isKeyguardShowing   # want: false
+```
+
+A physical device is also the *better* target here: biometric unlock needs real
+fingerprint hardware, which the AOSP emulator images do not emulate.
 
 **No item can be marked `[x]` right now**, because the manual half of two-sided
-verification is physically impossible: there is no emulator binary, no AVD, and no
-connected device. The app has never been launched since the project began.
+verification has never been performed: `adb devices` lists nothing, and the app has never
+been launched since the project began.
 
-The good news is that the expensive part is already on disk — the
-`android-36.1;google_apis_playstore;arm64-v8a` image matches `targetSdk 36` and is an
-Apple-Silicon build. Only the emulator package and an AVD definition are missing:
+To unblock it, attach a device with USB debugging enabled and confirm:
+
+```bash
+SDK=/Users/superguo/Library/Android/sdk
+"$SDK/platform-tools/adb" devices        # must list your device as "device", not "unauthorized"
+```
+
+A physical device is also the *better* target here: biometric unlock needs real
+fingerprint hardware, which the AOSP emulator images do not emulate.
+
+### If an emulator is ever wanted instead
+
+The `android-36.1;google_apis_playstore;arm64-v8a` image is already on disk and matches
+`targetSdk 36`; only the emulator package and an AVD definition would be missing:
 
 ```bash
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
@@ -78,8 +123,6 @@ Notes:
   the AOSP images have no fingerprint hardware, and unlock is a core flow here.
 - `sdkmanager` prints a harmless `test: : integer expression expected` line from its own
   shell wrapper; it does not affect the install.
-- An alternative to the emulator is a physical Android device over USB with USB
-  debugging enabled — that also gives a truthful answer about real biometric hardware.
 
 ## 4. API keys
 

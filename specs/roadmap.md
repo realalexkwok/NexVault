@@ -81,9 +81,14 @@ quality gates are green.
 
 Order within the phase is strict: 2.0.1 → 2.0.2 → 2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7.
 
-### 2.0.1 — Repair the `core-security` test suite `[ ]`
-64 tests exist and have never executed. `:core:core-security:compileDebugUnitTestKotlin`
-fails with:
+### 2.0.1 — Repair the `core-security` test suite `[~]`
+**Automatic half DONE 2026-09-21** — 61 tests, 0 failures, 1 skipped; the suite compiles
+and runs for the first time. Stays `[~]` until the owner reviews the nine
+test-vs-implementation judgments recorded in
+`specs/features/2026-09-20-2.0.0-stabilization/validation.md`.
+
+Originally: 64 tests existed and had never executed, because
+`:core:core-security:compileDebugUnitTestKotlin` did not compile:
 
 | File | Error |
 | --- | --- |
@@ -99,21 +104,31 @@ record the decision in `validation.md`. Changing production crypto to satisfy a 
 test is forbidden — `passphrase` may well be a deliberate hardening that the test simply
 predates.
 
+Outcome: **eight of the nine defects were stale test code; one was a real production
+bug** — `getWordList()` returned 100 of 2048 BIP-39 words. A ninth defect
+(`PasswordValidatorTest.testStrengthCalculationStrong`, threshold off by one) surfaced
+only once the suite finally ran. See `validation.md` for the per-defect judgment table.
+
 Exit criteria: `:core:core-security:testDebugUnitTest` compiles and passes; every
-resolved symbol is traced to a real production API in `validation.md`.
+resolved symbol is traced to a real production API in `validation.md`. ✅ met
+2026-09-21.
 
-### 2.0.2 — First run on a device `[!]`
-**Blocker:** no emulator installed, no AVD, no physical device.
+### 2.0.2 — First run on a device `[~]`
+**IN PROGRESS 2026-09-21.** Device: **Pixel 6a, Android 16 (API 36)**, adb over Wi-Fi.
+The app now builds, installs, launches and runs without crashing. The rendered UI is
+**not yet observed** — the device has a secure lock screen and needs the owner to unlock
+it. Evidence: `specs/features/2026-09-20-2.0.0-stabilization/validation.md` §2.0.2.
 
-The SDK has `platform-tools` (adb), `cmdline-tools/latest` (sdkmanager, avdmanager) and
-the `android-36.1;google_apis_playstore;arm64-v8a` system image — but **no `emulator`
-package**, `~/.android/avd` is empty, and `adb devices` lists nothing. The app has
-therefore never been launched. Every "the screen works" claim in the archive is
-unverified for this single reason.
+**The blocker was a real bug, not a missing device:**
+`app/src/main/AndroidManifest.xml` declared **no `<activity>`** and no
+`android:name` on `<application>`. `monkey` reported *"No activities found to run"* —
+so **the app had no entry point and could never have been launched**, and
+`@HiltAndroidApp` was never registered either. Fixed (owner-approved): `.MainActivity`
+with a MAIN/LAUNCHER filter, and `.NexVaultApplication` on the application element. This,
+not the placeholder tabs, is the root cause of "the GUI is not quite working".
 
-Steps: install the emulator package → create an AVD → `:app:installDebug` → walk
-onboarding → PIN → unlock → home → token detail, and record what actually happens
-(crashes included) in `validation.md`.
+Steps: unlock the device → `:app:installDebug` → walk onboarding → PIN → unlock → home →
+token detail, and record what actually happens (crashes included) in `validation.md`.
 
 Exit criteria: the main happy path has been observed on a device, with screenshots or a
 written trace, and any crash is filed as its own roadmap item.
@@ -238,18 +253,24 @@ already in the version catalog for 3.5 and 3.1.
 | 4.8 | Reach the `doc/08` code-quality bar: ≥70% coverage on `domain` + `data`, KDoc on all public API |
 | 4.9 | Clear the Gradle deprecation warnings blocking a Gradle 10 upgrade |
 | 4.10 | Decide the `androidx.biometric` alpha pin (`1.4.0-alpha05`) |
+| 4.11 | Fix the password-strength scale: `PasswordValidator.calculateStrength` can never exceed **75** while its `coerceIn(0, 100)` implies 100, so a strength meter would top out three-quarters of the way up its own bar. Found during 2.0.1; no production caller yet. |
+| 4.12 | Split `SecureUtils` / `SecurityUtils` — two unrelated objects in one file, one hosting extension functions. It caused three of the six 2.0.1 test defects by making the API surface guessable-but-wrong. |
+| 4.13 | Port the `@Ignore`d AndroidKeyStore tests from 2.0.1 to `app/src/androidTest` once 2.0.2 has established a device. |
+| 4.14 | Normalise the Android theme: `Theme.NexVault` extends `Theme.MaterialComponents.DayNight.DarkActionBar` while the app draws its own Compose Scaffold and calls `enableEdgeToEdge()`, so a stray platform ActionBar is likely above the Compose UI. Switch to `NoActionBar` — after confirming with a screenshot (2.0.3). |
+| 4.15 | Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36. |
 
 ---
 
-## Evidence appendix — baseline measured 2026-09-20
+## Evidence appendix — baseline measured 2026-09-20, updated 2026-09-21
 
 Commands run from the repository root; `JAVA_HOME` set to the Android Studio JBR.
 
 | # | Command | Result |
 | --- | --- | --- |
 | E1 | `./gradlew :app:assembleDebug` | **PASS** → `/Users/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` |
-| E2 | `./gradlew testDebugUnitTest` | **162 pass, 0 fail** across `domain` 63, `feature-onboarding` 30, `core-datastore` 27, `data` 27, `feature-auth` 14, `app` 1 |
-| E3 | `./gradlew :core:core-security:compileDebugUnitTestKotlin` | **FAIL** — 16 compile errors (Mockito, `passphrase`, `suggestWords`, `secureWipe`, `toHex`, `Int`/`Byte`) |
+| E2 | `./gradlew testDebugUnitTest --continue` (2026-09-21, after 2.0.1) | **223 tests, 222 pass, 1 skipped, 0 fail** — `domain` 63, `core-security` 61 (1 skipped), `feature-onboarding` 30, `core-datastore` 27, `data` 27, `feature-auth` 14, `app` 1 |
+| E2b | Same, pre-2.0.1 baseline | **162 pass** across 6 modules; `core-security`'s 64 tests did not compile at all |
+| E3 | `./gradlew :core:core-security:compileDebugUnitTestKotlin` | **FAIL → FIXED 2026-09-21** — was 16 compile errors (Mockito, `passphrase`, `suggestWords`, `secureWipe`, `toHex`, `Int`/`Byte`) |
 | E4 | `./gradlew detekt` | **FAIL** — 75 issues (`TooManyFunctions`, `MaxLineLength`), config `maxIssues: 0` |
 | E5 | `./gradlew ktlintCheck` | **FAIL** — 1656 violations in 178 of 221 Kotlin files |
 | E6 | `adb devices` / `ls $ANDROID_HOME/emulator` / `ls ~/.android/avd` | **empty / missing / empty** — no device, no emulator, no AVD |

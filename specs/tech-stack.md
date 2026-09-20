@@ -17,15 +17,23 @@
 | Build system | Gradle 9.3.1 (wrapper) + Kotlin DSL + version catalog | `gradle-wrapper.properties` |
 | Android Gradle Plugin | 9.1.0 | `libs.versions.toml` |
 | KSP | 2.3.6 | `libs.versions.toml` |
-| compileSdk | 36 (`minorApiLevel = 1`) | `app/build.gradle.kts` |
+| compileSdk | **37.2** (`version = release(37) { minorApiLevel = 2 }`) | 19 module build files |
 | minSdk | 26 | `app/build.gradle.kts` |
-| targetSdk | 36 | `app/build.gradle.kts` |
+| targetSdk | **37** | `app/build.gradle.kts` |
 | Java / JVM target | 17 (`sourceCompatibility` / `jvmTarget`) | `app/build.gradle.kts` |
 | Compose compiler | `org.jetbrains.kotlin.plugin.compose` (Kotlin 2.x plugin) | root `build.gradle.kts` |
 | Convention plugins | **none** — every module repeats its `android { }` block; there is no `build-logic/` module (see §Known gaps) | `settings.gradle.kts` |
 
-Running any Gradle task requires the Android Studio JBR (Homebrew's JDK 25 lacks
-`jlink`, which the Android SDK's `core-for-system-modules.jar` transformation needs).
+Raising `targetSdk` to 37 is a **behavioural** change, not just a build setting: it opts
+the app into Android 17 runtime restrictions. Neither the build nor the unit tests prove
+anything about that behaviour, and the only available test device runs API 36. Tracked as
+Phase 4 item 4.15.
+
+Running any Gradle task requires the Android Studio JBR. (The historical reason given was
+that Homebrew's JDK lacks `jlink`; that is not true of Homebrew's openjdk 25 — the claim
+refers to the Cursor extension's bundled runtime. Both have `jlink`, and
+`:data:assembleDebug` was verified to succeed without the override. Keep using the JBR
+for reproducibility with Android Studio.)
 See `dev-environment.md` for the exact command form.
 
 ## 2. Modules and dependency rules
@@ -190,7 +198,8 @@ Implemented in `core:core-security`: `EncryptionManager`, `KeyStoreManager`,
 Test layout: `<module>/src/test/java/...` mirrors the main source package.
 Instrumented tests live in `app/src/androidTest/`.
 
-**Measured state (2026-09-20)** — see `roadmap.md` Phase 2.0 for the remediation plan:
+**Measured state (2026-09-20; `core-security` row updated 2026-09-21 by 2.0.1)** — see
+`roadmap.md` Phase 2.0 for the remediation plan:
 
 | Module | Tests | Result |
 | --- | --- | --- |
@@ -200,8 +209,10 @@ Instrumented tests live in `app/src/androidTest/`.
 | `data` | 27 | pass |
 | `feature-auth` | 14 | pass |
 | `app` | 1 | pass (template stub) |
-| **`core-security`** | 64 | **does not compile** — Mockito import, `passphrase` signature, `suggestWords`/`secureWipe`/`toHex` missing, `Int`/`Byte` mismatch |
+| `core-security` | 61 | pass (1 skipped) — **compiled and ran for the first time on 2026-09-21**; was 64 tests that never built |
 | `core-network`, `core-database`, `core-ui`, `feature-home`, `feature-tokens` | 0 | no tests at all |
+
+Repository total: **223 tests, 222 passing, 1 skipped, 0 failing** (2026-09-21).
 
 `doc/07-TEST-CASES.md` defines 52 test cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
 TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). Nothing maps a TC id to a test method

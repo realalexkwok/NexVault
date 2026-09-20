@@ -72,16 +72,17 @@ See `specs/dev-environment.md` §7.)
 - An item may only be marked `[x]` when a `validation.md` exists for it AND both halves
   of verification have passed.
 - Never write "done", "complete", or "works" in a validation record without a command
-  and its observed result. Baseline re-measured 2026-09-20: 162 unit tests green, but the
-  `core-security` suite does not compile, 4 of 5 main tabs are placeholders, and both
-  quality gates are red.
+  and its observed result. Baseline 2026-09-21: 223 unit tests green (1 skipped), but the
+  app has never run on a device, 4 of 5 main tabs are placeholders, and both quality gates
+  are red.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes
    results.
-2. **Manual** — the owner exercises the app on a device/emulator and reports back.
-   The app has never been run on a device; installing the emulator is a prerequisite
-   (see `specs/dev-environment.md`).
+2. **Manual** — the owner exercises the app on a device and reports back.
+   The app has never been run on a device. The owner's device of choice is a **physical
+   Android device over USB** (decision 2026-09-21), not the emulator — installing one is
+   not required. See `specs/dev-environment.md`.
 
 ### Secrets
 - `local.properties` (git-ignored) holds `INFURA_API_KEY`, `ALCHEMY_API_KEY`,
