@@ -10,9 +10,17 @@
 
 | Item | Value |
 | --- | --- |
-| Known-good JDK | Android Studio JBR — `/Applications/Android Studio.app/Contents/jbr/Contents/Home` (JDK 25.0.3) |
-| Also on the machine | Homebrew `openjdk` 25 at `/opt/homebrew/opt/openjdk` (this is what bare `java` resolves to), Homebrew `openjdk@17`, Temurin 16, Microsoft 11, Corretto 11, Corretto 8 |
+| JDK Android Studio now uses | **`temurin-21`** (Eclipse Adoptium / Temurin 21) — set by Studio during the AGP 9.1.0 → 9.4.1 upgrade, 2026-09-21. Recorded in the tracked `.idea/misc.xml`. |
+| JBR (still the CLI convention) | `/Applications/Android Studio.app/Contents/jbr/Contents/Home` (JDK 25.0.3) |
+| Where the Temurin 21 comes from | **Gradle downloaded it**, not Android Studio: `settings.gradle.kts` declares `org.gradle.toolchains.foojay-resolver-convention`, which provisioned it into `~/.gradle/jdks/eclipse_adoptium-21-aarch64-os_x.2/` (335 MB extracted + a 190 MB tarball). It is **not** visible to `/usr/libexec/java_home`, which is why it looks absent. |
+| Also on the machine | Homebrew `openjdk` 25 at `/opt/homebrew/opt/openjdk` (what bare `java` resolves to), Homebrew `openjdk@17`, Temurin 16, Microsoft 11, Corretto 11, Corretto 8 |
 | Project Java level | 17 (`sourceCompatibility` / `jvmTarget`) |
+
+**Both JDKs build this project.** JDK 21 and JDK 25 each produced a green
+`:app:assembleDebug` and a green unit suite during the 2026-09-21 regression pass, and both
+can target Java 17. JDK 21 is the more conservative choice — it is an LTS and it is what
+Android Studio selected — so prefer it in the IDE; the CLI recipe below stays as it is
+because it is what `.cursor/rules/shell-commands.mdc` and every recorded command use.
 
 The repository's standing convention (`.cursor/rules/shell-commands.mdc`) is to run
 Gradle with the Android Studio JBR:
@@ -21,8 +29,10 @@ Gradle with the Android Studio JBR:
 JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" ./gradlew <task>
 ```
 
-`.vscode/settings.json` pins the same path via `java.import.gradle.java.home`, so the
-editor and the CLI agree.
+`.vscode/settings.json` pins the same path via `java.import.gradle.java.home`, so VS Code
+and the CLI agree — **but Android Studio now disagrees with both**, using Temurin 21. The
+split is harmless (verified above) yet worth knowing before blaming a build failure on the
+JDK.
 
 The stated historical reason for the override — "the bundled JDK lacks `jlink`" — refers
 to the **Cursor Java extension's** bundled runtime, not to Homebrew's. Both the JBR and

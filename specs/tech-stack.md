@@ -14,8 +14,8 @@
 | Item | Value | Source |
 | --- | --- | --- |
 | Language | Kotlin 2.3.10 (100% Kotlin, no Java sources) | `libs.versions.toml` |
-| Build system | Gradle 9.3.1 (wrapper) + Kotlin DSL + version catalog | `gradle-wrapper.properties` |
-| Android Gradle Plugin | 9.1.0 | `libs.versions.toml` |
+| Build system | Gradle **9.6.0** (wrapper) + Kotlin DSL + version catalog | `gradle-wrapper.properties` |
+| Android Gradle Plugin | **9.4.1** | `libs.versions.toml` |
 | KSP | 2.3.6 | `libs.versions.toml` |
 | compileSdk | **37.2** (`version = release(37) { minorApiLevel = 2 }`) | 19 module build files |
 | minSdk | 26 | `app/build.gradle.kts` |
@@ -292,5 +292,12 @@ to disk unencrypted.
   era; harmless with the Compose compiler plugin, but dead configuration.
 - `androidx.biometric` is pinned to an **alpha** (`1.4.0-alpha05`).
 - Gradle reports "deprecated Gradle features were used in this build, making it
-  incompatible with Gradle 10" on every run; the build is not yet Gradle 10 ready
-  (re-run with `--warning-mode all` to enumerate them).
+  incompatible with Gradle 10" on every run. **Diagnosed**: the single deprecation is
+  `ReportingExtension.file(String)`, raised from `build.gradle.kts:16` — that is the
+  `apply(plugin = "io.gitlab.arturbosch.detekt")` line, so the caller is the **Detekt
+  Gradle plugin**, not project code. Still a warning under Gradle 9.6.0; removing it needs
+  a detekt plugin bump, not a build-script edit. Owner: item 4.9.
+- **AGP 9.4.1 requires Gradle 9.6.0** (upgraded 2026-09-21 from AGP 9.1.0 / Gradle 9.3.1).
+  Kotlin 2.3.10 and KSP 2.3.6 were deliberately left untouched, preserving the KSP ↔ Kotlin
+  version lockstep that KSP task resolution depends on. Regression-verified: build, 223
+  tests, and both gates behave exactly as before the upgrade.
