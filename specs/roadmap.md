@@ -335,6 +335,7 @@ already in the version catalog for 3.5 and 3.1.
 | 4.14 | ~~Normalise the Android theme~~ **REFUTED 2026-09-21** — the Welcome screen renders with no ActionBar: `MainActivity` extends plain `FragmentActivity`, not `AppCompatActivity`, so the `MaterialComponents` theme never builds one. The prediction was wrong; nothing to fix. |
 | 4.15 | Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36. |
 | 4.16 | Migrate `hiltViewModel` to `androidx.hilt.lifecycle.viewmodel.compose` — the old `androidx.hilt.navigation.compose` entry point is deprecated. Surfaced by the first build on the remote host; handle alongside the next `hilt-navigation-compose` bump. |
+| 4.17 | Adopt design tokens, string resources and component previews across feature modules and `core-ui` (legacy CR findings 1.2-1 … 1.2-4; owner-approved 2026-09-21). |
 
 ---
 

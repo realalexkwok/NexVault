@@ -102,10 +102,10 @@ stays in the task file's findings table as the transfer channel for the develope
 
 | ID | Severity | Owning roadmap item |
 | --- | --- | --- |
-| 1.2-1 | Medium | proposed new Phase 4 item (design-token adoption in features) |
-| 1.2-2 | Low | same proposed Phase 4 item |
-| 1.2-3 | Low | same proposed Phase 4 item |
-| 1.2-4 | Low | same proposed Phase 4 item (or 3.7) |
+| 1.2-1 | Medium | 4.17 (owner-approved 2026-09-21) |
+| 1.2-2 | Low | 4.17 |
+| 1.2-3 | Low | 4.17 |
+| 1.2-4 | Low | 4.17 (or 3.7) |
 | 1.2-5 | Medium | 2.0.6 (TC traceability) |
 
 ### Manual half
