@@ -220,3 +220,120 @@ Android Studio itself runs, it is what `.vscode/settings.json` pins, and it keep
 editor builds reproducible. If the JDK ever changes, re-run E1 and E2 from `roadmap.md`'s
 evidence appendix before trusting a build result.
 
+## 8. Remote build host — `superguo-SQM2270`
+
+Added 2026-09-21. **Why it exists:** the Mac has **8 GiB of RAM**, and running the node
+harness, Gradle and Android Studio at once triggered repeated out-of-memory dialogs during
+development. The remote has 15 GiB. This is a capacity fix, not a configuration fix — there
+was nothing wrong with the Mac's Gradle setup.
+
+### The host
+
+| Item | Value |
+| --- | --- |
+| SSH alias | `superguo-SQM2270` (already in `~/.ssh/config`; user and key come from there) |
+| OS / kernel | Ubuntu 24.04.4 LTS, kernel 7.0.0 |
+| Architecture | **x86_64** — *not* the Mac's aarch64; see "why nothing was copied" below |
+| CPU / RAM | 4 cores / 15 GiB (≈8 GiB available) |
+| Disk | ~307 GB free |
+| Network | `192.168.1.17` (enp1s0), **`10.42.0.1` (wlo1 hotspot)** — the phone pairs over the 10.42.0.x range |
+| `sudo` | **requires a password** — the whole setup below was done without it |
+
+### Installed layout
+
+| Item | Path | Version |
+| --- | --- | --- |
+| Project | `~/Projects/NexVault` | `main` @ the same commit as the Mac |
+| Android SDK root | `~/Android/Sdk` | — |
+| cmdline-tools | `~/Android/Sdk/cmdline-tools/latest` | build 16111833 |
+| platforms | `~/Android/Sdk/platforms/android-37.2` | matches `compileSdk` |
+| build-tools | `~/Android/Sdk/build-tools/37.0.0` | matches the Mac |
+| platform-tools | `~/Android/Sdk/platform-tools` | 37.0.1 |
+| JDK | `/usr/lib/jvm/java-17-openjdk-amd64` | OpenJDK **17**.0.20 |
+
+### Why nothing was copied from the Mac
+
+The architectures differ (x86_64 vs aarch64), and Android SDK `build-tools` /
+`platform-tools` are **platform-specific binaries** — a straight copy would produce a
+broken SDK. Everything was installed fresh from Google's repositories instead, and the
+project came from GitHub (`git clone`), which already had the exact `main` the Mac had.
+
+**No new JDK was needed.** AGP 9.4.1's class files are compiled to major version **61 =
+Java 17**, so the distro's existing OpenJDK 17 runs the build. This is what kept the whole
+setup sudo-free: `openjdk-21-jdk` is available from apt, but installing it would have
+required a password.
+
+### Reproducing the setup
+
+```bash
+ssh superguo-SQM2270
+git clone https://github.com/superguo/NexVault.git ~/Projects/NexVault
+
+# Android SDK, no sudo required
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+SDK=~/Android/Sdk
+mkdir -p "$SDK/cmdline-tools" && cd /tmp
+curl -LO https://dl.google.com/android/repository/commandlinetools-linux-16111833_latest.zip
+unzip -q commandlinetools-linux-16111833_latest.zip -d /tmp/cmdtools
+mv /tmp/cmdtools/cmdline-tools "$SDK/cmdline-tools/latest"
+SM="$SDK/cmdline-tools/latest/bin/sdkmanager"
+yes | "$SM" --licenses
+yes | "$SM" "platform-tools" "platforms;android-37.2" "build-tools;37.0.0"
+```
+
+`local.properties` (git-ignored, so it must be created by hand) points at the Linux SDK:
+
+```properties
+sdk.dir=/home/superguo/Android/Sdk
+INFURA_API_KEY=your_key_here
+# …the same five placeholder keys as the Mac
+```
+
+### Building on the remote
+
+```bash
+ssh superguo-SQM2270
+cd ~/Projects/NexVault
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ulimit -n 32768            # see caveat 1
+./gradlew :app:assembleDebug
+```
+
+`adb` and `sdkmanager` are on `PATH` via `~/.bashrc` (backup: `~/.bashrc.bak-nexvault`).
+**They only resolve in an interactive shell** — Ubuntu's `.bashrc` returns early for
+non-interactive shells, so `ssh host 'adb devices'` needs
+`export PATH="$HOME/Android/Sdk/platform-tools:$PATH"` first.
+
+### Verified on 2026-09-21
+
+| Check | Result |
+| --- | --- |
+| `git -C ~/Projects/NexVault log -1 --format=%h` | matches the Mac's `main` |
+| `./gradlew :app:assembleDebug` | **BUILD SUCCESSFUL** in 7m 14s (cold, incl. Gradle 9.6.0 download) |
+| APK | 43 MB — identical to the Mac's clean build |
+| `./gradlew testDebugUnitTest :domain:test` | **223 tests, 222 passing, 1 skipped, 0 failing** |
+| Per-module test counts | identical to the Mac, module for module |
+| `adb devices` | Pixel 6a (bluejay), Android 16 / API 36, over adb TLS |
+| `sudo` prompts during setup | **zero** |
+
+### Caveats specific to this host
+
+1. **`ulimit -n` is 1024**, low for an Android build. Raise it per session with
+   `ulimit -n 32768`; the hard limit is 1048576 so no privilege is needed. Persisting it
+   would need `/etc/security/limits.conf`, i.e. `sudo`.
+2. **No Android udev rules are installed** (`/etc/udev/rules.d/` holds only snap rules).
+   The account is in `plugdev`, which is not sufficient on its own. **Wireless debugging
+   works and needs no rules**; USB would require an admin-installed rule file.
+3. **`~/.gradle` is shared with other projects** on this host, so nothing was written
+   there — no global JDK or JVM-args setting was set, to avoid changing their builds.
+4. The `repo` and `local.properties` are the only project-local additions; **no repository
+   file was modified for the remote**. `git status` is clean there.
+5. `.idea/` is tracked and therefore present on the remote with macOS paths and a `jbr-25`
+   reference. Harmless — there is no Android Studio on the host to read them.
+6. The newer cmdline-tools prints its package IDs with a **`/`** separator
+   (`platforms/android-37.2`) rather than the historical `;`, and warns that `sdkmanager`
+   is superseded by `android sdk`. The `;` form still installs correctly.
+7. The build emits one deprecation worth tracking: `hiltViewModel` has moved to
+   `androidx.hilt.lifecycle.viewmodel.compose`. It will need handling alongside any future
+   `hilt-navigation-compose` bump — see roadmap 4.16.
+
