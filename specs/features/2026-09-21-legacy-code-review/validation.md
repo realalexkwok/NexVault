@@ -12,7 +12,7 @@
 | --- | --- | --- | --- |
 | 1.1 Project scaffolding | 2026-09-21 (A1–A8) + fix verification (V1–V8) | 2026-09-21 | `[x]` |
 | 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
-| 1.3 Security module | — | — | `[ ]` |
+| 1.3 Security module | 2026-09-21 (S1–S6) | — | `[?]` |
 | 1.4 DataStore & preferences | — | — | `[ ]` |
 | 1.5 Domain models & repository interfaces | — | — | `[ ]` |
 | 1.6 Data layer | — | — | `[ ]` |
@@ -143,7 +143,33 @@ transfer channel for their owning items.
 
 ## Task 1.3 — Security module
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-21 — 5 findings recorded (1.3-1 … 1.3-5) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| S1 | Suite + build | `./gradlew :core:core-security:testDebugUnitTest :core:core-security:assembleDebug --rerun-tasks` | **BUILD SUCCESSFUL** — fresh sums: **61 tests, 0 failures, 0 errors, 1 skipped** |
+| S2 | Logging | `grep -rnE 'Log\\.|println|printStackTrace' core/core-security/src/main` | **0** |
+| S3 | Wipe discipline | `grep -rn 'secureWipe' core/core-security/src/main` + full reads | present in EncryptionManager (5 sites) + HDKeyManager; **absent** in WalletStore plaintext byte arrays → 1.3-3; `clearPassword` absent in SecurityUtils hash path → 1.3-2 |
+| S4 | Plaintext storage | read `WalletStore.kt` | mnemonic double-encrypted, private keys password-encrypted, biometric password under biometric key — no plaintext writes ✓ |
+| S5 | Checksum algorithm | read `SecurityUtils.kt:84,152–155` + `SecurityUtilsTest.kt:87–100` | NIST SHA3-256 ≠ Ethereum Keccak-256 → **1.3-1**; test asserts only format, cannot catch it |
+| S6 | Test-vector strength | read `HDKeyManagerTest.kt:14–26` | canonical mnemonic vector but format-only assertion → **1.3-5**; also `KeyStoreManager.isStrongBoxAvailable` orphan key → **1.3-4** |
+| — | Warnings | fresh run log | no compiler warnings (C11 ✓) |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 1.3-1 | Medium | 4.12 |
+| 1.3-2 | Low | 4.7 |
+| 1.3-3 | Low | 4.7 |
+| 1.3-4 | Low | 4.7 |
+| 1.3-5 | Medium | 2.0.6 |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.4 — DataStore & preferences
 
