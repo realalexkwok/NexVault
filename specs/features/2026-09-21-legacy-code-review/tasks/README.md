@@ -17,7 +17,7 @@
 
 | Task | Feature | Modules | Tests (2026-09-21) | Prompt | Status |
 | --- | --- | --- | --- | --- | --- |
-| [1.1](1.1-project-scaffolding.md) | Project scaffolding | whole build (20 modules) | 1 (app template stub) | `01` | `[ ]` |
+| [1.1](1.1-project-scaffolding.md) | Project scaffolding | whole build (20 modules) | 1 (app template stub) | `01` | `[x]` |
 | [1.2](1.2-design-system-theme.md) | Design system & theme | `core:core-ui` | 0 | `02` | `[ ]` |
 | [1.3](1.3-security-module.md) | Security module | `core:core-security` | 61 (1 skipped) | `03` | `[ ]` |
 | [1.4](1.4-datastore-preferences.md) | DataStore & preferences | `core:core-datastore` | 27 | `04` | `[ ]` |

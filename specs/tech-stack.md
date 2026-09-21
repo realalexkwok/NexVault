@@ -62,7 +62,7 @@ feature/feature-swap  feature-settings  feature-auth
 | `core/core-datastore` | `core:core-security` |
 | `core/core-ui` | `domain` |
 | `core/core-network` | `domain`, `core:core-common` |
-| `data` | `domain` + all six `core:*` |
+| `data` | `domain` + five of the six `core:*` modules — `core-common`, `core-network`, `core-database`, `core-datastore`, `core-security`. `core-ui` is deliberately **not** a dependency (2.3 AC 25; verified in `data/build.gradle.kts`). |
 | `feature-onboarding` / `feature-home` / `feature-tokens` | `domain`, `core:core-common`, `core:core-ui` |
 | `feature-auth` | `domain`, `core:core-common`, `core:core-ui`, `core:core-security`, `core:core-datastore` |
 | `app` | every module above |
