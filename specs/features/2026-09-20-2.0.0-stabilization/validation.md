@@ -405,4 +405,98 @@ The install must be reset (`adb shell pm clear com.nexvault.wallet.debug`, or un
 reinstall) before the flow can be retested. That destroys the wallet created above — which
 is currently worthless anyway, since its mnemonic was never captured.
 
+---
+
+# Toolchain upgrade — AGP 9.1.0 → 9.4.1, Gradle 9.3.1 → 9.6.0
+
+> Owner-driven (via Android Studio's AGP Upgrade Assistant), 2026-09-21. Not a roadmap
+> item; recorded here because it happened mid-Phase-2.0 and every later result is measured
+> against it. **Regression-verified: no behaviour changed.**
+
+## What changed
+
+| File | Change |
+| --- | --- |
+| `gradle/libs.versions.toml` | `agp = "9.1.0"` → **`"9.4.1"`** |
+| `gradle/wrapper/gradle-wrapper.properties` | Gradle `9.3.1` → **`9.6.0`** + new `distributionSha256Sum` |
+
+**AGP 9.4.1 requires Gradle 9.6.0** — worth recording, because the natural guess (that a
+9.4.x plugin wants a 9.4.x Gradle) is wrong and would have sent a future upgrade down the
+wrong path.
+
+**Kotlin 2.3.10 and KSP 2.3.6 were deliberately not touched.** KSP resolves its compiler
+version from the Kotlin version; letting them drift breaks `kspDebugKotlin` outright. The
+lockstep survived the upgrade, and that was checked explicitly rather than assumed.
+
+The first attempt failed with **"No space left on device"** after the downloads completed
+but before the build ran. Diagnosis afterwards:
+
+- The Gradle 9.6.0 distribution was **not** corrupted — `gradle-9.6.0-bin.zip.ok` present,
+  `gradle --version` reports `Gradle 9.6.0`, launcher JVM 25.0.3.
+- All AGP 9.4.1 artifacts were already in `modules-2`: `gradle`, `gradle-api`, `builder`,
+  `apksig`, `aapt2-proto`, `gradle-settings-api`, `gradle-common-api`, `builder-model`.
+- ~3.1 GB was reclaimed by deleting three unused Gradle instances (8.4, 8.14.4, 9.2.0)
+  and their wrapper distributions. The 9.6.0 distribution and version cache were kept —
+  which is why recovery needed no re-download.
+
+## Regression results
+
+Baseline = measured 2026-09-21 immediately before the upgrade.
+
+| Check | Baseline | After upgrade | Verdict |
+| --- | --- | --- | --- |
+| `:app:assembleDebug` | PASS | **PASS** (6m44s, 246 tasks executed) | ✅ |
+| `testDebugUnitTest --continue` | 223 tests, 222 pass, 1 skip, 0 fail | **223 / 222 / 1 / 0** | ✅ identical |
+| `:domain:test` | **stale — see below** | **63 pass, 0 fail** (fresh) | ✅ |
+| `detekt` | 75 issues | **75 issues** | ✅ identical, per-module identical |
+| `ktlintCheck` | 1656 | **1565** | ✅ upgrade-neutral — see below |
+| Gradle 10 deprecation | 1 warning | **1 warning** (not escalated to error) | ✅ |
+
+### The ktlint delta is not the upgrade's doing
+
+1656 → 1565 is −91, and the entire delta sits in one module:
+
+| Module | Baseline | After | Delta |
+| --- | --- | --- | --- |
+| `core-security` main | 262 | **170** | **−92** |
+| `core-security` test | 25 | **26** | +1 |
+| **all 18 other modules** | — | — | **0, count for count** |
+
+`core-security` is exactly the module 2.0.1 edited: the deleted hardcoded 100-word BIP-39
+literal was 12 lines carrying ~10 words each, which ktlint flagged repeatedly. Eighteen
+untouched modules reporting byte-identical counts is the evidence that the toolchain
+changed nothing.
+
+### A verification gap this run exposed
+
+The `domain` module is pure Kotlin/JVM, so its task is `:domain:test`, **not**
+`testDebugUnitTest`. Every earlier "full suite" aggregate in this record included `domain`'s
+63 tests read from result XMLs **dated ~170 days earlier** — they were being counted, but
+never re-executed. The total was right by luck; it had never been measured.
+
+`AGENTS.md` already documents the correct command pair (`testDebugUnitTest` **plus**
+`:domain:test`). The aggregate script did not follow it. Now run explicitly: 63 tests, 0
+failures, fresh.
+
+## Gradle 10 deprecation — diagnosed
+
+```
+The ReportingExtension.file(String) method has been deprecated.
+This is scheduled to be removed in Gradle 10.
+	at Build_gradle$1.execute(build.gradle.kts:16)
+```
+
+`build.gradle.kts:16` is `apply(plugin = "io.gitlab.arturbosch.detekt")` inside
+`subprojects { }`. The caller is the **Detekt Gradle plugin**, not project code, and it
+remains a warning under Gradle 9.6.0. Clearing it needs a detekt plugin bump — editing the
+build script would not help. Owner: roadmap item 4.9.
+
+## Handoff
+
+| Deferred | Why | Owner |
+| --- | --- | --- |
+| Clearing the `ReportingExtension.file` deprecation | Needs a Detekt plugin release that stops using the removed-in-Gradle-10 API | **4.9** |
+| Removing `composeOptions.kotlinCompilerExtensionVersion` (app + 11 feature modules) | Dead config under the Kotlin 2.x Compose plugin. AGP 9.4.1 did **not** flag it, so it is cleanup rather than a fix | **4.1** (build-logic extraction) |
+| Any further space recovery | Old AGP artifacts (7.3.1 … 9.1.0) total only 241 MB; not worth touching a working dependency cache | Unassigned |
+
 
