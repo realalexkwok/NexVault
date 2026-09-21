@@ -100,6 +100,12 @@ android {
             excludes += "META-INF/FastDoubleParser-NOTICE"
             excludes += "/META-INF/versions/9/io/netty/**"
             excludes += "META-INF/io.netty.versions.properties"
+            // web3j 6 uses Jackson 3 (tools.jackson.*) while its tuweni -> vertx-core
+            // chain still pulls Jackson 2 (com.fasterxml.jackson.*). Both jars carry a
+            // META-INF/thirdparty-LICENSE, which collides at packaging time. The two
+            // Jackson lines live in different packages and coexist at runtime; only the
+            // duplicate license file needs dropping.
+            excludes += "META-INF/thirdparty-LICENSE"
         }
     }
 }
