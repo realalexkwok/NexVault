@@ -18,11 +18,12 @@ separate developer session fixes them.
 | Q1 | Where does the legacy CR gate sit in roadmap order? | **Before resuming Phase 2.0 — new gate.** Legacy CR is the only open entry point now; the Phase 2.0 remainder (2.0.2b first) resumes after it closes. |
 | Q2 | How are the CR task files split? | **One md per task — 15 files** (1.1–2.5), mirroring `doc/prompts/01…15` one-to-one. |
 | Q3 | What happens to a finding? | **Record-only.** The reviewer never fixes inline. Every fix is the developer session's work. |
-| Q4 | Who does the review? | **Agent scans + owner signs off.** The agent walks each checklist with evidence; the owner's per-task sign-off is the manual half. |
+| Q4 | Who does the review? | **Agent scans + sign-off.** The agent walks each checklist with evidence; the manual half is the sign-off, which the owner, the reviewer, or the developer may give once the fixes are verified and the user confirms. |
 | Q5 | What may this session write? | **Record files (md/txt) and test files/test projects for testing only.** Production code, build scripts, config: read-only. |
 | Q6 | How are findings transferred and cleared? | **Delete after verified fix.** Findings stay in the task files as the transfer channel; when the developer session reports a fix and the reviewer verifies it, that finding row is deleted. |
 | Q7 | Implementation pause | **Pause after plan approval** for the owner's model switch; resume on the owner's go-ahead. |
 | Q8 | Where do the files live? | **`specs/features/2026-09-21-legacy-code-review/`**. `doc/prompts/` stays a read-only archive. |
+| Q9 | Branch & close flow | **Legacy CR fixes run on a temporary branch created by the reviewer** (`cr/<task>-<slug>`); Phase 2+ feature items already have their `feature/<item>-<slug>` branch, so no new branch. Close = mark the item done, commit, merge to main, delete the local branch, push main — by the reviewer or the developer. |
 
 ## Scope
 
@@ -76,6 +77,24 @@ item proceeds — Phase 2.0 remainder, 2.0.2b first — singly or as owner-appro
 Known defects already owned by roadmap items (e.g. 2.0.2b, the `TransactionRepositoryImpl` write
 paths) are listed in each task's **Known notes** as pre-registered findings so the developer session
 sees them; they are not re-created in the findings table.
+
+## Branch & close procedure (per CR item)
+
+1. **Start:** the reviewer creates the temporary branch `cr/<task>-<slug>` from `main` when a
+   fix round begins (for Phase 2+ feature items the existing `feature/<item>-<slug>` branch is
+   used instead — no new branch).
+2. The developer session fixes on that branch; the reviewer verifies the fixes (never on trust)
+   and records the evidence in `validation.md`.
+3. **Close / sign-off** — once the fixes are verified and **confirmed by the user**, either the
+   code reviewer or the developer:
+   1. marks the item done in the records (task file `[x]`, `tasks/README.md`, `validation.md`
+      gate table + sign-off date),
+   2. commits the code,
+   3. merges to `main`,
+   4. deletes the local branch,
+   5. pushes `main`.
+4. Open findings do not block the close under the record-only policy; they stay in the findings
+   table as the transfer channel for the next developer round.
 
 ## Acceptance criteria for the CR program
 

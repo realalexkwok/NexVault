@@ -72,5 +72,8 @@ Checklist items come from, in priority order:
 2. Author the 15 task files — this pass.
 3. Update `specs/roadmap.md` + `AGENTS.md` — this pass.
 4. Execute reviews 1.1 → 2.5 — subsequent passes (agent scans).
-5. Owner sign-offs; developer session fixes; reviewer deletes verified findings (Q6 loop).
-6. Gate closes; Phase 2.0 remainder (2.0.2b first) proceeds.
+5. Per fix round: the reviewer creates `cr/<task>-<slug>`; the developer fixes; the reviewer
+   verifies (never on trust) and deletes verified finding rows (Q6 loop).
+6. Per item close: mark done → commit → merge to `main` → delete the local branch → push
+   `main` (requirements.md Q9; sign-off by reviewer or developer once the user confirms).
+7. Gate closes; Phase 2.0 remainder (2.0.2b first) proceeds.

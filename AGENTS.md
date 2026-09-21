@@ -48,13 +48,21 @@ only open entry point in the roadmap (spec:
   `specs/features/2026-09-21-legacy-code-review/tasks/`; the **developer session**
   consumes them and fixes; the reviewer **deletes a finding row only after verifying the
   fix**.
+- **Branch flow:** legacy CR fixes run on a **temporary branch created by the code
+  reviewer** (`cr/<task>-<slug>`). Phase 2+ feature items already have their
+  `feature/<item>-<slug>` branch, so the reviewer does not create one for them.
+- **Close / sign-off:** when the fixes are verified by the reviewer and **confirmed by
+  the user**, either the code reviewer or the developer closes the item: **mark the item
+  done** in the records, **commit**, **merge to main**, **delete the local branch**, and
+  **push main**.
 
 ### Branch rules
 - `main` is the trunk (there is no `develop` branch, despite `doc/01`).
 - One branch per roadmap item: `feature/<item>-<slug>`; never stack a feature branch
   on an unfinished feature branch.
 - Agents must NOT `git commit` / `git push`. Leave changes in the working tree for
-  owner review.
+  owner review. **Exception:** the close / sign-off procedure for legacy CR items and
+  feature items (section above) is owner-directed and may end in a pushed `main`.
 
 ### Build, test and quality gates
 Run Gradle with the Android Studio JBR — it is the JDK Android Studio itself uses and

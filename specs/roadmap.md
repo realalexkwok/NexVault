@@ -98,15 +98,19 @@ session** fixes them, and a finding row is deleted from the record only after it
 verified.
 
 - Spec directory: `specs/features/2026-09-21-legacy-code-review/` — decisions
-  (`requirements.md`, owner Q1–Q8), method (`plan.md`), 15 task files (`tasks/`,
+  (`requirements.md`, owner Q1–Q9), method (`plan.md`), 15 task files (`tasks/`,
   index `tasks/README.md`), evidence (`validation.md`).
 - Order is strict: 1.1 → 2.5, one task at a time; a task closes when its checklist
-  verdicts and findings are recorded and the **owner signs it off**. The gate closes when
+  verdicts and findings are recorded and it is **signed off** — by the owner, the reviewer,
+  or the developer, once the fixes are verified and the user confirms. The gate closes when
   all 15 tasks are signed off.
 - Known defects already owned by roadmap items (2.0.2b, the `TransactionRepositoryImpl`
   write paths, 2.0.3 empty callbacks, …) are **pre-registered** in the task files, not
   re-created.
 - Reviewer write scope: record files and test files/test projects only.
+- **Branch & close:** fixes run on a reviewer-created temp branch (`cr/<task>-<slug>`); close =
+  mark the item done, commit, merge to `main`, delete the local branch, push `main` — by the
+  reviewer or the developer, once fixes are verified and the user confirms.
 - After the gate closes, the **next undone roadmap item** (Phase 2.0 remainder, 2.0.2b
   first) is proceeded — singly or as owner-approved grouped items.
 
