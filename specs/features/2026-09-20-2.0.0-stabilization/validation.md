@@ -496,7 +496,133 @@ build script would not help. Owner: roadmap item 4.9.
 | Deferred | Why | Owner |
 | --- | --- | --- |
 | Clearing the `ReportingExtension.file` deprecation | Needs a Detekt plugin release that stops using the removed-in-Gradle-10 API | **4.9** |
-| Removing `composeOptions.kotlinCompilerExtensionVersion` (app + 11 feature modules) | Dead config under the Kotlin 2.x Compose plugin. AGP 9.4.1 did **not** flag it, so it is cleanup rather than a fix | **4.1** (build-logic extraction) |
+| Removing `composeOptions.kotlinCompilerExtensionVersion` (app + 11 feature modules) | Dead config under the Kotlin 2.x Compose plugin. AGP 9.4.1 did **not** flag it, so it is cleanup rather than a fix | Done in G5 |
 | Any further space recovery | Old AGP artifacts (7.3.1 … 9.1.0) total only 241 MB; not worth touching a working dependency cache | Unassigned |
+
+---
+
+# Grouped dependency upgrade — 2026-09-21
+
+> Owner-directed, spec-first: `specs/tech-stack.md` §4 was updated with the target versions
+> and committed **before** any build file was touched, so intent can be diffed against
+> result. Five groups, each applied and regression-tested on its own, each its own commit.
+
+## Baseline
+
+| Metric | Before |
+| --- | --- |
+| `:app:assembleDebug` | PASS |
+| Tests | 223 (222 passing, 1 skipped, 0 failing) |
+| detekt | 75 issues |
+| ktlint | 1656 violations |
+| Failing gate tasks | 49 |
+
+## Per-group results
+
+| Group | Change | Build | Tests | detekt | ktlint |
+| --- | --- | --- | --- | --- | --- |
+| **G1** | KSP 2.3.6 → 2.3.12 | PASS (every `:kspDebugKotlin` executed) | 223 / 0 fail | 75 | 1565 |
+| **G2** | 19 minor/patch bumps | PASS | 223 / 0 fail | 75 | 1565 |
+| **G3** | Compose BOM 2026.03 → 2026.09, ui-test 1.10.5 → 1.12.1 | PASS | 223 / 0 fail | 75 | 1565 |
+| **G4** | web3j 5.0.2 → 6.0.0 | PASS (after packaging fix) | 223 / 0 fail | 75 | 1565 |
+| **G5** | catalog hygiene + 13 `composeOptions` removals | PASS | 223 / 0 fail | 75 | **1553** |
+
+**No Kotlin source file was changed by any group.** Every version moved under code that
+compiled unchanged, including the web3j major bump.
+
+## What each group actually cost
+
+**G1 (KSP)** — isolated because KSP is version-paired with Kotlin and a mismatch fails
+codegen outright rather than degrading. Kotlin stayed at 2.3.10; KSP has published **zero
+2.4.x releases**, so a Kotlin 2.4 move was not available at any price. This is the single
+most important constraint discovered in the sweep, and it is now recorded in
+`tech-stack.md` §4 so the next upgrade does not have to rediscover it.
+
+**G3 (Compose)** — largest blast radius in the catalog: 12 modules. Verified the new BOM
+actually took effect rather than silently resolving the old one:
+`:app:dependencies` reports `androidx.compose.foundation:foundation-android:1.12.1` where
+it previously resolved `1.10.x`. Test re-execution was confirmed by result-file mtimes, not
+assumed — only `app`, `feature-auth` and `feature-onboarding` depend on Compose *and* carry
+tests, and those are the three that re-ran.
+
+**G4 (web3j)** — held to its own group because it lands in four modules with the security
+module the highest-consequence consumer (`MnemonicUtils` incl. `getWords()`,
+`Bip32ECKeyPair`, `Bip44WalletUtils`, `Keys`). Surprise: **no code changes were needed** —
+every API this project touches kept its signature from 5.0.2 to 6.0.0.
+
+It did force one build change. web3j 6 moved to **Jackson 3** (`tools.jackson.*`, a
+namespace change), while its own `tuweni-bytes → vertx-core` chain still pulls **Jackson 2**
+(`com.fasterxml.jackson.*`). Both jars carry `META-INF/thirdparty-LICENSE`, so
+`mergeDebugJavaResource` failed on a duplicate path. Added that path to the existing
+`packaging { resources { excludes += … } }` list in `app/build.gradle.kts`, beside the netty
+and FastDoubleParser entries already there. The two Jackson lines live in different packages
+and coexist at runtime; only the duplicated license file is dropped.
+
+Worth knowing for 3.7: the app now ships three Jackson variants —
+`tools.jackson.core:jackson-core:3.1.0` (web3j 6),
+`com.fasterxml.jackson.core:jackson-core:2.16.1` (via vertx), and
+`software.amazon.awssdk:third-party-jackson-core:2.27.24`.
+
+**G5 (hygiene)** — all six removals were confirmed to have zero references first:
+
+| Removed | Why it was safe |
+| --- | --- |
+| `shimmer` version + library | The declared 1.2.0 **does not exist** — `com.facebook.shimmer:shimmer` tops out at 0.5.0. Nothing referenced it: `core-ui`'s `ShimmerPlaceholder` is a hand-rolled Compose animation using `animateFloat` + `Brush`. No build ever failed; the first `implementation(libs.shimmer)` would have. |
+| `zxing` version alias | A `[versions]` entry with **no matching `[library]` entry**, so `libs.zxing` could never resolve. |
+| `compose-compiler` version + 13 `composeOptions` blocks | Inert under Kotlin 2.x — the Compose compiler comes from `org.jetbrains.kotlin.plugin.compose`, which resolves from `kotlin`. |
+| `detekt`/`ktlint`/`spotless` **library** aliases | Applied as plugins via `libs.plugins.*`. Their *version* aliases stay — the plugin entries still reference them. |
+
+Kept deliberately: four unused bundles (`blockchain`, `camerax`, `testing`, `debug`) cost
+nothing and 2.7/3.x will want the CameraX and WalletConnect groupings; `junit-jupiter` and
+`kotlinx-collections-immutable` are valid-but-unused, which is the Phase 4.5 adopt-or-delete
+decision rather than hygiene.
+
+## The ktlint delta, fully attributed
+
+`1656 → 1553` is **−103**, and both halves are accounted for:
+
+| Component | Before | After | Delta | Cause |
+| --- | --- | --- | --- | --- |
+| `ktlintKotlinScriptCheck` (build.gradle.kts) | 108 | **96** | **−12** | 13 `composeOptions` blocks removed in G5 |
+| Source-set checks | 1548 | **1457** | **−91** | 2.0.1 deleting the 100-word BIP-39 literal from `core-security` |
+
+Nothing is unexplained, which is the point of computing it: the toolchain changes
+themselves contributed **zero** ktlint movement, and 18 untouched modules report
+count-for-count identical numbers across every group.
+
+## A number that was wrong, and why
+
+The debug APK measured **49 MB** at the end of G4 but **43 MB** after a `clean` rebuild in
+the final pass. The 6 MB gap is not a regression being fixed — the 49 MB figure came from an
+incremental build carrying residue accumulated across the toolchain and dependency churn.
+Only the clean figure is meaningful, and it is the one to quote.
+
+`doc/08`'s "APK under 25 MB" bar applies to the **minified release** build, which has still
+never been produced. That comparison stays outstanding for 3.7.
+
+## Final state
+
+| Metric | Before | After |
+| --- | --- | --- |
+| `:app:assembleDebug` (from `clean`) | PASS | **PASS** |
+| Tests | 223 / 222 pass / 1 skip / 0 fail | **223 / 222 / 1 / 0** |
+| detekt | 75 | **75** (unchanged) |
+| ktlint | 1656 | **1553** (−103, fully attributed) |
+| Failing gate tasks | 49 | **49** (unchanged) |
+| Debug APK | 49 MB (stale) | **43 MB** (clean) |
+| Kotlin source changes | — | **none** |
+
+Both quality gates remain red, exactly as before. This upgrade deliberately did not touch
+them — that is 2.0.5, and it still needs the `.editorconfig`-vs-reformat decision.
+
+## Handoff
+
+| Deferred | Why | Owner |
+| --- | --- | --- |
+| Kotlin 2.4.x | Blocked upstream: KSP has no 2.4.x release. Re-check the pairing before any move. | Whoever next bumps Kotlin |
+| `compose-bom` beyond 2026.09 | Moved 6 months in one step and passed; nothing outstanding | — |
+| The three coexisting Jackson variants | Two are transitive and cannot be excluded safely without proving nothing on those paths is called | **4.4**-adjacent; revisit if APK size matters |
+| Debug-vs-release APK size | Release has never been built; `doc/08`'s 25 MB bar is unverified | **3.7** |
+| `junit-jupiter`, `kotlinx-collections-immutable`, 4 unused bundles | Kept on purpose; adopt-or-delete is a product decision | **4.5** |
 
 

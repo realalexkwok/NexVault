@@ -121,13 +121,14 @@ Compose screen → ViewModel (StateFlow<XxxUiState>) → UseCase → Repository 
 
 ## 4. Approved libraries
 
-> **Approved upgrade, 2026-09-21.** The versions below are the target state for the
-> grouped dependency upgrade, written here **before** the build files were touched. Each
-> group is applied and regression-tested on its own. Verified against Google Maven, Maven
-> Central, the Gradle Plugin Portal and JitPack on 2026-09-21.
+> **Upgrade APPLIED, 2026-09-21.** Written here as the target first, then applied group by
+> group with a regression pass after each. Five commits: G1 KSP · G2 low-risk minor/patch ·
+> G3 Compose BOM · G4 web3j 6 (major) · G5 catalog hygiene.
 >
-> **Group 1** KSP · **Group 2** low-risk minor/patch · **Group 3** Compose BOM ·
-> **Group 4** web3j 6 (major) · **Group 5** catalog hygiene.
+> **Result: build green, 223 tests (222 passing, 1 skipped, 0 failing), detekt unchanged at
+> 75, ktlint 1656 → 1553 with the whole delta attributed.** No Kotlin source changes were
+> needed in any group. Full record: `features/2026-09-20-2.0.0-stabilization/validation.md`
+> §"Grouped dependency upgrade".
 
 ### The Kotlin ↔ KSP constraint (hard)
 
@@ -263,7 +264,7 @@ today; building that traceability is Phase 2.0.6.
 | Tool | Version | Config | Current result |
 | --- | --- | --- | --- |
 | Detekt | 1.23.8 — **already the latest published; no upgrade exists** | `config/detekt/detekt.yml` (`build.maxIssues: 0`, `maxLineLength: 120`, `TooManyFunctions thresholdInFiles: 11`, `weights.complexity: 2`) | **75 issues → fail** |
-| ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | no `.editorconfig` | **1565 violations → fail** |
+| ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | no `.editorconfig` | **1553 violations → fail** |
 | Spotless | **8.10.2** (G2, was 8.3.0) | **applied with no configuration block** | no-op — never cite it as evidence |
 
 **Both gates are already on their newest available releases**, which has a consequence for
