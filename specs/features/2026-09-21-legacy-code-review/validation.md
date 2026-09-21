@@ -86,7 +86,8 @@ stays in the task file's findings table as the transfer channel for the develope
 
 ## Task 1.2 — Design system & theme
 
-> Status: **SCAN COMPLETE 2026-09-21 — 5 findings recorded (1.2-1 … 1.2-5) — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-21 — 1.2-1 … 1.2-4 verified-fixed (rows deleted);
+> 3 open findings (1.2-5, 1.2-6, 1.2-7) — ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -98,19 +99,45 @@ stays in the task file's findings table as the transfer channel for the develope
 | B4 | Hardcoded values in features | `grep -rnE '[0-9]+\\.(dp|sp)' feature` · `grep -rnE 'Color\\(0x' feature app` · `grep -rnE 'Text\\(\"[A-Za-z]' feature` | 149 dim literals · 1 color (`TokenDetailScreen.kt:333`) · 10 string hits; no `feature/*/res/values` strings → finding 1.2-1 |
 | B5 | Component token discipline | `grep -rn 'Color(0x' core/core-ui/src/main/.../components` | only `TransactionRow.kt:62,64` → finding 1.2-3; `NexVaultButton` spot-read token-compliant |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer handoff re-checked by the reviewer (2026-09-21)
 
-| ID | Severity | Owning roadmap item |
+Every claim was re-verified from the tree; none was taken on trust.
+
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | Strings moved out of features (Fixed A) | `grep -rnE 'Text\\(\"' feature` | **0** (was 10) — per-feature `strings.xml` exist: tokens 16 keys, onboarding 48, home 24, auth 11 + 1 plurals; `errorRes`/`errorArgs`/`errorMessage` mechanism across auth/home/onboarding/tokens VMs + UiStates + screens (`errorMessage ?: stringResource(errorRes, *errorArgs)`) | ✅ substance verified; the "19 new keys" count is inaccurate — **99** feature keys exist |
+| V2 | `BiometricHelper` takes `@StringRes` (Fixed B) | read `BiometricHelper.kt:40–58` + `UnlockScreen.kt:68–78` | `createPromptInfo(@StringRes title/subtitle/negativeButtonText: Int)` with `R.string` defaults; `core-security/res/values/strings.xml` has 3 keys; `UnlockScreen` passes its own ids | ✅ |
+| V3 | Core-ui dims → tokens (Fixed C) | `grep -rnE '[0-9]+\\.(dp|sp)' core/core-ui/src/main` minus `Dimens.kt`/`Type.kt` | only `@Preview` blocks (ShimmerPlaceholder, SimpleLineChart) and the Typography scale remain — production components: **0**. `Dimens.kt` gained **12** new tokens (claim said 6) | ✅ |
+| V4 | Feature dims/colors/contentDescriptions | fresh greps on `feature/` | dims **0** (was 149), `Color(0x` **0** (was 1), literal contentDescription **0** — fixed beyond the handoff's stated scope | ✅ |
+| V5 | Previews (1.2-2) | `grep -rn '@Preview' core/core-ui` | **0 → 17**; every component file covered (`ChainUi.kt` is a data class). Strict per-composable previews remain a 4.17 nicety (reviewer note) | ✅ |
+| V6 | TransactionRow colors (1.2-3) | read `TransactionRow.kt` | `NexVaultTheme.colors.info` / `.positive` — hardcoded colors gone; `info` token added to `NexVaultColors`; SimpleLineChart preview `lineColor = NexVaultTheme.colors.positive` | ✅ |
+| V7 | Fonts (1.2-4 — not even listed in the handoff) | read `Type.kt` + `res/font/` | `NexVaultFontFamily = FontFamily(Font(R.font.inter_regular…))` with `inter_{regular,medium,semibold,bold}.ttf` bundled + OFL licence note | ✅ fixed |
+| V8 | Build | `./gradlew :app:assembleDebug --rerun-tasks` | **PASS** (fresh, 624 tasks) — APK `/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` **45,904,999 B, 21:05**. The handoff's 46,978,341 B (20:57) is not reproduced by the fresh run; build correctness is what counts | ✅ |
+| V9 | Tests | `testDebugUnitTest :domain:test --rerun-tasks`, sums from 29 XMLs | **223 / 0 failures / 0 errors / 1 skipped** — matches the claim | ✅ |
+| V10 | Gates | `detekt ktlintCheck --rerun-tasks` | detekt: 10 failing tasks, **87 weighted issues** (was 91 — improved by 4); ktlint: 39 failing tasks, ≈1390 violation lines in the log (was ≈1553 — improved). The handoff's "72 vs 75" / "444→438" use different counting bases than the reviewer's 91→87 weighted / 1553→1390; direction (improvement) confirmed on the reviewer's own basis | ✅ direction confirmed |
+| V11 | Boundaries | `git status` | 49 changed files, all under `app|core|feature|data|domain` — **nothing under `specs/` or `doc/`**; on branch `cr/1.2-design-system-theme`, uncommitted | ✅ |
+| V12 | New candidates | reads of the named lines | 1.2-6 confirmed (`ImportWalletScreen.kt:276,342`, `UnlockScreen.kt:255`); **"N monogram" refuted** (`TokenIcon.kt:47` is data-driven); 1.2-7 confirmed (`SetPinViewModel.kt:189–193` dangling "Failed to set PIN: "); **"Verification error: " not reproduced** (no such string in the tree) | ✅ recorded as 1.2-6 / 1.2-7 with the refutations |
+
+**Reviewer notes (reporting inaccuracies, substance unaffected):** "19 new keys" is actually 99 feature
+string keys (+1 plurals, +3 core-security); "3 test files" is 4 (`UnlockViewModelTest`,
+`CreateWalletViewModelTest`, `ImportWalletViewModelTest`, `SetPinViewModelTest`); "6 new dim
+tokens" is 12; APK size and gate counts use different measurement bases than the reviewer's fresh run.
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 1.2-1 | Medium | 4.17 (owner-approved 2026-09-21) |
-| 1.2-2 | Low | 4.17 |
-| 1.2-3 | Low | 4.17 |
-| 1.2-4 | Low | 4.17 (or 3.7) |
-| 1.2-5 | Medium | 2.0.6 (TC traceability) |
+| 1.2-1 (Medium, hardcoded values in features) | fixed + verified (V1, V4) → **row deleted**; residual interpolated strings re-recorded as 1.2-6 | Closed |
+| 1.2-2 (Low, zero previews) | fixed + verified (V5) → **row deleted** | Closed |
+| 1.2-3 (Low, TransactionRow colors) | fixed + verified (V6) → **row deleted** | Closed |
+| 1.2-4 (Low, fonts) | fixed + verified (V7) → **row deleted** | Closed |
+| 1.2-5 (Medium, no tests) | untouched — **Open** (2.0.6) | Open |
+| 1.2-6 (Low, 3 interpolated strings) | **Open** (4.17) | Open |
+| 1.2-7 (Low, dangling "Failed to set PIN: ") | **Open** (4.17) | Open |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 1.3 — Security module
 
