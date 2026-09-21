@@ -121,34 +121,59 @@ Compose screen → ViewModel (StateFlow<XxxUiState>) → UseCase → Repository 
 
 ## 4. Approved libraries
 
+> **Approved upgrade, 2026-09-21.** The versions below are the target state for the
+> grouped dependency upgrade, written here **before** the build files were touched. Each
+> group is applied and regression-tested on its own. Verified against Google Maven, Maven
+> Central, the Gradle Plugin Portal and JitPack on 2026-09-21.
+>
+> **Group 1** KSP · **Group 2** low-risk minor/patch · **Group 3** Compose BOM ·
+> **Group 4** web3j 6 (major) · **Group 5** catalog hygiene.
+
+### The Kotlin ↔ KSP constraint (hard)
+
+`kotlin` **stays on 2.3.10**. KSP has published **zero 2.4.x releases** — its newest
+version is 2.3.12 — and Hilt, Room and Moshi all rely on KSP code generation here, so
+moving Kotlin to 2.4.20 would break `kspDebugKotlin` outright. `ksp` may advance within
+the 2.3 line (2.3.6 → 2.3.12) because both ends of the pair stay on Kotlin 2.3.
+
+Re-check this pairing before any future Kotlin bump: KSP publishes per-Kotlin-version, and
+"a newer Kotlin exists" never implies "KSP supports it".
+
 ### Jetpack / AndroidX
 
 | Library | Version | Use |
 | --- | --- | --- |
-| Compose BOM | 2026.03.00 | UI toolkit (Material 3) |
+| Compose BOM (G3) | **2026.09.00** (was 2026.03.00) | UI toolkit (Material 3) |
 | `androidx.compose.material3` + `material-icons-extended` | via BOM | Components, icons |
-| `androidx.navigation:navigation-compose` | 2.9.7 | Navigation graphs |
-| `androidx.hilt:hilt-navigation-compose` | 1.3.0 | `hiltViewModel()` |
-| `androidx.lifecycle:*` | 2.10.0 | ViewModel, `collectAsStateWithLifecycle` |
-| Hilt | 2.59.2 | DI |
-| Room | 2.8.4 | Local database (`core-database`, schema JSON in `core/core-database/schemas/`) |
-| DataStore Preferences | 1.2.1 | Settings, wallet metadata, secure app state |
-| WorkManager | 2.11.1 | Background sync (Phase 3, not yet used) |
-| CameraX | 1.5.3 | QR scanning |
-| Biometric | 1.4.0-alpha05 | Unlock (note: alpha) |
-| `androidx.core:core-ktx` | 1.18.0 | Core extensions |
+| `androidx.navigation:navigation-compose` (G2) | **2.10.1** (was 2.9.7) | Navigation graphs |
+| `androidx.hilt:hilt-navigation-compose` (G2) | **1.4.0** (was 1.3.0) | `hiltViewModel()` |
+| `androidx.lifecycle:*` (G2) | **2.11.0** (was 2.10.0) | ViewModel, `collectAsStateWithLifecycle` |
+| Hilt (G2) | **2.60.1** (was 2.59.2) | DI |
+| Room (G2) | **2.8.5** (was 2.8.4) | Local database (`core-database`, schema JSON in `core/core-database/schemas/`) |
+| DataStore Preferences | 1.2.1 | Settings, wallet metadata, secure app state — 1.3.0-alpha11 exists; stay on stable |
+| WorkManager (G2) | **2.11.2** (was 2.11.1) | Background sync (Phase 3, not yet used) |
+| CameraX | 1.5.3 | QR scanning — 1.6.2 available but the `camerax` bundle is referenced by nothing; see §4d |
+| Biometric | **1.4.0-alpha07** (was 1.4.0-alpha05) | Unlock. Already on the alpha line; the stable line (1.1.0) is older than what the code uses |
+| `androidx.core:core-ktx` (G2) | **1.19.0** (was 1.18.0) | Core extensions |
+| AppCompat (G2) | **1.8.0** (was 1.7.1) | Theme base |
 
 ### Network & blockchain
 
 | Library | Version | Use |
 | --- | --- | --- |
-| Retrofit | 3.0.0 | REST clients (CoinGecko, Etherscan-compatible explorers) |
-| OkHttp + logging-interceptor | 5.3.2 | HTTP, cache-control interceptor |
-| Moshi (`moshi-kotlin-codegen` via KSP) | 1.15.2 | JSON |
-| kotlinx-serialization-json | 1.10.0 | Backup serialization |
-| Web3j (`org.web3j:core`) | 5.0.2 | JSON-RPC, ABI, transaction signing |
-| WalletConnect Android BOM | 1.35.2 | DApp sessions (Phase 3) |
-| kethereum `bip39` | 0.86.0 | BIP-39 / BIP-32 / BIP-44 |
+| Retrofit | 3.0.0 | REST clients (CoinGecko, Etherscan-compatible explorers) — already latest |
+| OkHttp + logging-interceptor (G2) | **5.5.0** (was 5.3.2) | HTTP, cache-control interceptor |
+| Moshi (`moshi-kotlin-codegen` via KSP) | 1.15.2 | JSON — already latest |
+| kotlinx-serialization-json (G2) | **1.11.0** (was 1.10.0) | Backup serialization |
+| kotlinx-coroutines (G2) | **1.11.0** (was 1.10.2) | Structured concurrency |
+| Web3j (`org.web3j:core`) (G4) | **6.0.0** (was 5.0.2) | JSON-RPC, ABI, transaction signing — **major bump, own spec** |
+| WalletConnect Android BOM | 1.35.2 | DApp sessions (Phase 3) — already latest |
+| kethereum `bip39` | 0.86.0 | BIP-39 / BIP-32 / BIP-44 — already latest on JitPack |
+
+**G4 carries real risk.** `MnemonicManager` calls `MnemonicUtils.generateMnemonic`,
+`validateMnemonic`, `generateSeed` **and** `getWords()` — the last one is the fix that made
+`core-security`'s suite pass at all. A web3j 6 API change lands in the security module, so
+this group is applied last, on its own, and must not be bundled with anything else.
 
 API surface in `core:core-network`: `CoinGeckoApi`, `BlockExplorerApi` +
 `BlockExplorerApiFactory`, `Web3jProvider`, `ChainConfigProvider`/`ChainNetworkConfig`,
@@ -160,7 +185,7 @@ API surface in `core:core-network`: `CoinGeckoApi`, `BlockExplorerApi` +
 | Library / API | Version | Use |
 | --- | --- | --- |
 | AndroidKeyStore | platform | Hardware-backed key wrapping |
-| Google Tink (`tink-android`) | 1.20.0 | AEAD primitives over KeyStore |
+| Google Tink (`tink-android`) (G2) | **1.23.0** (was 1.20.0) | AEAD primitives over KeyStore |
 | kethereum bip39 | 0.86.0 | Mnemonic generation/validation |
 | SQLCipher | — | **Not adopted.** Room is unencrypted today; deferred to Phase 4 |
 
@@ -172,28 +197,43 @@ Implemented in `core:core-security`: `EncryptionManager`, `KeyStoreManager`,
 
 | Library | Version | Use |
 | --- | --- | --- |
-| Coil Compose | 2.7.0 | Image loading (NFT thumbnails, token icons) |
-| Lottie Compose | 6.7.1 | Animated illustrations |
-| Vico Compose | 3.0.3 | Portfolio charts |
-| ML Kit barcode-scanning | 17.3.0 | QR scanning |
-| ZXing | 3.5.3 | QR generation |
-| Accompanist permissions / systemuicontroller | 0.37.3 | Permissions, system bars |
-| Shimmer | 1.2.0 | Loading placeholders |
-| LeakCanary (`debugImplementation`) | 2.14 | Leak detection |
+| Coil Compose | 2.7.0 | Image loading — already latest |
+| Lottie Compose | 6.7.1 | Animated illustrations — already latest |
+| Vico Compose (G2) | **3.3.1** (was 3.0.3) | Portfolio charts |
+| ML Kit barcode-scanning | 17.3.0 | QR scanning — already latest |
+| ZXing | **3.5.4** (was an orphan alias) | QR generation — see §4d |
+| Accompanist permissions / systemuicontroller | 0.37.3 | Permissions, system bars — already latest |
+| Shimmer | **0.5.0** (was a non-existent 1.2.0) | Loading placeholders — see §4d |
+| LeakCanary (`debugImplementation`) | 2.14 | Leak detection — already latest stable (3.0 is alpha) |
+
+### 4d. Catalog hygiene (Group 5)
+
+Findings from the 2026-09-21 sweep. All were latent: nothing referenced the broken entries,
+so nothing failed.
+
+| Finding | Detail | Resolution |
+| --- | --- | --- |
+| **`shimmer = "1.2.0"` does not exist** | `com.facebook.shimmer:shimmer` tops out at **0.5.0** on Maven Central. With zero references it never failed — the first person to write `implementation(libs.shimmer)` would have hit an unresolvable dependency. | Pin the real latest (0.5.0) or delete the entry |
+| **`zxing` is an orphan version alias** | A `[versions]` entry with **no matching library entry at all**; `libs.zxing` cannot resolve. Real latest is 3.5.4. | Add the library entry or delete the alias |
+| **`compose-compiler = "1.5.12"` is dead config** | Under Kotlin 2.x the Compose compiler comes from `org.jetbrains.kotlin.plugin.compose`. `composeOptions.kotlinCompilerExtensionVersion` in `app` and `core:core-ui` is inert. | Delete both the property and the two `composeOptions` blocks |
+| **4 unused bundles** | `blockchain`, `camerax`, `testing`, `debug` are declared and referenced by nothing; only `compose`, `compose.testing`, `compose.navigation`, `networking` are used. | Keep if Phase 3 will use them, else delete |
+| **3 redundant library entries** | `detekt`, `ktlint`, `spotless` library aliases are unused — those tools are applied as plugins via `libs.plugins.*`. | Delete the library aliases |
+| **`junit-jupiter 6.0.3`** | Unused; latest is 6.1.3. See roadmap 4.5. | Decide: adopt or delete |
+| **`kotlinx-collections-immutable 0.4.0`** | Unused; latest 0.5.2. | Decide: adopt or delete |
 
 ## 5. Testing
 
 | Library | Version | Status |
 | --- | --- | --- |
-| JUnit 4 | 4.13.2 | **The actual standard** — every module uses `testImplementation(libs.junit)` |
-| MockK | 1.14.9 | **The mocking library.** Mockito is not a dependency anywhere |
-| kotlinx-coroutines-test | 1.10.2 | `runTest`, `advanceUntilIdle` |
-| Turbine | 1.2.1 | Flow assertions |
-| Truth | 1.4.5 | Fluent assertions |
-| Robolectric | 4.16.1 | JVM Android tests (declared, not yet used) |
-| `androidx.compose.ui:ui-test-*` | 1.10.5 | Compose UI tests |
-| `hilt-android-testing` | 2.59.2 | DI-aware tests |
-| JUnit 5 (`junit-jupiter` 6.0.3) | — | **Catalog-only, unused.** Either adopt or delete — open decision in Phase 4 |
+| JUnit 4 | 4.13.2 | **The actual standard** — every module uses `testImplementation(libs.junit)`; already latest |
+| MockK (G2) | **1.14.11** (was 1.14.9) | **The mocking library.** Mockito is not a dependency anywhere |
+| kotlinx-coroutines-test (G2) | **1.11.0** (was 1.10.2) | `runTest`, `advanceUntilIdle` |
+| Turbine | 1.2.1 | Flow assertions — already latest |
+| Truth | 1.4.5 | Fluent assertions — already latest |
+| Robolectric (G2) | **4.17** (was 4.16.1) | JVM Android tests (declared, not yet used) |
+| `androidx.compose.ui:ui-test-*` (G3) | **1.12.1** (was 1.10.5) | Compose UI tests — moves with the BOM |
+| `hilt-android-testing` (G2) | **2.60.1** (was 2.59.2) | DI-aware tests — tracks the Hilt version |
+| JUnit 5 (`junit-jupiter` 6.0.3 → 6.1.3 available) | — | **Catalog-only, unused.** Either adopt or delete — open decision in Phase 4 |
 
 Test layout: `<module>/src/test/java/...` mirrors the main source package.
 Instrumented tests live in `app/src/androidTest/`.
@@ -222,9 +262,15 @@ today; building that traceability is Phase 2.0.6.
 
 | Tool | Version | Config | Current result |
 | --- | --- | --- | --- |
-| Detekt | 1.23.8 | `config/detekt/detekt.yml` (`build.maxIssues: 0`, `maxLineLength: 120`, `TooManyFunctions thresholdInFiles: 11`, `weights.complexity: 2`) | **75 issues → fail** |
-| ktlint | 14.2.0 (plugin), ktlint 1.x defaults | no `.editorconfig` | **1656 violations across 178 of 221 Kotlin files → fail** |
-| Spotless | 8.3.0 | **applied with no configuration block** | no-op — never cite it as evidence |
+| Detekt | 1.23.8 — **already the latest published; no upgrade exists** | `config/detekt/detekt.yml` (`build.maxIssues: 0`, `maxLineLength: 120`, `TooManyFunctions thresholdInFiles: 11`, `weights.complexity: 2`) | **75 issues → fail** |
+| ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | no `.editorconfig` | **1565 violations → fail** |
+| Spotless | **8.10.2** (G2, was 8.3.0) | **applied with no configuration block** | no-op — never cite it as evidence |
+
+**Both gates are already on their newest available releases**, which has a consequence for
+roadmap 4.9: the Gradle 10 deprecation (`ReportingExtension.file`, raised by the Detekt
+plugin) **cannot be fixed by upgrading** — no newer detekt plugin exists to upgrade to. It
+waits on an upstream release. (Maven Central tops out at detekt 1.23.8; the Gradle Plugin
+Portal tops out at ktlint-gradle 14.2.0.)
 
 All three are applied to every subproject from the root `build.gradle.kts`
 (`subprojects { apply(...) }`); no module opts out. There is **no CI** — gates only run
