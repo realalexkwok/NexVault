@@ -32,10 +32,15 @@ without evidence.
 
 ## Current position
 
-> **The only open entry point is Phase 2.0.** Nothing in Phase 2 (remaining) or Phase 3
-> may start until Phase 2.0 closes, because the debt it clears — an unbuildable security
-> test suite, a never-executed app, two red quality gates — is the exact substrate every
-> later item would be built on.
+> **The only open entry point is Phase 1.9 — Legacy code review** (pre-SDD, Tasks 1.1–2.5).
+> Those 15 features were implemented before the SDD cut-over with **no code review**, so
+> the legacy CR gate must close before any further roadmap work proceeds. Spec:
+> `specs/features/2026-09-21-legacy-code-review/` (15 task files under `tasks/`; the
+> status table there is authoritative for the gate).
+>
+> **After the legacy CR tasks are done, the next undone roadmap item — the Phase 2.0
+> remainder, 2.0.2b first — is proceeded**, singly or as owner-approved grouped items
+> (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -52,30 +57,32 @@ without evidence.
 ## Phase 0 — Historical: the prompt-driven era (retired)
 
 Tasks 1.1–2.5 were implemented by feeding `doc/prompts/01…15` to an agent, one file per
-task, with no feature spec and no verification step. The code they produced is real and
-mostly sound — but **every item below is `[~]`, because not one of them was ever verified
-on a device and both quality gates they claimed to satisfy are red.**
+task, with no feature spec, no verification step and **no code review**. The code they
+produced is real and mostly sound — but **every item below is `[~]`, because not one of
+them was ever verified on a device and both quality gates they claimed to satisfy are
+red.** The legacy CR gate (Phase 1.9, below) reviews them one by one; each row links to
+its CR task file.
 
 Evidence of the era's failure mode: `doc/04-IMPLEMENTATION-PLAN-PHASE1.md` ends with
 "All Phase 1 unit tests pass" and "Detekt and ktlint pass with zero issues" — both
 statements are false today, and there is no record they were ever true.
 
-| Item | Deliverable | Evidence in tree | Status |
-| --- | --- | --- | --- |
-| 1.1 Project scaffolding | Multi-module Gradle build, version catalog | `settings.gradle.kts` (20 modules), `gradle/libs.versions.toml` | `[~]` |
-| 1.2 Design system & theme | `core:core-ui` | 29 source files: `theme/` 6, `components/` 16, `animation/` 3, `util/` 2, `mapper/` + `preview/` 2 | `[~]` |
-| 1.3 Security module | `core:core-security` | 10 source + 5 test files (KeyStore, Tink, BIP-39/44, biometric, PIN validation) — **its 64 tests do not compile** | `[~]` |
-| 1.4 DataStore & preferences | `core:core-datastore` | 8 source + 4 test files; 27 tests pass | `[~]` |
-| 1.5 Domain models & repository interfaces | `domain` | 32 source files (7 models, 5 repository interfaces, 20 use cases) + 10 test files; 63 tests pass | `[~]` |
-| 1.6 Data layer | `data` | 11 source files: 5 repository impls + 5 mappers + `RepositoryModule`; 27 tests pass | `[~]` |
-| 1.7 Onboarding (parts 1–2) | `feature:feature-onboarding` | 12 source + 5 test files; 30 tests pass | `[~]` |
-| 1.8 Auth / unlock | `feature:feature-auth` | 3 source + 1 test file; 14 tests pass | `[~]` |
-| 1.9 Main scaffold & navigation shell | `app` | `MainScreen` with 5 tabs — **4 render `PlaceholderTabScreen`** | `[~]` |
-| 2.1 Network module | `core:core-network` | 19 files: CoinGecko + explorer APIs, Web3j provider, interceptors, adapters — **no tests** | `[~]` |
-| 2.2 Database module | `core:core-database` | 10 files: 4 entities, 4 DAOs, DB, DI; schema `1.json` — **no tests** | `[~]` |
-| 2.3 Chain management | Chain switching | 3 chain use cases, `ChainUiMapper`, `ChainSelectorDropdown`, `ChainBadge`, `ChainIconMapper` — **no tests** | `[~]` |
-| 2.4 Home dashboard | `feature:feature-home` | 4 files: `HomeScreen`, `HomeViewModel`, `HomeUiState`, `AddTokenDialog` — **no tests** | `[~]` |
-| 2.5 Token detail | `feature:feature-tokens` | 3 files: `TokenDetailScreen`, `TokenDetailViewModel`, `TokenDetailUiState` — **no tests** | `[~]` |
+| Item | Deliverable | Evidence in tree | CR task | Status |
+| --- | --- | --- | --- | --- |
+| 1.1 Project scaffolding | Multi-module Gradle build, version catalog | `settings.gradle.kts` (20 modules), `gradle/libs.versions.toml` | [1.1](features/2026-09-21-legacy-code-review/tasks/1.1-project-scaffolding.md) | `[~]` |
+| 1.2 Design system & theme | `core:core-ui` | 29 source files: `theme/` 6, `components/` 16, `animation/` 3, `util/` 2, `mapper/` + `preview/` 2 | [1.2](features/2026-09-21-legacy-code-review/tasks/1.2-design-system-theme.md) | `[~]` |
+| 1.3 Security module | `core:core-security` | 10 source + 5 test files (KeyStore, Tink, BIP-39/44, biometric, PIN validation) — suite repaired by 2.0.1: **61 tests, 0 fail, 1 skipped** | [1.3](features/2026-09-21-legacy-code-review/tasks/1.3-security-module.md) | `[~]` |
+| 1.4 DataStore & preferences | `core:core-datastore` | 8 source + 4 test files; 27 tests pass | [1.4](features/2026-09-21-legacy-code-review/tasks/1.4-datastore-preferences.md) | `[~]` |
+| 1.5 Domain models & repository interfaces | `domain` | 32 source files (7 models, 5 repository interfaces, 20 use cases) + 10 test files; 63 tests pass | [1.5](features/2026-09-21-legacy-code-review/tasks/1.5-domain-models-repositories.md) | `[~]` |
+| 1.6 Data layer | `data` | 11 source files: 5 repository impls + 5 mappers + `RepositoryModule`; 27 tests pass | [1.6](features/2026-09-21-legacy-code-review/tasks/1.6-data-layer.md) | `[~]` |
+| 1.7 Onboarding (parts 1–2) | `feature:feature-onboarding` | 12 source + 5 test files; 30 tests pass | [1.7](features/2026-09-21-legacy-code-review/tasks/1.7-onboarding.md) | `[~]` |
+| 1.8 Auth / unlock | `feature:feature-auth` | 3 source + 1 test file; 14 tests pass | [1.8](features/2026-09-21-legacy-code-review/tasks/1.8-auth-unlock.md) | `[~]` |
+| 1.9 Main scaffold & navigation shell | `app` | `MainScreen` with 5 tabs — **4 render `PlaceholderTabScreen`** | [1.9](features/2026-09-21-legacy-code-review/tasks/1.9-main-scaffold-navigation.md) | `[~]` |
+| 2.1 Network module | `core:core-network` | 19 files: CoinGecko + explorer APIs, Web3j provider, interceptors, adapters — **no tests** | [2.1](features/2026-09-21-legacy-code-review/tasks/2.1-network-module.md) | `[~]` |
+| 2.2 Database module | `core:core-database` | 10 files: 4 entities, 4 DAOs, DB, DI; schema `1.json` — **no tests** | [2.2](features/2026-09-21-legacy-code-review/tasks/2.2-database-module.md) | `[~]` |
+| 2.3 Chain management | Chain switching | 3 chain use cases, `ChainUiMapper`, `ChainSelectorDropdown`, `ChainBadge`, `ChainIconMapper` — **no tests** | [2.3](features/2026-09-21-legacy-code-review/tasks/2.3-chain-management.md) | `[~]` |
+| 2.4 Home dashboard | `feature:feature-home` | 4 files: `HomeScreen`, `HomeViewModel`, `HomeUiState`, `AddTokenDialog` — **no tests** | [2.4](features/2026-09-21-legacy-code-review/tasks/2.4-home-dashboard.md) | `[~]` |
+| 2.5 Token detail | `feature:feature-tokens` | 3 files: `TokenDetailScreen`, `TokenDetailViewModel`, `TokenDetailUiState` — **no tests** | [2.5](features/2026-09-21-legacy-code-review/tasks/2.5-token-detail.md) | `[~]` |
 
 Prompt files 16–29 (Send, Receive, History, default token list, all of Phase 3, unit
 tests, UI tests, performance pass) were **never written**. That work now flows through
@@ -83,7 +90,29 @@ the spec workflow — no prompt file will be authored for it.
 
 ---
 
-## Phase 2.0 — Stabilization & verification debt `← current gate`
+## Phase 1.9 — Legacy code review (pre-SDD, Tasks 1.1–2.5) `← current gate`
+
+**Goal:** code-review every feature implemented in the prompt-driven era, because none of
+them ever received one. The reviewer records findings only; a separate **developer
+session** fixes them, and a finding row is deleted from the record only after its fix is
+verified.
+
+- Spec directory: `specs/features/2026-09-21-legacy-code-review/` — decisions
+  (`requirements.md`, owner Q1–Q8), method (`plan.md`), 15 task files (`tasks/`,
+  index `tasks/README.md`), evidence (`validation.md`).
+- Order is strict: 1.1 → 2.5, one task at a time; a task closes when its checklist
+  verdicts and findings are recorded and the **owner signs it off**. The gate closes when
+  all 15 tasks are signed off.
+- Known defects already owned by roadmap items (2.0.2b, the `TransactionRepositoryImpl`
+  write paths, 2.0.3 empty callbacks, …) are **pre-registered** in the task files, not
+  re-created.
+- Reviewer write scope: record files and test files/test projects only.
+- After the gate closes, the **next undone roadmap item** (Phase 2.0 remainder, 2.0.2b
+  first) is proceeded — singly or as owner-approved grouped items.
+
+---
+
+## Phase 2.0 — Stabilization & verification debt
 
 **Goal:** make the existing code true. No new features. Closes when the app has been run
 on a device, the security suite compiles and passes, the dead ends are gone, and both
