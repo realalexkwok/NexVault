@@ -11,7 +11,7 @@
 | Task | Scan evidence | Owner sign-off | Status |
 | --- | --- | --- | --- |
 | 1.1 Project scaffolding | 2026-09-21 (A1–A8) + fix verification (V1–V8) | 2026-09-21 | `[x]` |
-| 1.2 Design system & theme | — | — | `[ ]` |
+| 1.2 Design system & theme | 2026-09-21 (B1–B5) | — | `[?]` |
 | 1.3 Security module | — | — | `[ ]` |
 | 1.4 DataStore & preferences | — | — | `[ ]` |
 | 1.5 Domain models & repository interfaces | — | — | `[ ]` |
@@ -86,7 +86,31 @@ stays in the task file's findings table as the transfer channel for the develope
 
 ## Task 1.2 — Design system & theme
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-21 — 5 findings recorded (1.2-1 … 1.2-5) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| B1 | Build | `./gradlew :core:core-ui:assembleDebug --console=plain` | **BUILD SUCCESSFUL** (2026-09-21) |
+| B2 | detekt (module) | `./gradlew :core:core-ui:detekt` | **FAIL — 5 weighted issues** (pre-registered 2.0.5, not re-created) |
+| B3 | Previews | `grep -rn '@Preview' core/core-ui` | **0** → finding 1.2-2 |
+| B4 | Hardcoded values in features | `grep -rnE '[0-9]+\\.(dp|sp)' feature` · `grep -rnE 'Color\\(0x' feature app` · `grep -rnE 'Text\\(\"[A-Za-z]' feature` | 149 dim literals · 1 color (`TokenDetailScreen.kt:333`) · 10 string hits; no `feature/*/res/values` strings → finding 1.2-1 |
+| B5 | Component token discipline | `grep -rn 'Color(0x' core/core-ui/src/main/.../components` | only `TransactionRow.kt:62,64` → finding 1.2-3; `NexVaultButton` spot-read token-compliant |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 1.2-1 | Medium | proposed new Phase 4 item (design-token adoption in features) |
+| 1.2-2 | Low | same proposed Phase 4 item |
+| 1.2-3 | Low | same proposed Phase 4 item |
+| 1.2-4 | Low | same proposed Phase 4 item (or 3.7) |
+| 1.2-5 | Medium | 2.0.6 (TC traceability) |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.3 — Security module
 
