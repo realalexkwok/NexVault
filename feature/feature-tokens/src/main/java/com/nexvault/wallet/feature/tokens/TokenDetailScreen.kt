@@ -38,19 +38,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.NexVaultCard
 import com.nexvault.wallet.core.ui.components.SimpleLineChart
 import com.nexvault.wallet.core.ui.components.TokenIcon
 import com.nexvault.wallet.core.ui.components.TransactionRow
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
+import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import com.nexvault.wallet.core.ui.util.formatFiatValue
 import com.nexvault.wallet.core.ui.util.formatTokenBalance
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
+import com.nexvault.wallet.feature.tokens.R
 
 /**
  * Token detail: balance, chart, stats, actions, and recent transactions.
@@ -86,7 +90,7 @@ fun TokenDetailScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.token_detail_back),
                         )
                     }
                 },
@@ -113,7 +117,7 @@ fun TokenDetailScreen(
                 token != null -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 24.dp),
+                        contentPadding = PaddingValues(bottom = NexVaultDimens.spacingLg),
                     ) {
                         item(key = "header") {
                             TokenDetailHeader(token = token)
@@ -140,12 +144,13 @@ fun TokenDetailScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        .padding(horizontal = NexVaultDimens.spacingMd)
+                                        .padding(vertical = NexVaultDimens.spacingSm),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(
-                                        text = "Recent Transactions",
+                                        text = stringResource(R.string.token_detail_recent_transactions),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
                                     )
@@ -154,12 +159,13 @@ fun TokenDetailScreen(
                                             onNavigateToHistory(token.contractAddress, token.chainId)
                                         },
                                     ) {
-                                        Text("See All")
-                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(stringResource(R.string.token_detail_see_all))
+                                        Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
                                         Icon(
                                             imageVector = Icons.Default.ArrowForward,
-                                            contentDescription = "See all transactions",
-                                            modifier = Modifier.size(16.dp),
+                                            contentDescription =
+                                                stringResource(R.string.token_detail_see_all_transactions),
+                                            modifier = Modifier.size(NexVaultDimens.spacingMd),
                                         )
                                     }
                                 }
@@ -180,11 +186,11 @@ fun TokenDetailScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(32.dp),
+                                        .padding(NexVaultDimens.spacingXl),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
-                                        text = "No transactions yet",
+                                        text = stringResource(R.string.token_detail_no_transactions),
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -195,14 +201,20 @@ fun TokenDetailScreen(
                 }
 
                 else -> {
+                    val errorText =
+                        uiState.errorMessage
+                            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
+                            ?: uiState.errorPluralsRes?.let {
+                                pluralStringResource(it, uiState.errorQuantity, *uiState.errorArgs.toTypedArray())
+                            }
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
+                            .padding(NexVaultDimens.spacingLg),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = uiState.error ?: "Unable to load token",
+                            text = errorText ?: stringResource(R.string.token_detail_unable_to_load_token),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error,
                         )
@@ -218,27 +230,27 @@ private fun TokenDetailHeader(token: Token) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(NexVaultDimens.spacingMd),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TokenIcon(
             imageUrl = token.logoUrl,
             symbol = token.symbol,
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(NexVaultDimens.tokenLogoSize),
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacing12))
         Text(
             text = token.name,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
         Text(
             text = "${formatTokenBalance(token.balance)} ${token.symbol}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Medium,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
         Text(
             text = formatFiatValue(token.fiatValue ?: 0.0),
             style = MaterialTheme.typography.bodyLarge,
@@ -257,12 +269,12 @@ private fun TokenPriceChartSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(NexVaultDimens.spacingMd),
     ) {
         NexVaultCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(NexVaultDimens.chartHeightLarge),
         ) {
             when {
                 isLoading -> {
@@ -270,7 +282,7 @@ private fun TokenPriceChartSection(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(modifier = Modifier.size(NexVaultDimens.iconSizeMedium))
                     }
                 }
 
@@ -280,7 +292,7 @@ private fun TokenPriceChartSection(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = "No chart data available",
+                            text = stringResource(R.string.token_detail_no_chart_data),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -292,14 +304,20 @@ private fun TokenPriceChartSection(
                         dataPoints = chartData,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(12.dp),
+                            .padding(NexVaultDimens.spacing12),
                         lineColor = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        val ranges = listOf(1 to "1D", 7 to "7D", 30 to "1M", 365 to "1Y")
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
+        val ranges =
+            listOf(
+                1 to stringResource(R.string.token_detail_range_1d),
+                7 to stringResource(R.string.token_detail_range_7d),
+                30 to stringResource(R.string.token_detail_range_1m),
+                365 to stringResource(R.string.token_detail_range_1y),
+            )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -321,22 +339,22 @@ private fun TokenPriceStats(token: Token) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
     ) {
         val fiatPrice = token.fiatPrice
         TokenStatRow(
-            label = "Price",
+            label = stringResource(R.string.token_detail_price),
             value = if (fiatPrice != null) formatFiatValue(fiatPrice) else "—",
         )
         val change24h = token.priceChange24h
         val changeColor = when {
-            (change24h ?: 0.0) > 0 -> Color(0xFF4CAF50)
+            (change24h ?: 0.0) > 0 -> NexVaultTheme.colors.positive
             (change24h ?: 0.0) < 0 -> MaterialTheme.colorScheme.error
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         }
         val changePrefix = if ((change24h ?: 0.0) > 0) "+" else ""
         TokenStatRow(
-            label = "24h Change",
+            label = stringResource(R.string.token_detail_24h_change),
             value = if (change24h != null) {
                 "$changePrefix${String.format("%.2f", change24h)}%"
             } else {
@@ -344,7 +362,7 @@ private fun TokenPriceStats(token: Token) {
             },
             valueColor = changeColor,
         )
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = NexVaultDimens.spacingSm))
     }
 }
 
@@ -357,7 +375,7 @@ private fun TokenStatRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = NexVaultDimens.spacing6),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
@@ -382,8 +400,8 @@ private fun TokenActionButtons(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
+        horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacing12),
     ) {
         Button(
             onClick = onSend,
@@ -392,10 +410,10 @@ private fun TokenActionButtons(
             Icon(
                 imageVector = Icons.Default.ArrowUpward,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(NexVaultDimens.iconSizeXs),
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Send")
+            Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
+            Text(stringResource(R.string.token_detail_send))
         }
         OutlinedButton(
             onClick = onReceive,
@@ -404,10 +422,10 @@ private fun TokenActionButtons(
             Icon(
                 imageVector = Icons.Default.ArrowDownward,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(NexVaultDimens.iconSizeXs),
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Receive")
+            Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
+            Text(stringResource(R.string.token_detail_receive))
         }
     }
 }

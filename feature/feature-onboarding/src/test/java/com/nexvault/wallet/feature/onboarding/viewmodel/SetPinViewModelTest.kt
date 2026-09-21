@@ -31,7 +31,8 @@ class SetPinViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(SetPinViewModel.PinPhase.SET, state.phase)
         assertEquals("", state.pin)
-        assertNull(state.error)
+        assertNull(state.errorRes)
+        assertNull(state.errorMessage)
         assertFalse(state.isLoading)
         assertFalse(state.isBiometricAvailable)
         assertFalse(state.isBiometricEnabled)

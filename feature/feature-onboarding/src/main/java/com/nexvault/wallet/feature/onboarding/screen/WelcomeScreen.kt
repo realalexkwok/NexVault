@@ -24,12 +24,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nexvault.wallet.core.ui.components.NexVaultButton
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.onboarding.R
 import com.nexvault.wallet.feature.onboarding.viewmodel.WelcomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -77,28 +79,28 @@ private fun WelcomeScreenContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = NexVaultDimens.spacingLg)
             .systemBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
         VaultIcon(
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier.size(NexVaultDimens.logoSize),
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
         Text(
-            text = "NexVault",
+            text = stringResource(R.string.onboarding_app_name),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
         Text(
-            text = "Your keys. Your crypto.",
+            text = stringResource(R.string.onboarding_welcome_tagline),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -107,21 +109,21 @@ private fun WelcomeScreenContent(
         Spacer(modifier = Modifier.weight(1f))
 
         NexVaultButton(
-            text = "Create New Wallet",
+            text = stringResource(R.string.onboarding_create_wallet),
             onClick = onCreateWalletClicked,
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
         NexVaultButton(
-            text = "Import Wallet",
+            text = stringResource(R.string.onboarding_import_wallet),
             onClick = onImportWalletClicked,
             modifier = Modifier.fillMaxWidth(),
             secondary = true,
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingXxl))
     }
 }
 
@@ -144,7 +146,7 @@ private fun VaultIcon(modifier: Modifier = Modifier) {
         Icon(
             imageVector = Icons.Outlined.Lock,
             contentDescription = null,
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(NexVaultDimens.iconSizeXl),
             tint = onPrimaryColor,
         )
     }

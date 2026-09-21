@@ -1,5 +1,7 @@
 package com.nexvault.wallet.feature.home
 
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import com.nexvault.wallet.domain.model.chain.Chain
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
@@ -17,9 +19,14 @@ data class HomeUiState(
     val supportedChains: List<Chain> = emptyList(),
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
-    val error: String? = null,
+    @StringRes val errorRes: Int? = null,
+    @PluralsRes val errorPluralsRes: Int? = null,
+    val errorQuantity: Int = 0,
+    val errorArgs: List<Any> = emptyList(),
+    val errorMessage: String? = null,
     val showAddTokenDialog: Boolean = false,
     val addTokenLoading: Boolean = false,
-    val addTokenError: String? = null,
+    @StringRes val addTokenErrorRes: Int? = null,
+    val addTokenErrorMessage: String? = null,
     val addTokenResult: Token? = null,
 )

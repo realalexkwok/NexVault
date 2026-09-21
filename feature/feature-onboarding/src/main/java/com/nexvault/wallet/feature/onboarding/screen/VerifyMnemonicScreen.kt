@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +39,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.NexVaultButton
 import com.nexvault.wallet.core.ui.components.NexVaultTopBar
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.onboarding.R
 import com.nexvault.wallet.feature.onboarding.viewmodel.VerifyMnemonicViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -116,10 +119,14 @@ private fun VerifyMnemonicScreenContent(
         }
     }
 
+    val errorText =
+        uiState.errorMessage
+            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
+
     Scaffold(
         topBar = {
             NexVaultTopBar(
-                title = "Step 2 of 3",
+                title = stringResource(R.string.verify_mnemonic_step_indicator),
                 showBackButton = true,
                 onBackClick = onNavigateBack,
             )
@@ -137,7 +144,7 @@ private fun VerifyMnemonicScreenContent(
                 }
             }
 
-            uiState.errorMessage != null -> {
+            errorText != null -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -145,7 +152,7 @@ private fun VerifyMnemonicScreenContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = uiState.errorMessage,
+                        text = errorText,
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -156,26 +163,26 @@ private fun VerifyMnemonicScreenContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .padding(horizontal = 24.dp)
+                        .padding(horizontal = NexVaultDimens.spacingLg)
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
                     Text(
-                        text = "Verify Your Phrase",
+                        text = stringResource(R.string.verify_mnemonic_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
                     Text(
-                        text = "Tap the words in the correct order to verify your recovery phrase.",
+                        text = stringResource(R.string.verify_mnemonic_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
                     val selectedAreaColor by animateColorAsState(
                         targetValue = if (uiState.isError) {
@@ -187,40 +194,40 @@ private fun VerifyMnemonicScreenContent(
                     )
 
                     Text(
-                        text = "Selected:",
+                        text = stringResource(R.string.verify_mnemonic_selected_label),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .defaultMinSize(minHeight = 100.dp)
+                            .defaultMinSize(minHeight = NexVaultDimens.selectionAreaMinHeight)
                             .offset(x = shakeOffset.value.toInt().dp),
                         color = selectedAreaColor,
-                        shape = RoundedCornerShape(12.dp),
-                        tonalElevation = 1.dp,
+                        shape = RoundedCornerShape(NexVaultDimens.cornerRadiusMedium),
+                        tonalElevation = NexVaultDimens.chipTonalElevation,
                     ) {
                         if (uiState.selectedWords.isEmpty()) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(24.dp),
+                                    .padding(NexVaultDimens.spacingLg),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = "Tap words below in order...",
+                                    text = stringResource(R.string.verify_mnemonic_empty_hint),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                 )
                             }
                         } else {
                             FlowRow(
-                                modifier = Modifier.padding(12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(NexVaultDimens.spacing12),
+                                horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
+                                verticalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
                             ) {
                                 uiState.selectedWords.forEachIndexed { index, word ->
                                     WordChip(
@@ -234,28 +241,28 @@ private fun VerifyMnemonicScreenContent(
                     }
 
                     if (uiState.isError) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
                         Text(
-                            text = "Incorrect order! Try again.",
+                            text = stringResource(R.string.verify_mnemonic_error),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
                     Text(
-                        text = "Available:",
+                        text = stringResource(R.string.verify_mnemonic_available_label),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
+                        verticalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
                     ) {
                         uiState.availableWords.forEach { word ->
                             WordChip(
@@ -266,16 +273,16 @@ private fun VerifyMnemonicScreenContent(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
                     NexVaultButton(
-                        text = "Confirm",
+                        text = stringResource(R.string.verify_mnemonic_confirm),
                         onClick = onConfirmClicked,
                         enabled = uiState.isVerified,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
                 }
             }
         }
@@ -309,16 +316,15 @@ private fun WordChip(
 
     Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(0.dp),
+            .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusSmall))
+            .clickable(onClick = onClick),
         color = backgroundColor,
-        shape = RoundedCornerShape(8.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
+        shape = RoundedCornerShape(NexVaultDimens.cornerRadiusSmall),
+        border = androidx.compose.foundation.BorderStroke(NexVaultDimens.borderWidth, borderColor),
     ) {
         Text(
             text = text,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = textColor,

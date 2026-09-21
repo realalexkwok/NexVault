@@ -15,7 +15,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
@@ -59,4 +60,12 @@ fun NexVaultTopBar(
             containerColor = colors.cardSurface.copy(alpha = 0f),
         ),
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NexVaultTopBarPreview() {
+    ThemePreviewWrapper {
+        NexVaultTopBar(title = "Wallet", showBackButton = true)
+    }
 }

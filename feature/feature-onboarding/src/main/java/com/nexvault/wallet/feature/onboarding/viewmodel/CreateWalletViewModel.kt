@@ -1,10 +1,12 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.auth.WalletCreationResult
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.wallet.CreateWalletUseCase
+import com.nexvault.wallet.feature.onboarding.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +32,9 @@ class CreateWalletViewModel @Inject constructor(
         val address: String = "",
         val isAcknowledged: Boolean = false,
         val isLoading: Boolean = true,
-        val error: String? = null,
+        @StringRes val errorRes: Int? = null,
+        val errorArgs: List<Any> = emptyList(),
+        val errorMessage: String? = null,
     )
 
     sealed interface NavigationEvent {
@@ -49,7 +53,9 @@ class CreateWalletViewModel @Inject constructor(
 
     private fun createWallet() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update {
+                it.copy(isLoading = true, errorRes = null, errorMessage = null)
+            }
 
             val result = createWalletUseCase("Main Wallet")
 
@@ -62,7 +68,8 @@ class CreateWalletViewModel @Inject constructor(
                             walletId = creationResult.walletId,
                             address = creationResult.address,
                             isLoading = false,
-                            error = null,
+                            errorRes = null,
+                            errorMessage = null,
                         )
                     }
                 }
@@ -70,7 +77,8 @@ class CreateWalletViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = result.message ?: "Failed to create wallet",
+                            errorRes = R.string.create_wallet_failed,
+                            errorMessage = result.message,
                         )
                     }
                 }

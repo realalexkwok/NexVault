@@ -25,15 +25,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.NexVaultTopBar
 import com.nexvault.wallet.core.ui.components.PinInputField
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.onboarding.R
 import com.nexvault.wallet.feature.onboarding.viewmodel.SetPinViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -114,10 +116,19 @@ private fun SetPinScreenContent(
         }
     }
 
+    val errorText =
+        uiState.errorMessage
+            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
+
     Scaffold(
         topBar = {
             NexVaultTopBar(
-                title = if (showStepIndicator) "Step 3 of 3" else "Set PIN",
+                title =
+                    if (showStepIndicator) {
+                        stringResource(R.string.set_pin_step_indicator)
+                    } else {
+                        stringResource(R.string.set_pin_title_short)
+                    },
                 showBackButton = uiState.phase == SetPinViewModel.PinPhase.SET,
                 onBackClick = onNavigateBack,
             )
@@ -131,44 +142,44 @@ private fun SetPinScreenContent(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = NexVaultDimens.spacingLg),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
 
                 Text(
                     text = when (uiState.phase) {
-                        SetPinViewModel.PinPhase.SET -> "Set Your PIN"
-                        SetPinViewModel.PinPhase.CONFIRM -> "Confirm Your PIN"
+                        SetPinViewModel.PinPhase.SET -> stringResource(R.string.set_pin_title_set)
+                        SetPinViewModel.PinPhase.CONFIRM -> stringResource(R.string.set_pin_title_confirm)
                     },
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
                 Text(
                     text = when (uiState.phase) {
                         SetPinViewModel.PinPhase.SET ->
-                            "Choose a 6-digit PIN to secure your wallet."
+                            stringResource(R.string.set_pin_subtitle_set)
                         SetPinViewModel.PinPhase.CONFIRM ->
-                            "Enter the same PIN again to confirm."
+                            stringResource(R.string.set_pin_subtitle_confirm)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
 
-                if (uiState.error != null) {
+                if (errorText != null) {
                     Text(
-                        text = uiState.error,
+                        text = errorText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 16.dp),
+                        modifier = Modifier.padding(bottom = NexVaultDimens.spacingMd),
                     )
                 }
 
@@ -193,12 +204,12 @@ private fun SetPinScreenContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                            .padding(vertical = NexVaultDimens.spacingMd),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
-                            text = "Enable Biometric Unlock",
+                            text = stringResource(R.string.set_pin_enable_biometric),
                             style = MaterialTheme.typography.bodyLarge,
                         )
                         Switch(
@@ -208,7 +219,7 @@ private fun SetPinScreenContent(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
             }
 
             if (uiState.isLoading) {
@@ -221,9 +232,9 @@ private fun SetPinScreenContent(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
                             Text(
-                                text = "Securing your wallet...",
+                                text = stringResource(R.string.set_pin_securing),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
@@ -285,7 +296,7 @@ private fun SetPinScreenErrorPreview() {
             uiState = SetPinViewModel.UiState(
                 phase = SetPinViewModel.PinPhase.SET,
                 pin = "",
-                error = "PINs don't match. Please try again.",
+                errorRes = R.string.set_pin_mismatch,
                 isBiometricAvailable = false,
             ),
             showStepIndicator = false,

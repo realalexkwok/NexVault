@@ -67,7 +67,7 @@ class UnlockViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals("", state.pin)
-        assertNull(state.error)
+        assertNull(state.errorMessage)
         assertFalse(state.isBiometricAvailable)
         assertFalse(state.isBiometricEnabled)
         assertFalse(state.isLockedOut)
@@ -134,7 +134,7 @@ class UnlockViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(0, state.failedAttempts)
-        assertNull(state.error)
+        assertNull(state.errorMessage)
     }
 
     @Test
@@ -156,7 +156,7 @@ class UnlockViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertTrue(state.error?.contains("Incorrect PIN") == true)
+        assertTrue(state.errorMessage?.contains("Incorrect PIN") == true)
         assertEquals(1, state.failedAttempts)
         assertEquals("", state.pin)
         assertTrue(state.isShakeError)
@@ -174,7 +174,7 @@ class UnlockViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(0, state.failedAttempts)
-        assertNull(state.error)
+        assertNull(state.errorMessage)
     }
 
     @Test
@@ -186,7 +186,7 @@ class UnlockViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertTrue(state.error?.contains("Sensor not recognized") == true)
+        assertTrue(state.errorMessage?.contains("Sensor not recognized") == true)
     }
 
     @Test
@@ -198,7 +198,7 @@ class UnlockViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertNull(state.error)
+        assertNull(state.errorMessage)
     }
 
     @Test

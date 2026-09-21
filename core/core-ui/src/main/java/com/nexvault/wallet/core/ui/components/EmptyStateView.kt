@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,11 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
@@ -50,14 +53,14 @@ fun EmptyStateView(
                 LottieAnimation(
                     composition = composition,
                     iterations = LottieConstants.IterateForever,
-                    modifier = Modifier.size(120.dp),
+                    modifier = Modifier.size(NexVaultDimens.iconSize3xl),
                 )
             }
             icon != null -> {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(NexVaultDimens.iconSize2xl),
                     tint = colors.textMedium,
                 )
             }
@@ -85,5 +88,20 @@ fun EmptyStateView(
             Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
             actionButton()
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EmptyStateViewPreview() {
+    ThemePreviewWrapper {
+        EmptyStateView(
+            title = "No tokens yet",
+            subtitle = "Add a token to start tracking your portfolio",
+            icon = Icons.Default.Search,
+            actionButton = {
+                NexVaultButton(text = "Add token", onClick = {})
+            },
+        )
     }
 }

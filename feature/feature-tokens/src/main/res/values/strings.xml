@@ -1,0 +1,18 @@
+<resources>
+    <string name="token_detail_back">Back</string>
+    <string name="token_detail_price">Price</string>
+    <string name="token_detail_24h_change">24h Change</string>
+    <string name="token_detail_send">Send</string>
+    <string name="token_detail_receive">Receive</string>
+    <string name="token_detail_recent_transactions">Recent Transactions</string>
+    <string name="token_detail_see_all">See All</string>
+    <string name="token_detail_see_all_transactions">See all transactions</string>
+    <string name="token_detail_no_transactions">No transactions yet</string>
+    <string name="token_detail_no_chart_data">No chart data available</string>
+    <string name="token_detail_unable_to_load_token">Unable to load token</string>
+    <string name="token_detail_token_not_found">Token not found</string>
+    <string name="token_detail_range_1d">1D</string>
+    <string name="token_detail_range_7d">7D</string>
+    <string name="token_detail_range_1m">1M</string>
+    <string name="token_detail_range_1y">1Y</string>
+</resources>

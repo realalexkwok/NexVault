@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
 @Composable
@@ -34,9 +36,9 @@ fun PriceChangeChip(
 
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusLarge))
             .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = NexVaultDimens.spacingSm, vertical = NexVaultDimens.spacingXs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -46,7 +48,7 @@ fun PriceChangeChip(
                 Icons.Filled.KeyboardArrowDown
             },
             contentDescription = if (isPositive) "Positive" else "Negative",
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(NexVaultDimens.iconSizeXxs),
             tint = contentColor,
         )
         Text(
@@ -54,5 +56,13 @@ fun PriceChangeChip(
             style = MaterialTheme.typography.labelMedium,
             color = contentColor,
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PriceChangeChipPreview() {
+    ThemePreviewWrapper {
+        PriceChangeChip(percentage = "+2.35%", isPositive = true)
     }
 }

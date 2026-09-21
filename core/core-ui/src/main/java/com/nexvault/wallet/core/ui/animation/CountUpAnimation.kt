@@ -15,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import java.text.DecimalFormat
 
 @Composable
@@ -96,4 +98,20 @@ fun CountUpAnimationInt(
         color = textColor,
         modifier = modifier,
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CountUpAnimationPreview() {
+    ThemePreviewWrapper {
+        CountUpAnimation(targetValue = 1234.56f)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CountUpAnimationIntPreview() {
+    ThemePreviewWrapper {
+        CountUpAnimationInt(targetValue = 128, suffix = " txns")
+    }
 }

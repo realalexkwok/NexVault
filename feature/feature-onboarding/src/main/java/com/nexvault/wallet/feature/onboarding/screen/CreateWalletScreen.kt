@@ -31,15 +31,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.NexVaultButton
 import com.nexvault.wallet.core.ui.components.NexVaultTopBar
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.onboarding.R
 import com.nexvault.wallet.feature.onboarding.viewmodel.CreateWalletViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -106,10 +108,14 @@ private fun CreateWalletScreenContent(
     onContinueClicked: () -> Unit,
     onRetryClicked: () -> Unit,
 ) {
+    val errorText =
+        uiState.errorMessage
+            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
+
     Scaffold(
         topBar = {
             NexVaultTopBar(
-                title = "Step 1 of 3",
+                title = stringResource(R.string.create_wallet_step_indicator),
                 showBackButton = true,
                 onBackClick = onNavigateBack,
             )
@@ -125,16 +131,16 @@ private fun CreateWalletScreenContent(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
                         Text(
-                            text = "Creating your wallet...",
+                            text = stringResource(R.string.create_wallet_creating),
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     }
                 }
             }
 
-            uiState.error != null -> {
+            errorText != null -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -143,14 +149,14 @@ private fun CreateWalletScreenContent(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = uiState.error,
+                            text = errorText,
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
                         NexVaultButton(
-                            text = "Retry",
+                            text = stringResource(R.string.create_wallet_retry),
                             onClick = onRetryClicked,
                         )
                     }
@@ -162,62 +168,62 @@ private fun CreateWalletScreenContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .padding(horizontal = 24.dp)
+                        .padding(horizontal = NexVaultDimens.spacingLg)
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
                     Text(
-                        text = "Your Recovery Phrase",
+                        text = stringResource(R.string.create_wallet_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
                     Text(
-                        text = "Write these 12 words down in order. Never share them with anyone. This is the only way to recover your wallet.",
+                        text = stringResource(R.string.create_wallet_warning),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
                     MnemonicGrid(
                         words = uiState.mnemonicWords,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = NexVaultDimens.spacingSm),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Checkbox(
                             checked = uiState.isAcknowledged,
                             onCheckedChange = onAcknowledgeToggled,
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
                         Text(
-                            text = "I have written down my recovery phrase",
+                            text = stringResource(R.string.create_wallet_acknowledge),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f),
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
                     NexVaultButton(
-                        text = "Continue",
+                        text = stringResource(R.string.create_wallet_continue),
                         onClick = onContinueClicked,
                         enabled = uiState.isAcknowledged,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
                 }
             }
         }
@@ -236,8 +242,8 @@ fun MnemonicGrid(
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
+        verticalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
         userScrollEnabled = false,
     ) {
         itemsIndexed(words) { index, word ->
@@ -258,17 +264,17 @@ private fun MnemonicWordCell(
     androidx.compose.material3.Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusSmall))
             .border(
-                width = 1.dp,
+                width = NexVaultDimens.borderWidth,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(NexVaultDimens.cornerRadiusSmall),
             ),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(NexVaultDimens.cornerRadiusSmall),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = NexVaultDimens.spacing12, vertical = NexVaultDimens.spacing10),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -276,7 +282,7 @@ private fun MnemonicWordCell(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
             Text(
                 text = word,
                 style = MaterialTheme.typography.bodyMedium,
@@ -301,7 +307,7 @@ private fun CreateWalletScreenPreview() {
                 address = "0x1234...abcd",
                 isAcknowledged = false,
                 isLoading = false,
-                error = null,
+                errorRes = null,
             ),
             onNavigateBack = {},
             onAcknowledgeToggled = {},

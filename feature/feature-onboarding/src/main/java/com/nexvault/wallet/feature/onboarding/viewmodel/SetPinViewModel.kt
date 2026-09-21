@@ -1,10 +1,12 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.repository.AuthRepository
 import com.nexvault.wallet.domain.usecase.auth.SetPinUseCase
+import com.nexvault.wallet.feature.onboarding.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +44,9 @@ class SetPinViewModel @Inject constructor(
     data class UiState(
         val phase: PinPhase = PinPhase.SET,
         val pin: String = "",
-        val error: String? = null,
+        @StringRes val errorRes: Int? = null,
+        val errorArgs: List<Any> = emptyList(),
+        val errorMessage: String? = null,
         val isLoading: Boolean = false,
         val isBiometricAvailable: Boolean = false,
         val isBiometricEnabled: Boolean = false,
@@ -82,7 +86,9 @@ class SetPinViewModel @Inject constructor(
         if (currentState.isLoading || currentState.pin.length >= 6) return
 
         val newPin = currentState.pin + digit.toString()
-        _uiState.update { it.copy(pin = newPin, error = null, isShakeError = false) }
+        _uiState.update {
+            it.copy(pin = newPin, errorRes = null, errorMessage = null, isShakeError = false)
+        }
 
         if (newPin.length == 6) {
             handlePinComplete(newPin)
@@ -100,7 +106,8 @@ class SetPinViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 pin = it.pin.dropLast(1),
-                error = null,
+                errorRes = null,
+                errorMessage = null,
                 isShakeError = false,
             )
         }
@@ -114,7 +121,8 @@ class SetPinViewModel @Inject constructor(
                     it.copy(
                         phase = PinPhase.CONFIRM,
                         pin = "",
-                        error = null,
+                        errorRes = null,
+                        errorMessage = null,
                     )
                 }
             }
@@ -125,7 +133,9 @@ class SetPinViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isShakeError = true,
-                            error = "PINs don't match. Please try again.",
+                            errorRes = R.string.set_pin_mismatch,
+                            errorArgs = emptyList(),
+                            errorMessage = null,
                         )
                     }
                     viewModelScope.launch {
@@ -135,7 +145,8 @@ class SetPinViewModel @Inject constructor(
                             it.copy(
                                 phase = PinPhase.SET,
                                 pin = "",
-                                error = null,
+                                errorRes = null,
+                                errorMessage = null,
                                 isShakeError = false,
                             )
                         }
@@ -164,7 +175,9 @@ class SetPinViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                error = result.message ?: "Failed to set PIN",
+                                errorRes = R.string.set_pin_failed,
+                                errorArgs = emptyList(),
+                                errorMessage = result.message,
                             )
                         }
                     }
@@ -173,7 +186,9 @@ class SetPinViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "Failed to set PIN: ${e.message}",
+                        errorRes = R.string.set_pin_failed_with_reason,
+                        errorArgs = listOf(e.message.orEmpty()),
+                        errorMessage = null,
                     )
                 }
             }

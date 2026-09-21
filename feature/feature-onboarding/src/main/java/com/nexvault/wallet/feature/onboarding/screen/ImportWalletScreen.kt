@@ -28,16 +28,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.NexVaultButton
 import com.nexvault.wallet.core.ui.components.NexVaultTopBar
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.onboarding.R
 import com.nexvault.wallet.feature.onboarding.viewmodel.ImportWalletViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -110,32 +112,40 @@ private fun ImportWalletScreenContent(
     Scaffold(
         topBar = {
             NexVaultTopBar(
-                title = "Import Wallet",
+                title = stringResource(R.string.onboarding_import_wallet),
                 showBackButton = true,
                 onBackClick = onNavigateBack,
             )
         },
         bottomBar = {
             Surface(
-                tonalElevation = 3.dp,
+                tonalElevation = NexVaultDimens.surfaceTonalElevation,
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                        .padding(horizontal = NexVaultDimens.spacingLg, vertical = NexVaultDimens.spacingMd)
                         .navigationBarsPadding(),
                 ) {
-                    if (uiState.generalError != null) {
+                    val generalErrorText =
+                        uiState.generalErrorMessage
+                            ?: uiState.generalErrorRes?.let { stringResource(it) }
+                    if (generalErrorText != null) {
                         Text(
-                            text = uiState.generalError,
+                            text = generalErrorText,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(bottom = 8.dp),
+                            modifier = Modifier.padding(bottom = NexVaultDimens.spacingSm),
                         )
                     }
 
                     NexVaultButton(
-                        text = if (uiState.isLoading) "Importing..." else "Import",
+                        text =
+                            if (uiState.isLoading) {
+                                stringResource(R.string.import_wallet_importing)
+                            } else {
+                                stringResource(R.string.import_wallet_import_button)
+                            },
                         onClick = onImportClicked,
                         enabled = uiState.isImportEnabled && !uiState.isLoading,
                         isLoading = uiState.isLoading,
@@ -149,10 +159,10 @@ private fun ImportWalletScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = NexVaultDimens.spacingLg)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
             ImportModeSelector(
                 selectedMode = uiState.importMode,
@@ -160,13 +170,16 @@ private fun ImportWalletScreenContent(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
             when (uiState.importMode) {
                 ImportWalletViewModel.ImportMode.MNEMONIC -> {
                     MnemonicInputSection(
                         input = uiState.mnemonicInput,
-                        error = uiState.mnemonicError,
+                        error =
+                            uiState.mnemonicErrorRes?.let {
+                                stringResource(it, *uiState.mnemonicErrorArgs.toTypedArray())
+                            },
                         onInputChanged = onMnemonicInputChanged,
                         isLoading = uiState.isLoading,
                     )
@@ -174,14 +187,14 @@ private fun ImportWalletScreenContent(
                 ImportWalletViewModel.ImportMode.PRIVATE_KEY -> {
                     PrivateKeyInputSection(
                         input = uiState.privateKeyInput,
-                        error = uiState.privateKeyError,
+                        error = uiState.privateKeyErrorRes?.let { stringResource(it) },
                         onInputChanged = onPrivateKeyInputChanged,
                         isLoading = uiState.isLoading,
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
         }
     }
 }
@@ -204,12 +217,12 @@ private fun ImportModeSelector(
         Tab(
             selected = selectedMode == ImportWalletViewModel.ImportMode.MNEMONIC,
             onClick = { onModeChanged(ImportWalletViewModel.ImportMode.MNEMONIC) },
-            text = { Text("Recovery Phrase") },
+            text = { Text(stringResource(R.string.import_wallet_recovery_phrase)) },
         )
         Tab(
             selected = selectedMode == ImportWalletViewModel.ImportMode.PRIVATE_KEY,
             onClick = { onModeChanged(ImportWalletViewModel.ImportMode.PRIVATE_KEY) },
-            text = { Text("Private Key") },
+            text = { Text(stringResource(R.string.import_wallet_private_key)) },
         )
     }
 }
@@ -222,31 +235,31 @@ private fun MnemonicInputSection(
     isLoading: Boolean,
 ) {
     Text(
-        text = "Recovery Phrase",
+        text = stringResource(R.string.import_wallet_recovery_phrase),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
     Text(
-        text = "Enter your 12 or 24 word recovery phrase, with words separated by spaces.",
+        text = stringResource(R.string.import_wallet_mnemonic_hint),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
     OutlinedTextField(
         value = input,
         onValueChange = onInputChanged,
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp),
+            .height(NexVaultDimens.textAreaHeight),
         enabled = !isLoading,
         placeholder = {
             Text(
-                text = "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12",
+                text = stringResource(R.string.import_wallet_mnemonic_placeholder),
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         },
@@ -275,10 +288,10 @@ private fun MnemonicInputSection(
         shape = MaterialTheme.shapes.medium,
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
     Text(
-        text = "Never share your recovery phrase with anyone.",
+        text = stringResource(R.string.import_wallet_mnemonic_warning),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
     )
@@ -292,20 +305,20 @@ private fun PrivateKeyInputSection(
     isLoading: Boolean,
 ) {
     Text(
-        text = "Private Key",
+        text = stringResource(R.string.import_wallet_private_key),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
     Text(
-        text = "Enter your 64-character hexadecimal private key. Optionally prefixed with 0x.",
+        text = stringResource(R.string.import_wallet_private_key_hint),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
     OutlinedTextField(
         value = input,
@@ -314,7 +327,7 @@ private fun PrivateKeyInputSection(
         enabled = !isLoading,
         placeholder = {
             Text(
-                text = "0x or 64 hex characters",
+                text = stringResource(R.string.import_wallet_private_key_placeholder),
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         },
@@ -341,10 +354,10 @@ private fun PrivateKeyInputSection(
         shape = MaterialTheme.shapes.medium,
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
     Text(
-        text = "Never share your private key with anyone.",
+        text = stringResource(R.string.import_wallet_private_key_warning),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
     )
@@ -358,7 +371,7 @@ private fun ImportWalletScreenMnemonicPreview() {
             uiState = ImportWalletViewModel.UiState(
                 importMode = ImportWalletViewModel.ImportMode.MNEMONIC,
                 mnemonicInput = "apple brave crane delta eagle frost grape house ivory jump king",
-                mnemonicError = null,
+                mnemonicErrorRes = null,
                 isImportEnabled = false,
             ),
             onNavigateBack = {},
@@ -378,7 +391,7 @@ private fun ImportWalletScreenPrivateKeyPreview() {
             uiState = ImportWalletViewModel.UiState(
                 importMode = ImportWalletViewModel.ImportMode.PRIVATE_KEY,
                 privateKeyInput = "0xabcdef1234567890",
-                privateKeyError = null,
+                privateKeyErrorRes = null,
                 isImportEnabled = false,
             ),
             onNavigateBack = {},
@@ -398,7 +411,7 @@ private fun ImportWalletScreenErrorPreview() {
             uiState = ImportWalletViewModel.UiState(
                 importMode = ImportWalletViewModel.ImportMode.MNEMONIC,
                 mnemonicInput = "invalid words here that are not a real mnemonic phrase at all twelve",
-                generalError = "Invalid mnemonic phrase. Please check your words.",
+                generalErrorMessage = "Invalid mnemonic phrase. Please check your words.",
                 isImportEnabled = true,
             ),
             onNavigateBack = {},

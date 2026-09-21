@@ -1,0 +1,26 @@
+<resources>
+    <string name="home_action_receive">Receive</string>
+    <string name="home_action_send">Send</string>
+    <string name="home_action_swap">Swap</string>
+    <string name="home_add_token">Add Token</string>
+    <string name="home_add_token_cancel">Cancel</string>
+    <string name="home_add_token_confirm">Add</string>
+    <string name="home_add_token_contract_label">Contract Address</string>
+    <string name="home_add_token_contract_placeholder">0x...</string>
+    <string name="home_add_token_description">Enter the ERC-20 contract address to add a token.</string>
+    <string name="home_add_token_dialog_title">Add Custom Token</string>
+    <string name="home_add_token_error_invalid_contract">Invalid contract address or not an ERC-20 token.</string>
+    <string name="home_add_token_icon_description">Add token</string>
+    <string name="home_chart_loading">Loading chart...</string>
+    <string name="home_chart_range_1d">1D</string>
+    <string name="home_chart_range_1m">1M</string>
+    <string name="home_chart_range_3m">3M</string>
+    <string name="home_chart_range_7d">7D</string>
+    <string name="home_chart_range_all">ALL</string>
+    <string name="home_empty_tokens">No tokens yet. Pull to refresh.</string>
+    <string name="home_error_load_balances">Failed to load balances. Pull to refresh.</string>
+    <string name="home_error_network">Network error. Please check your connection.</string>
+    <string name="home_error_refresh_failed">Failed to refresh. Please try again.</string>
+    <string name="home_tokens_header">Tokens</string>
+    <string name="home_total_balance">Total Balance</string>
+</resources>

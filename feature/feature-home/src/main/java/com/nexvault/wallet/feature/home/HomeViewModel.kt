@@ -96,13 +96,15 @@ class HomeViewModel @Inject constructor(
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, errorRes = null, errorMessage = null) }
             when (val result = refreshBalancesUseCase()) {
                 is DataResult.Error -> {
+                    val message = result.message
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = result.message ?: "Failed to load balances. Pull to refresh.",
+                            errorRes = if (message == null) R.string.home_error_load_balances else null,
+                            errorMessage = message,
                         )
                     }
                 }
@@ -115,22 +117,23 @@ class HomeViewModel @Inject constructor(
 
     fun onRefresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true, error = null) }
+            _uiState.update { it.copy(isRefreshing = true, errorRes = null, errorMessage = null) }
             try {
                 when (val result = refreshBalancesUseCase()) {
                     is DataResult.Error -> {
-                        val msg = when (result.exception) {
-                            is IOException -> "Network error. Please check your connection."
-                            else -> "Failed to refresh. Please try again."
-                        }
-                        _uiState.update { it.copy(error = msg) }
+                        val errorRes =
+                            when (result.exception) {
+                                is IOException -> R.string.home_error_network
+                                else -> R.string.home_error_refresh_failed
+                            }
+                        _uiState.update { it.copy(errorRes = errorRes) }
                     }
                     is DataResult.Success -> { }
                 }
             } catch (e: IOException) {
-                _uiState.update { it.copy(error = "Network error. Please check your connection.") }
+                _uiState.update { it.copy(errorRes = R.string.home_error_network) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed to refresh. Please try again.") }
+                _uiState.update { it.copy(errorRes = R.string.home_error_refresh_failed) }
             } finally {
                 _uiState.update { it.copy(isRefreshing = false) }
             }
@@ -139,7 +142,7 @@ class HomeViewModel @Inject constructor(
 
     fun onChainSelected(chainId: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(errorRes = null, errorMessage = null) }
             when (setSelectedChainUseCase(chainId)) {
                 is DataResult.Error -> { }
                 is DataResult.Success -> {
@@ -178,7 +181,13 @@ class HomeViewModel @Inject constructor(
     fun onAddCustomToken(contractAddress: String) {
         viewModelScope.launch {
             val chainId = _uiState.value.selectedChain?.chainId ?: return@launch
-            _uiState.update { it.copy(addTokenLoading = true, addTokenError = null) }
+            _uiState.update {
+                it.copy(
+                    addTokenLoading = true,
+                    addTokenErrorRes = null,
+                    addTokenErrorMessage = null,
+                )
+            }
             when (val result = addCustomTokenUseCase(chainId, contractAddress)) {
                 is DataResult.Success -> {
                     _uiState.update {
@@ -194,7 +203,7 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             addTokenLoading = false,
-                            addTokenError = "Invalid contract address or not an ERC-20 token.",
+                            addTokenErrorRes = R.string.home_add_token_error_invalid_contract,
                         )
                     }
                 }
@@ -204,15 +213,26 @@ class HomeViewModel @Inject constructor(
 
     fun onShowAddTokenDialog() {
         _uiState.update {
-            it.copy(showAddTokenDialog = true, addTokenError = null, addTokenResult = null)
+            it.copy(
+                showAddTokenDialog = true,
+                addTokenErrorRes = null,
+                addTokenErrorMessage = null,
+                addTokenResult = null,
+            )
         }
     }
 
     fun onDismissAddTokenDialog() {
-        _uiState.update { it.copy(showAddTokenDialog = false, addTokenError = null) }
+        _uiState.update {
+            it.copy(
+                showAddTokenDialog = false,
+                addTokenErrorRes = null,
+                addTokenErrorMessage = null,
+            )
+        }
     }
 
     fun onErrorDismissed() {
-        _uiState.update { it.copy(error = null) }
+        _uiState.update { it.copy(errorRes = null, errorMessage = null) }
     }
 }

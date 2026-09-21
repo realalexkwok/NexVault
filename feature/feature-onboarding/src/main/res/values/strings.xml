@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Welcome screen -->
+    <string name="onboarding_app_name">NexVault</string>
+    <string name="onboarding_welcome_tagline">Your keys. Your crypto.</string>
+    <string name="onboarding_create_wallet">Create New Wallet</string>
+    <string name="onboarding_import_wallet">Import Wallet</string>
+
+    <!-- Create wallet screen -->
+    <string name="create_wallet_step_indicator">Step 1 of 3</string>
+    <string name="create_wallet_title">Your Recovery Phrase</string>
+    <string name="create_wallet_warning">Write these 12 words down in order. Never share them with anyone. This is the only way to recover your wallet.</string>
+    <string name="create_wallet_acknowledge">I have written down my recovery phrase</string>
+    <string name="create_wallet_creating">Creating your wallet...</string>
+    <string name="create_wallet_retry">Retry</string>
+    <string name="create_wallet_continue">Continue</string>
+    <string name="create_wallet_failed">Failed to create wallet</string>
+
+    <!-- Verify mnemonic screen -->
+    <string name="verify_mnemonic_step_indicator">Step 2 of 3</string>
+    <string name="verify_mnemonic_title">Verify Your Phrase</string>
+    <string name="verify_mnemonic_subtitle">Tap the words in the correct order to verify your recovery phrase.</string>
+    <string name="verify_mnemonic_selected_label">Selected:</string>
+    <string name="verify_mnemonic_available_label">Available:</string>
+    <string name="verify_mnemonic_empty_hint">Tap words below in order...</string>
+    <string name="verify_mnemonic_error">Incorrect order! Try again.</string>
+    <string name="verify_mnemonic_confirm">Confirm</string>
+    <string name="verify_mnemonic_load_failed">Failed to load mnemonic</string>
+
+    <!-- Set PIN screen -->
+    <string name="set_pin_step_indicator">Step 3 of 3</string>
+    <string name="set_pin_title_short">Set PIN</string>
+    <string name="set_pin_title_set">Set Your PIN</string>
+    <string name="set_pin_title_confirm">Confirm Your PIN</string>
+    <string name="set_pin_subtitle_set">Choose a 6-digit PIN to secure your wallet.</string>
+    <string name="set_pin_subtitle_confirm">Enter the same PIN again to confirm.</string>
+    <string name="set_pin_enable_biometric">Enable Biometric Unlock</string>
+    <string name="set_pin_securing">Securing your wallet...</string>
+    <string name="set_pin_mismatch">PINs don\'t match. Please try again.</string>
+    <string name="set_pin_failed">Failed to set PIN</string>
+    <string name="set_pin_failed_with_reason">Failed to set PIN: %1$s</string>
+
+    <!-- Import wallet screen -->
+    <string name="import_wallet_importing">Importing...</string>
+    <string name="import_wallet_import_button">Import</string>
+    <string name="import_wallet_recovery_phrase">Recovery Phrase</string>
+    <string name="import_wallet_private_key">Private Key</string>
+    <string name="import_wallet_mnemonic_hint">Enter your 12 or 24 word recovery phrase, with words separated by spaces.</string>
+    <string name="import_wallet_mnemonic_placeholder">word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12</string>
+    <string name="import_wallet_mnemonic_warning">Never share your recovery phrase with anyone.</string>
+    <string name="import_wallet_private_key_hint">Enter your 64-character hexadecimal private key. Optionally prefixed with 0x.</string>
+    <string name="import_wallet_private_key_placeholder">0x or 64 hex characters</string>
+    <string name="import_wallet_private_key_warning">Never share your private key with anyone.</string>
+    <string name="import_wallet_mnemonic_too_many_words">Too many words. Enter 12 or 24 words.</string>
+    <string name="import_wallet_mnemonic_invalid_chars">Words should contain only letters.</string>
+    <string name="import_wallet_mnemonic_wrong_count">Enter exactly 12 or 24 words. Currently: %1$d words.</string>
+    <string name="import_wallet_private_key_too_long">Private key is too long.</string>
+    <string name="import_wallet_private_key_not_hex">Private key must be hexadecimal (0-9, a-f).</string>
+    <string name="import_wallet_failed">Import failed. Please check your input.</string>
+</resources>

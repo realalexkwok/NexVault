@@ -1,10 +1,12 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.wallet.GetMnemonicForBackupUseCase
+import com.nexvault.wallet.feature.onboarding.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -36,6 +38,8 @@ class VerifyMnemonicViewModel @Inject constructor(
         val isVerified: Boolean = false,
         val isError: Boolean = false,
         val isLoading: Boolean = true,
+        @StringRes val errorRes: Int? = null,
+        val errorArgs: List<Any> = emptyList(),
         val errorMessage: String? = null,
     )
 
@@ -77,7 +81,8 @@ class VerifyMnemonicViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = result.message ?: "Failed to load mnemonic",
+                            errorRes = R.string.verify_mnemonic_load_failed,
+                            errorMessage = result.message,
                         )
                     }
                 }

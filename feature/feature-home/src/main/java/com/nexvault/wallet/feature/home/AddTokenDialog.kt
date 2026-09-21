@@ -1,5 +1,6 @@
 package com.nexvault.wallet.feature.home
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
+import com.nexvault.wallet.feature.home.R
 
 /**
  * Dialog to add a custom ERC-20 token by contract address.
@@ -24,35 +27,36 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AddTokenDialog(
     isLoading: Boolean,
-    error: String?,
+    @StringRes errorRes: Int?,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var contractAddress by remember { mutableStateOf("") }
+    val errorText = errorRes?.let { stringResource(it) }
 
     AlertDialog(
         onDismissRequest = { if (!isLoading) onDismiss() },
-        title = { Text("Add Custom Token") },
+        title = { Text(stringResource(R.string.home_add_token_dialog_title)) },
         text = {
             Column {
                 Text(
-                    text = "Enter the ERC-20 contract address to add a token.",
+                    text = stringResource(R.string.home_add_token_description),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(NexVaultDimens.spacing12))
                 OutlinedTextField(
                     value = contractAddress,
                     onValueChange = { contractAddress = it.trim() },
-                    label = { Text("Contract Address") },
-                    placeholder = { Text("0x...") },
+                    label = { Text(stringResource(R.string.home_add_token_contract_label)) },
+                    placeholder = { Text(stringResource(R.string.home_add_token_contract_placeholder)) },
                     singleLine = true,
-                    isError = error != null,
-                    supportingText = error?.let { { Text(it) } },
+                    isError = errorText != null,
+                    supportingText = errorText?.let { { Text(it) } },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                 )
                 if (isLoading) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
             }
@@ -62,7 +66,7 @@ fun AddTokenDialog(
                 onClick = { onConfirm(contractAddress) },
                 enabled = contractAddress.length >= 42 && contractAddress.startsWith("0x") && !isLoading,
             ) {
-                Text("Add")
+                Text(stringResource(R.string.home_add_token_confirm))
             }
         },
         dismissButton = {
@@ -70,7 +74,7 @@ fun AddTokenDialog(
                 onClick = onDismiss,
                 enabled = !isLoading,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.home_add_token_cancel))
             }
         },
     )

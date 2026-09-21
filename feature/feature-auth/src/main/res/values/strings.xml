@@ -1,0 +1,17 @@
+<resources>
+    <string name="unlock_biometric_prompt_subtitle">Use your fingerprint or face to unlock</string>
+    <string name="unlock_biometric_prompt_title">Unlock NexVault</string>
+    <string name="unlock_brand_name">NexVault</string>
+    <string name="unlock_enter_pin">Enter your PIN to unlock</string>
+    <plurals name="unlock_incorrect_pin_attempts">
+        <item quantity="one">Incorrect PIN. %1$d attempt remaining.</item>
+        <item quantity="other">Incorrect PIN. %1$d attempts remaining.</item>
+    </plurals>
+    <string name="unlock_locked_out">Locked out</string>
+    <string name="unlock_too_many_attempts">Too many attempts. Please wait.</string>
+    <string name="unlock_try_again_in">Try again in</string>
+    <string name="unlock_use_biometric">Use Biometric</string>
+    <string name="unlock_use_pin">Use PIN</string>
+    <string name="unlock_verification_error">Verification error: %1$s</string>
+    <string name="unlock_wallet_wiped">Wallet wiped due to too many failed attempts.</string>
+</resources>

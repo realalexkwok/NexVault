@@ -48,11 +48,8 @@ class TokenDetailViewModel @Inject constructor(
                     state.copy(
                         token = token,
                         isLoading = false,
-                        error = if (token == null) {
-                            "Token not found"
-                        } else {
-                            null
-                        },
+                        errorRes = if (token == null) R.string.token_detail_token_not_found else null,
+                        errorMessage = null,
                     )
                 }
             }

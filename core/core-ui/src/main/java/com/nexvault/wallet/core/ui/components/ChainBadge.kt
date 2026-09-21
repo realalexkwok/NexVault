@@ -15,7 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.R
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 
 /**
  * Small badge showing the current blockchain network.
@@ -40,22 +43,30 @@ fun ChainBadge(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusLarge))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .padding(horizontal = NexVaultDimens.spacing10, vertical = NexVaultDimens.spacingXs),
     ) {
         if (chainIconRes != 0) {
             Image(
                 painter = painterResource(id = chainIconRes),
                 contentDescription = chainName,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(NexVaultDimens.iconSizeXxs),
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
         }
         Text(
             text = if (isTestnet) "$chainName (Testnet)" else chainName,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChainBadgePreview() {
+    ThemePreviewWrapper {
+        ChainBadge(chainName = "Ethereum", chainIconRes = R.drawable.ic_chain_ethereum)
     }
 }

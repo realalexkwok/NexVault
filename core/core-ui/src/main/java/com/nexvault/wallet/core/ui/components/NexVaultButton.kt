@@ -13,7 +13,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 
 @Composable
@@ -43,12 +44,12 @@ fun NexVaultButton(
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                 )
             ),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(horizontal = NexVaultDimens.spacingLg, vertical = NexVaultDimens.spacingMd),
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(NexVaultDimens.iconSizeSmall),
+                    strokeWidth = NexVaultDimens.borderWidthStrong,
                     color = MaterialTheme.colorScheme.primary,
                 )
             } else {
@@ -72,12 +73,12 @@ fun NexVaultButton(
                 disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                 disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             ),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(horizontal = NexVaultDimens.spacingLg, vertical = NexVaultDimens.spacingMd),
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(NexVaultDimens.iconSizeSmall),
+                    strokeWidth = NexVaultDimens.borderWidthStrong,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
@@ -87,5 +88,13 @@ fun NexVaultButton(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NexVaultButtonPreview() {
+    ThemePreviewWrapper {
+        NexVaultButton(text = "Continue", onClick = {})
     }
 }

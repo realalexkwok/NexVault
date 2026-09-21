@@ -27,8 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.TextButton
+import com.nexvault.wallet.core.ui.R
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 
 /**
  * Dropdown selector for switching between blockchain networks.
@@ -56,7 +59,7 @@ fun ChainSelectorDropdown(
     Box(modifier = modifier) {
         TextButton(
             onClick = { expanded = true },
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = NexVaultDimens.spacing12, vertical = NexVaultDimens.spacingSm),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -64,15 +67,15 @@ fun ChainSelectorDropdown(
                 Image(
                     painter = painterResource(id = selectedChain.iconRes),
                     contentDescription = selectedChain.name,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(NexVaultDimens.iconSizeMedium),
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
                 Text(
                     text = selectedChain.name,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = "Select network",
@@ -92,9 +95,9 @@ fun ChainSelectorDropdown(
                             Image(
                                 painter = painterResource(id = chain.iconRes),
                                 contentDescription = chain.name,
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(NexVaultDimens.iconSizeSmall),
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
                             Column {
                                 Text(
                                     text = chain.name,
@@ -126,5 +129,47 @@ fun ChainSelectorDropdown(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChainSelectorDropdownPreview() {
+    ThemePreviewWrapper {
+        ChainSelectorDropdown(
+            selectedChain =
+                ChainUi(
+                    chainId = 1,
+                    name = "Ethereum",
+                    symbol = "ETH",
+                    iconRes = R.drawable.ic_chain_ethereum,
+                    isTestnet = false,
+                ),
+            supportedChains =
+                listOf(
+                    ChainUi(
+                        chainId = 1,
+                        name = "Ethereum",
+                        symbol = "ETH",
+                        iconRes = R.drawable.ic_chain_ethereum,
+                        isTestnet = false,
+                    ),
+                    ChainUi(
+                        chainId = 137,
+                        name = "Polygon",
+                        symbol = "MATIC",
+                        iconRes = R.drawable.ic_chain_polygon,
+                        isTestnet = false,
+                    ),
+                    ChainUi(
+                        chainId = 11155111,
+                        name = "Sepolia",
+                        symbol = "ETH",
+                        iconRes = R.drawable.ic_chain_sepolia,
+                        isTestnet = true,
+                    ),
+                ),
+            onChainSelected = {},
+        )
     }
 }

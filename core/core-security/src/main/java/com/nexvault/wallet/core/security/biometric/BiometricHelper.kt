@@ -1,9 +1,11 @@
 package com.nexvault.wallet.core.security.biometric
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import com.nexvault.wallet.core.security.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,15 +33,23 @@ class BiometricHelper @Inject constructor(
             BiometricManager.BIOMETRIC_SUCCESS
     }
 
+    /**
+     * Builds the system biometric prompt. All copy comes from string resources so callers can
+     * override it without introducing hardcoded user-facing text.
+     *
+     * @param title Prompt title resource.
+     * @param subtitle Prompt subtitle resource.
+     * @param negativeButtonText Resource for the fallback button label.
+     */
     fun createPromptInfo(
-        title: String = "Authenticate",
-        subtitle: String = "Use your fingerprint or face to continue",
-        negativeButtonText: String = "Use PIN"
+        @StringRes title: Int = R.string.biometric_prompt_title,
+        @StringRes subtitle: Int = R.string.biometric_prompt_subtitle,
+        @StringRes negativeButtonText: Int = R.string.biometric_prompt_use_pin,
     ): BiometricPrompt.PromptInfo {
         return BiometricPrompt.PromptInfo.Builder()
-            .setTitle(title)
-            .setSubtitle(subtitle)
-            .setNegativeButtonText(negativeButtonText)
+            .setTitle(context.getString(title))
+            .setSubtitle(context.getString(subtitle))
+            .setNegativeButtonText(context.getString(negativeButtonText))
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
             .build()
     }

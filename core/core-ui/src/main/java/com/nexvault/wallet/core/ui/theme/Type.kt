@@ -6,9 +6,22 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.nexvault.wallet.core.ui.R
 
-// Using default system font as fallback, Inter can be added via Google Fonts or bundled TTF
-val NexVaultFontFamily = FontFamily.Default
+/**
+ * Inter — the brand typeface required by AC-1.2. The four static weights used by the
+ * scale below are bundled in `core-ui/src/main/res/font`.
+ *
+ * Inter is licensed under the SIL Open Font License 1.1; the licence text ships with the
+ * app at `res/raw/inter_ofl_license.txt`.
+ */
+val NexVaultFontFamily =
+    FontFamily(
+        Font(R.font.inter_regular, FontWeight.Normal),
+        Font(R.font.inter_medium, FontWeight.Medium),
+        Font(R.font.inter_semibold, FontWeight.SemiBold),
+        Font(R.font.inter_bold, FontWeight.Bold),
+    )
 
 val NexVaultTypography = Typography(
     displayLarge = TextStyle(

@@ -1,9 +1,11 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.wallet.ImportWalletUseCase
+import com.nexvault.wallet.feature.onboarding.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,14 +37,25 @@ class ImportWalletViewModel @Inject constructor(
         PRIVATE_KEY,
     }
 
+    /**
+     * Validation failure that carries runtime values, so the UI resolves it
+     * from a resource id plus positional arguments.
+     */
+    private data class ValidationError(
+        @StringRes val messageRes: Int,
+        val args: List<Any> = emptyList(),
+    )
+
     data class UiState(
         val importMode: ImportMode = ImportMode.MNEMONIC,
         val mnemonicInput: String = "",
         val privateKeyInput: String = "",
-        val mnemonicError: String? = null,
-        val privateKeyError: String? = null,
+        @StringRes val mnemonicErrorRes: Int? = null,
+        val mnemonicErrorArgs: List<Any> = emptyList(),
+        @StringRes val privateKeyErrorRes: Int? = null,
         val isLoading: Boolean = false,
-        val generalError: String? = null,
+        @StringRes val generalErrorRes: Int? = null,
+        val generalErrorMessage: String? = null,
         val isImportEnabled: Boolean = false,
     )
 
@@ -60,9 +73,11 @@ class ImportWalletViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 importMode = mode,
-                mnemonicError = null,
-                privateKeyError = null,
-                generalError = null,
+                mnemonicErrorRes = null,
+                mnemonicErrorArgs = emptyList(),
+                privateKeyErrorRes = null,
+                generalErrorRes = null,
+                generalErrorMessage = null,
                 isImportEnabled = when (mode) {
                     ImportMode.MNEMONIC -> isValidMnemonicFormat(it.mnemonicInput)
                     ImportMode.PRIVATE_KEY -> isValidPrivateKeyFormat(it.privateKeyInput)
@@ -77,8 +92,10 @@ class ImportWalletViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 mnemonicInput = input,
-                mnemonicError = error,
-                generalError = null,
+                mnemonicErrorRes = error?.messageRes,
+                mnemonicErrorArgs = error?.args ?: emptyList(),
+                generalErrorRes = null,
+                generalErrorMessage = null,
                 isImportEnabled = error == null && isValidMnemonicFormat(trimmed),
             )
         }
@@ -90,8 +107,9 @@ class ImportWalletViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 privateKeyInput = input,
-                privateKeyError = error,
-                generalError = null,
+                privateKeyErrorRes = error,
+                generalErrorRes = null,
+                generalErrorMessage = null,
                 isImportEnabled = error == null && isValidPrivateKeyFormat(trimmed),
             )
         }
@@ -102,7 +120,7 @@ class ImportWalletViewModel @Inject constructor(
         if (currentState.isLoading) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, generalError = null) }
+            _uiState.update { it.copy(isLoading = true, generalErrorRes = null, generalErrorMessage = null) }
 
             val result = when (currentState.importMode) {
                 ImportMode.MNEMONIC -> {
@@ -128,8 +146,8 @@ class ImportWalletViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            generalError = result.message
-                                ?: "Import failed. Please check your input.",
+                            generalErrorRes = R.string.import_wallet_failed,
+                            generalErrorMessage = result.message,
                         )
                     }
                 }
@@ -139,26 +157,29 @@ class ImportWalletViewModel @Inject constructor(
 
     /**
      * Real-time validation for mnemonic input.
-     * Returns error message or null if input is valid so far.
+     * Returns the error resource (with its arguments) or null if input is valid so far.
      * Note: this is format validation, not BIP-39 checksum validation.
      * Full checksum validation happens when the user taps Import.
      */
-    private fun validateMnemonicInput(input: String): String? {
+    private fun validateMnemonicInput(input: String): ValidationError? {
         if (input.isEmpty()) return null
 
         val words = input.split("\\s+".toRegex()).filter { it.isNotEmpty() }
 
         if (words.size > 24) {
-            return "Too many words. Enter 12 or 24 words."
+            return ValidationError(R.string.import_wallet_mnemonic_too_many_words)
         }
 
         val hasInvalidChars = words.any { word -> !word.all { it.isLetter() } }
         if (hasInvalidChars) {
-            return "Words should contain only letters."
+            return ValidationError(R.string.import_wallet_mnemonic_invalid_chars)
         }
 
         if (words.size in 13..23) {
-            return "Enter exactly 12 or 24 words. Currently: ${words.size} words."
+            return ValidationError(
+                messageRes = R.string.import_wallet_mnemonic_wrong_count,
+                args = listOf(words.size),
+            )
         }
 
         return null
@@ -169,20 +190,20 @@ class ImportWalletViewModel @Inject constructor(
         return words.size == 12 || words.size == 24
     }
 
-    private fun validatePrivateKeyInput(input: String): String? {
+    private fun validatePrivateKeyInput(input: String): Int? {
         if (input.isEmpty()) return null
 
         val cleaned = input.removePrefix("0x").removePrefix("0X")
 
         if (cleaned.length > 64) {
-            return "Private key is too long."
+            return R.string.import_wallet_private_key_too_long
         }
 
         val hasInvalidChars = !cleaned.all {
             it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F'
         }
         if (hasInvalidChars && cleaned.isNotEmpty()) {
-            return "Private key must be hexadecimal (0-9, a-f)."
+            return R.string.import_wallet_private_key_not_hex
         }
 
         return null

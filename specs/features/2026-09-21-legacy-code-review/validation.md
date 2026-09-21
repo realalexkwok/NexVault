@@ -11,7 +11,7 @@
 | Task | Scan evidence | Owner sign-off | Status |
 | --- | --- | --- | --- |
 | 1.1 Project scaffolding | 2026-09-21 (A1–A8) + fix verification (V1–V8) | 2026-09-21 | `[x]` |
-| 1.2 Design system & theme | 2026-09-21 (B1–B5) | — | `[?]` |
+| 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
 | 1.3 Security module | — | — | `[ ]` |
 | 1.4 DataStore & preferences | — | — | `[ ]` |
 | 1.5 Domain models & repository interfaces | — | — | `[ ]` |
@@ -137,7 +137,9 @@ tokens" is 12; APK size and gate counts use different measurement bases than the
 
 ### Manual half
 
-Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
+Sign-off: **DONE 2026-09-21** — user-confirmed close per Q9 (fixes verified by the reviewer V1–V12).
+Open findings 1.2-5 (2.0.6), 1.2-6 and 1.2-7 (4.17) remain in the task file's findings table as the
+transfer channel for their owning items.
 
 ## Task 1.3 — Security module
 

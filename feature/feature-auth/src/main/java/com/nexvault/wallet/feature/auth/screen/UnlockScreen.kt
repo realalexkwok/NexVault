@@ -39,17 +39,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.security.biometric.BiometricHelper
 import com.nexvault.wallet.core.ui.components.PinInputField
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.auth.R
 import com.nexvault.wallet.feature.auth.viewmodel.UnlockViewModel
 import kotlin.math.roundToInt
 
@@ -65,6 +68,12 @@ fun UnlockScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = context as? FragmentActivity
+    val promptInfo =
+        biometricHelper.createPromptInfo(
+            title = R.string.unlock_biometric_prompt_title,
+            subtitle = R.string.unlock_biometric_prompt_subtitle,
+            negativeButtonText = R.string.unlock_use_pin,
+        )
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
@@ -82,7 +91,7 @@ fun UnlockScreen(
                     activity?.let { fragActivity ->
                         showBiometricPrompt(
                             activity = fragActivity,
-                            biometricHelper = biometricHelper,
+                            promptInfo = promptInfo,
                             onSuccess = { viewModel.onBiometricSuccess() },
                             onError = { errorMsg -> viewModel.onBiometricError(errorMsg) },
                         )
@@ -103,7 +112,7 @@ fun UnlockScreen(
 
 private fun showBiometricPrompt(
     activity: FragmentActivity,
-    biometricHelper: BiometricHelper,
+    promptInfo: BiometricPrompt.PromptInfo,
     onSuccess: () -> Unit,
     onError: (String?) -> Unit,
 ) {
@@ -129,11 +138,6 @@ private fun showBiometricPrompt(
     }
 
     val biometricPrompt = BiometricPrompt(activity, executor, callback)
-    val promptInfo = biometricHelper.createPromptInfo(
-        title = "Unlock NexVault",
-        subtitle = "Use your fingerprint or face to unlock",
-        negativeButtonText = "Use PIN",
-    )
     biometricPrompt.authenticate(promptInfo)
 }
 
@@ -146,6 +150,12 @@ private fun UnlockScreenContent(
     onShakeAnimationComplete: () -> Unit,
 ) {
     val shakeOffset = remember { Animatable(0f) }
+    val errorArgs = uiState.errorArgs.toTypedArray()
+    val errorText =
+        uiState.errorMessage
+            ?: uiState.errorRes?.let { stringResource(it, *errorArgs) }
+            ?: uiState.errorPluralsRes?.let { pluralStringResource(it, uiState.errorQuantity, *errorArgs) }
+    val hasError = uiState.errorMessage != null || uiState.errorRes != null || uiState.errorPluralsRes != null
 
     LaunchedEffect(uiState.isShakeError) {
         if (uiState.isShakeError) {
@@ -169,14 +179,14 @@ private fun UnlockScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = NexVaultDimens.spacingLg),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacing64))
 
             // App icon placeholder
             Surface(
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier.size(NexVaultDimens.logoSizeSmall),
                 shape = MaterialTheme.shapes.large,
                 color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -190,41 +200,41 @@ private fun UnlockScreenContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
 
             Text(
-                text = "NexVault",
+                text = stringResource(R.string.unlock_brand_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
 
             Text(
                 text = if (uiState.isLockedOut) {
-                    "Locked out"
+                    stringResource(R.string.unlock_locked_out)
                 } else {
-                    "Enter your PIN to unlock"
+                    stringResource(R.string.unlock_enter_pin)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
             // Error message
             AnimatedVisibility(
-                visible = uiState.error != null,
+                visible = hasError,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
                 Text(
-                    text = uiState.error ?: "",
+                    text = errorText.orEmpty(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    modifier = Modifier.padding(bottom = NexVaultDimens.spacingSm),
                 )
             }
 
@@ -236,18 +246,18 @@ private fun UnlockScreenContent(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Try again in",
+                        text = stringResource(R.string.unlock_try_again_in),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
                     Text(
                         text = "${uiState.lockoutRemainingSeconds}s",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.error,
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
                 }
             }
 
@@ -269,17 +279,17 @@ private fun UnlockScreenContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 32.dp),
+                        .padding(vertical = NexVaultDimens.spacingXl),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingMd)) {
                         repeat(PIN_LENGTH) {
                             Box(
                                 modifier = Modifier
-                                    .size(16.dp)
+                                    .size(NexVaultDimens.spacingMd)
                                     .clip(CircleShape)
                                     .border(
-                                        width = 1.5.dp,
+                                        width = NexVaultDimens.borderWidthEmphasis,
                                         color = MaterialTheme.colorScheme.outline,
                                         shape = CircleShape,
                                     )
@@ -297,19 +307,19 @@ private fun UnlockScreenContent(
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp),
+                    modifier = Modifier.padding(bottom = NexVaultDimens.spacingMd),
                 ) {
                     IconButton(onClick = onBiometricRequested) {
                         Icon(
                             imageVector = Icons.Default.Fingerprint,
-                            contentDescription = "Use Biometric",
+                            contentDescription = stringResource(R.string.unlock_use_biometric),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier.size(NexVaultDimens.spacingXl),
                         )
                     }
                     TextButton(onClick = onBiometricRequested) {
                         Text(
-                            text = "Use Biometric",
+                            text = stringResource(R.string.unlock_use_biometric),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary,
                         )
@@ -317,7 +327,7 @@ private fun UnlockScreenContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
         }
 
         // Verification overlay
@@ -328,7 +338,7 @@ private fun UnlockScreenContent(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(NexVaultDimens.iconSizeXl),
                     )
                 }
             }
@@ -361,7 +371,8 @@ private fun UnlockScreenErrorPreview() {
         UnlockScreenContent(
             uiState = UnlockViewModel.UiState(
                 pin = "",
-                error = "Incorrect PIN. 2 attempts remaining.",
+                errorPluralsRes = R.plurals.unlock_incorrect_pin_attempts,
+                errorQuantity = 2,
                 failedAttempts = 3,
                 isBiometricAvailable = true,
                 isBiometricEnabled = true,
@@ -384,7 +395,7 @@ private fun UnlockScreenLockedOutPreview() {
                 isLockedOut = true,
                 lockoutRemainingSeconds = 22,
                 failedAttempts = 5,
-                error = "Too many attempts. Please wait.",
+                errorRes = R.string.unlock_too_many_attempts,
                 isBiometricAvailable = false,
                 isBiometricEnabled = false,
             ),

@@ -13,7 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
@@ -68,8 +69,21 @@ fun NexVaultTextField(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                modifier = Modifier.padding(start = NexVaultDimens.spacingMd, top = NexVaultDimens.spacingXs),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NexVaultTextFieldPreview() {
+    ThemePreviewWrapper {
+        NexVaultTextField(
+            value = "0.5",
+            onValueChange = {},
+            label = "Amount",
+            placeholder = "0.0",
+        )
     }
 }

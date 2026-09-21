@@ -18,16 +18,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
 @Composable
 fun ShimmerPlaceholder(
     modifier: Modifier = Modifier,
-    width: Dp = 100.dp,
-    height: Dp = 16.dp,
-    cornerRadius: Dp = 4.dp,
+    width: Dp = NexVaultDimens.skeletonBlockWidthMedium,
+    height: Dp = NexVaultDimens.spacingMd,
+    cornerRadius: Dp = NexVaultDimens.cornerRadiusXSmall,
 ) {
     val colors = NexVaultTheme.colors
 
@@ -64,4 +67,12 @@ fun ShimmerPlaceholder(
             .clip(RoundedCornerShape(cornerRadius))
             .background(brush)
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ShimmerPlaceholderPreview() {
+    ThemePreviewWrapper {
+        ShimmerPlaceholder(width = 200.dp, height = 20.dp, cornerRadius = 8.dp)
+    }
 }

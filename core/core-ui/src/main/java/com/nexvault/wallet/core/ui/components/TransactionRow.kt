@@ -24,13 +24,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
+import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import com.nexvault.wallet.core.ui.util.formatTimestamp
 import com.nexvault.wallet.core.ui.util.formatTransactionAmount
 import com.nexvault.wallet.core.ui.util.truncateAddress
 import com.nexvault.wallet.domain.model.transaction.Transaction
 import com.nexvault.wallet.domain.model.transaction.TransactionStatus
 import com.nexvault.wallet.domain.model.transaction.TransactionType
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * One row for a transaction in a list (token detail or history).
@@ -59,9 +64,9 @@ fun TransactionRow(
 
     val iconTint: Color = when {
         isFailed -> MaterialTheme.colorScheme.onSurfaceVariant
-        isSwap -> Color(0xFF2196F3)
+        isSwap -> NexVaultTheme.colors.info
         isSend -> MaterialTheme.colorScheme.error
-        else -> Color(0xFF4CAF50)
+        else -> NexVaultTheme.colors.positive
     }
 
     val amountPrefix = when {
@@ -73,12 +78,12 @@ fun TransactionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing10),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(NexVaultDimens.tokenIconSize)
                 .clip(CircleShape)
                 .background(iconTint.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center,
@@ -87,11 +92,11 @@ fun TransactionRow(
                 imageVector = icon,
                 contentDescription = transaction.type.name,
                 tint = iconTint,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(NexVaultDimens.iconSizeSmall),
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(NexVaultDimens.spacing12))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -136,5 +141,33 @@ fun TransactionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TransactionRowPreview() {
+    ThemePreviewWrapper {
+        TransactionRow(
+            transaction =
+                Transaction(
+                    txHash = "0x9f2c4d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d",
+                    chainId = 1,
+                    fromAddress = "0xDc6D56BfFA21b1E9bb3C6B02F7c7cC071d351BEe",
+                    toAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                    value = BigDecimal("1.2345"),
+                    gasUsed = BigInteger.valueOf(21_000),
+                    gasPrice = BigInteger.valueOf(20_000_000_000),
+                    tokenSymbol = "ETH",
+                    tokenContractAddress = null,
+                    tokenDecimals = 18,
+                    blockNumber = 20_000_000,
+                    timestamp = 1_756_000_000_000,
+                    status = TransactionStatus.CONFIRMED,
+                    type = TransactionType.SEND,
+                ),
+            tokenSymbol = "ETH",
+            tokenDecimals = 18,
+        )
     }
 }

@@ -60,7 +60,8 @@ class CreateWalletViewModelTest {
         assertEquals(12, state.mnemonicWords.size)
         assertEquals("abc", state.walletId)
         assertFalse(state.isLoading)
-        assertNull(state.error)
+        assertNull(state.errorRes)
+        assertNull(state.errorMessage)
     }
 
     @Test
@@ -75,7 +76,7 @@ class CreateWalletViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertTrue(state.error?.contains("Encryption failed") == true)
+        assertTrue(state.errorMessage?.contains("Encryption failed") == true)
         assertFalse(state.isLoading)
         assertTrue(state.mnemonicWords.isEmpty())
     }
@@ -148,13 +149,14 @@ class CreateWalletViewModelTest {
 
         advanceUntilIdle()
 
-        assertTrue(viewModel.uiState.value.error != null)
+        assertTrue(viewModel.uiState.value.errorMessage != null)
 
         viewModel.onRetryClicked()
 
         advanceUntilIdle()
 
-        assertNull(viewModel.uiState.value.error)
+        assertNull(viewModel.uiState.value.errorRes)
+        assertNull(viewModel.uiState.value.errorMessage)
         assertEquals(2, callCount)
     }
 }

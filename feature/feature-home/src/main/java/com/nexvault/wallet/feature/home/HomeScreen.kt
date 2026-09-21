@@ -41,21 +41,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.ChainSelectorDropdown
 import com.nexvault.wallet.core.ui.components.NexVaultCard
 import com.nexvault.wallet.core.ui.components.SimpleLineChart
 import com.nexvault.wallet.core.ui.components.TokenIcon
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.util.formatFiatValue
 import com.nexvault.wallet.core.ui.util.formatTokenBalance
 import com.nexvault.wallet.core.ui.mapper.toChainUi
 import com.nexvault.wallet.domain.model.chain.Chain
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
+import com.nexvault.wallet.feature.home.R
 import java.math.BigDecimal
 
 /**
@@ -72,11 +75,16 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val errorText =
+        uiState.errorMessage
+            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
+            ?: uiState.errorPluralsRes?.let {
+                pluralStringResource(it, uiState.errorQuantity, *uiState.errorArgs.toTypedArray())
+            }
 
-    LaunchedEffect(uiState.error) {
-        val msg = uiState.error
-        if (msg != null) {
-            snackbarHostState.showSnackbar(msg)
+    LaunchedEffect(errorText) {
+        if (errorText != null) {
+            snackbarHostState.showSnackbar(errorText)
             viewModel.onErrorDismissed()
         }
     }
@@ -84,7 +92,7 @@ fun HomeScreen(
     if (uiState.showAddTokenDialog) {
         AddTokenDialog(
             isLoading = uiState.addTokenLoading,
-            error = uiState.addTokenError,
+            errorRes = uiState.addTokenErrorRes,
             onConfirm = { viewModel.onAddCustomToken(it) },
             onDismiss = { viewModel.onDismissAddTokenDialog() },
         )
@@ -102,7 +110,7 @@ fun HomeScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp),
+                contentPadding = PaddingValues(bottom = NexVaultDimens.spacingMd),
             ) {
                 item(key = "chain_selector") {
                     ChainSelectorHeader(
@@ -136,23 +144,23 @@ fun HomeScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Tokens",
+                            text = stringResource(R.string.home_tokens_header),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
                         TextButton(onClick = { viewModel.onShowAddTokenDialog() }) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Add token",
-                                modifier = Modifier.size(18.dp),
+                                contentDescription = stringResource(R.string.home_add_token_icon_description),
+                                modifier = Modifier.size(NexVaultDimens.iconSizeXs),
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Token")
+                            Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
+                            Text(stringResource(R.string.home_add_token))
                         }
                     }
                 }
@@ -177,11 +185,11 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(32.dp),
+                                .padding(NexVaultDimens.spacingXl),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = "No tokens yet. Pull to refresh.",
+                                text = stringResource(R.string.home_empty_tokens),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -203,7 +211,7 @@ private fun ChainSelectorHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
     ) {
         ChainSelectorDropdown(
             selectedChain = chain.toChainUi(),
@@ -222,22 +230,22 @@ private fun PortfolioBalanceSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Total Balance",
+            text = stringResource(R.string.home_total_balance),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
         if (isLoading && totalFiatValue == 0.0) {
             Box(
                 modifier = Modifier
-                    .width(160.dp)
-                    .height(40.dp)
-                    .padding(4.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .width(NexVaultDimens.skeletonBlockWidthWide)
+                    .height(NexVaultDimens.skeletonBlockHeightLarge)
+                    .padding(NexVaultDimens.spacingXs)
+                    .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusSmall))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             )
         } else {
@@ -247,7 +255,7 @@ private fun PortfolioBalanceSection(
                 fontWeight = FontWeight.Bold,
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
         val changeColor = when {
             change24hPercent > 0 -> MaterialTheme.colorScheme.primary
             change24hPercent < 0 -> MaterialTheme.colorScheme.error
@@ -271,12 +279,12 @@ private fun PortfolioChartSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(NexVaultDimens.spacingMd),
     ) {
         NexVaultCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp),
+                .height(NexVaultDimens.chartHeight),
         ) {
             if (chartData.isEmpty()) {
                 Box(
@@ -284,7 +292,7 @@ private fun PortfolioChartSection(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Loading chart...",
+                        text = stringResource(R.string.home_chart_loading),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -297,8 +305,15 @@ private fun PortfolioChartSection(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        val ranges = listOf(1 to "1D", 7 to "7D", 30 to "1M", 90 to "3M", 365 to "ALL")
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
+        val ranges =
+            listOf(
+                1 to stringResource(R.string.home_chart_range_1d),
+                7 to stringResource(R.string.home_chart_range_7d),
+                30 to stringResource(R.string.home_chart_range_1m),
+                90 to stringResource(R.string.home_chart_range_3m),
+                365 to stringResource(R.string.home_chart_range_all),
+            )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -324,22 +339,22 @@ private fun QuickActionsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         QuickActionButton(
             icon = Icons.Default.ArrowUpward,
-            label = "Send",
+            label = stringResource(R.string.home_action_send),
             onClick = onSend,
         )
         QuickActionButton(
             icon = Icons.Default.ArrowDownward,
-            label = "Receive",
+            label = stringResource(R.string.home_action_receive),
             onClick = onReceive,
         )
         QuickActionButton(
             icon = Icons.Default.SwapHoriz,
-            label = "Swap",
+            label = stringResource(R.string.home_action_swap),
             onClick = onSwap,
         )
     }
@@ -356,11 +371,11 @@ private fun QuickActionButton(
     ) {
         FilledTonalIconButton(
             onClick = onClick,
-            modifier = Modifier.size(56.dp),
+            modifier = Modifier.size(NexVaultDimens.actionButtonSize),
         ) {
             Icon(imageVector = icon, contentDescription = label)
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
@@ -378,15 +393,15 @@ fun TokenRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TokenIcon(
             imageUrl = token.logoUrl,
             symbol = token.symbol,
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(NexVaultDimens.tokenIconSize),
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(NexVaultDimens.spacing12))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = token.name,
@@ -414,7 +429,7 @@ fun TokenRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 token.priceChange24h?.let { change ->
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
                     val changeColor = if (change >= 0) {
                         MaterialTheme.colorScheme.primary
                     } else {
@@ -437,30 +452,30 @@ private fun TokenRowShimmer() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(NexVaultDimens.tokenIconSize)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(NexVaultDimens.spacing12))
         Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier
-                    .width(100.dp)
-                    .height(16.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .width(NexVaultDimens.skeletonBlockWidthMedium)
+                    .height(NexVaultDimens.spacingMd)
+                    .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusXSmall))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
             Box(
                 modifier = Modifier
-                    .width(60.dp)
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .width(NexVaultDimens.skeletonBlockWidth)
+                    .height(NexVaultDimens.skeletonBlockHeight)
+                    .clip(RoundedCornerShape(NexVaultDimens.cornerRadiusXSmall))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             )
         }

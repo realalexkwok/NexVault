@@ -1,5 +1,7 @@
 package com.nexvault.wallet.feature.tokens
 
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
 import com.nexvault.wallet.domain.model.transaction.Transaction
@@ -14,7 +16,11 @@ import com.nexvault.wallet.domain.model.transaction.Transaction
  * @param recentTransactions Recent transactions for this token.
  * @param isLoading Initial token observation not yet completed.
  * @param isRefreshing Pull-to-refresh in progress.
- * @param error Optional user-visible error when the token cannot be shown.
+ * @param errorRes Static error text when the token cannot be shown.
+ * @param errorPluralsRes Plural error text; used when [errorRes] is null.
+ * @param errorQuantity Quantity for [errorPluralsRes].
+ * @param errorArgs Positional args for [errorRes] or [errorPluralsRes].
+ * @param errorMessage Dynamic error text; wins over the resource fields when non-null.
  */
 data class TokenDetailUiState(
     val token: Token? = null,
@@ -24,5 +30,9 @@ data class TokenDetailUiState(
     val recentTransactions: List<Transaction> = emptyList(),
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
-    val error: String? = null,
+    @StringRes val errorRes: Int? = null,
+    @PluralsRes val errorPluralsRes: Int? = null,
+    val errorQuantity: Int = 0,
+    val errorArgs: List<Any> = emptyList(),
+    val errorMessage: String? = null,
 )

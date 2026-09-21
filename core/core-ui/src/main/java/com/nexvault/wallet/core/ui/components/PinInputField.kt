@@ -27,9 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import com.nexvault.wallet.core.ui.theme.NexVaultColors
+import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
 /**
@@ -62,7 +63,7 @@ fun PinInputField(
             modifier = modifier,
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
 
         NumericKeypad(
             onDigitClick = onDigitClick,
@@ -90,7 +91,7 @@ private fun PinDotRow(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingMd),
     ) {
         repeat(pinLength) { index ->
             PinDot(
@@ -128,11 +129,11 @@ private fun PinDot(
 
     Box(
         modifier = modifier
-            .size(16.dp)
+            .size(NexVaultDimens.iconSizeXxs)
             .clip(CircleShape)
             .background(dotColor)
             .border(
-                width = 1.5.dp,
+                width = NexVaultDimens.borderWidthEmphasis,
                 color = borderColor,
                 shape = CircleShape,
             ),
@@ -154,7 +155,7 @@ private fun NumericKeypad(
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(NexVaultDimens.spacing12),
     ) {
         // Row 1: 1, 2, 3
         Row(
@@ -200,7 +201,7 @@ private fun NumericKeypad(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Box(modifier = Modifier.size(72.dp))
+            Box(modifier = Modifier.size(NexVaultDimens.pinKeySize))
 
             KeypadDigit(
                 digit = 0,
@@ -226,7 +227,7 @@ private fun KeypadDigit(
 
     Surface(
         modifier = modifier
-            .size(72.dp)
+            .size(NexVaultDimens.pinKeySize)
             .clip(CircleShape)
             .clickable(
                 interactionSource = interactionSource,
@@ -241,7 +242,7 @@ private fun KeypadDigit(
         ) {
             Text(
                 text = digit.toString(),
-                fontSize = 28.sp,
+                fontSize = NexVaultDimens.pinDigitTextSize,
                 fontWeight = FontWeight.Medium,
                 color = colors.textHigh,
             )
@@ -262,7 +263,7 @@ private fun KeypadBackspace(
 
     Surface(
         modifier = modifier
-            .size(72.dp)
+            .size(NexVaultDimens.pinKeySize)
             .clip(CircleShape)
             .clickable(
                 interactionSource = interactionSource,
@@ -279,8 +280,20 @@ private fun KeypadBackspace(
                 imageVector = Icons.AutoMirrored.Filled.Backspace,
                 contentDescription = "Backspace",
                 tint = colors.textHigh,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(NexVaultDimens.iconSizeMedium),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PinInputFieldPreview() {
+    ThemePreviewWrapper {
+        PinInputField(
+            onDigitClick = {},
+            onBackspaceClick = {},
+            filledCount = 3,
+        )
     }
 }

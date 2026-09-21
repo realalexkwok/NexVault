@@ -3,6 +3,7 @@ package com.nexvault.wallet.feature.onboarding.viewmodel
 import com.nexvault.wallet.domain.model.auth.WalletCreationResult
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.wallet.ImportWalletUseCase
+import com.nexvault.wallet.feature.onboarding.R
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -32,25 +33,27 @@ class ImportWalletViewModelTest {
         assertEquals(ImportWalletViewModel.ImportMode.MNEMONIC, state.importMode)
         assertEquals("", state.mnemonicInput)
         assertEquals("", state.privateKeyInput)
-        assertNull(state.mnemonicError)
-        assertNull(state.privateKeyError)
+        assertNull(state.mnemonicErrorRes)
+        assertNull(state.privateKeyErrorRes)
         assertFalse(state.isLoading)
-        assertNull(state.generalError)
+        assertNull(state.generalErrorRes)
+        assertNull(state.generalErrorMessage)
         assertFalse(state.isImportEnabled)
     }
 
     @Test
     fun modeSwitchClearsErrors() {
         viewModel.onMnemonicInputChanged("word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12")
-        assertTrue(viewModel.uiState.value.mnemonicError != null)
+        assertTrue(viewModel.uiState.value.mnemonicErrorRes != null)
 
         viewModel.onImportModeChanged(ImportWalletViewModel.ImportMode.PRIVATE_KEY)
 
         val state = viewModel.uiState.value
         assertEquals(ImportWalletViewModel.ImportMode.PRIVATE_KEY, state.importMode)
-        assertNull(state.mnemonicError)
-        assertNull(state.privateKeyError)
-        assertNull(state.generalError)
+        assertNull(state.mnemonicErrorRes)
+        assertNull(state.privateKeyErrorRes)
+        assertNull(state.generalErrorRes)
+        assertNull(state.generalErrorMessage)
     }
 
     @Test
@@ -59,7 +62,7 @@ class ImportWalletViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state.isImportEnabled)
-        assertNull(state.mnemonicError)
+        assertNull(state.mnemonicErrorRes)
     }
 
     @Test
@@ -68,7 +71,7 @@ class ImportWalletViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state.isImportEnabled)
-        assertNull(state.mnemonicError)
+        assertNull(state.mnemonicErrorRes)
     }
 
     @Test
@@ -85,7 +88,7 @@ class ImportWalletViewModelTest {
         viewModel.onMnemonicInputChanged("word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12")
 
         val state = viewModel.uiState.value
-        assertTrue(state.mnemonicError?.contains("only letters") == true)
+        assertEquals(R.string.import_wallet_mnemonic_invalid_chars, state.mnemonicErrorRes)
         assertFalse(state.isImportEnabled)
     }
 
@@ -95,7 +98,7 @@ class ImportWalletViewModelTest {
         viewModel.onMnemonicInputChanged(tooMany)
 
         val state = viewModel.uiState.value
-        assertTrue(state.mnemonicError?.contains("Too many words") == true)
+        assertEquals(R.string.import_wallet_mnemonic_too_many_words, state.mnemonicErrorRes)
     }
 
     @Test
@@ -107,7 +110,7 @@ class ImportWalletViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state.isImportEnabled)
-        assertNull(state.privateKeyError)
+        assertNull(state.privateKeyErrorRes)
     }
 
     @Test
