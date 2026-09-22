@@ -4,11 +4,14 @@ import com.nexvault.wallet.core.datastore.model.AutoLockTimeout
 import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
 import com.nexvault.wallet.core.datastore.wallet.WalletMetadataDataStore
+import com.nexvault.wallet.core.security.keystore.KeyStoreManager
+import com.nexvault.wallet.core.security.wallet.WalletStore
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,6 +23,8 @@ class AppStateManagerTest {
     private lateinit var userPreferences: UserPreferencesDataStore
     private lateinit var securityPreferences: SecurityPreferencesDataStore
     private lateinit var walletMetadata: WalletMetadataDataStore
+    private lateinit var walletStore: WalletStore
+    private lateinit var keyStoreManager: KeyStoreManager
     private lateinit var appStateManager: AppStateManager
 
     @Before
@@ -27,6 +32,8 @@ class AppStateManagerTest {
         userPreferences = mockk(relaxed = true)
         securityPreferences = mockk(relaxed = true)
         walletMetadata = mockk(relaxed = true)
+        walletStore = mockk(relaxed = true)
+        keyStoreManager = mockk(relaxed = true)
 
         every { userPreferences.autoLockTimeout } returns flowOf(AutoLockTimeout.FIVE_MINUTES)
         every { securityPreferences.isWalletSetUp } returns flowOf(true)
@@ -37,16 +44,10 @@ class AppStateManagerTest {
         appStateManager = AppStateManager(
             userPreferences = userPreferences,
             securityPreferences = securityPreferences,
-            walletMetadata = walletMetadata
+            walletMetadata = walletMetadata,
+            walletStore = walletStore,
+            keyStoreManager = keyStoreManager
         )
-    }
-
-    @Test
-    fun progressiveLockout_after4Failures_noLockout() {
-        val result = appStateManager.run {
-            // Test at 4 attempts - no lockout
-            assert(true) // This is a placeholder, actual logic tested in test methods
-        }
     }
 
     @Test
@@ -102,13 +103,25 @@ class AppStateManagerTest {
     }
 
     @Test
-    fun onAuthenticationFailure_after20Failures_walletWiped() = runTest {
-        every { securityPreferences.failedAttemptCount } returns flowOf(19)
+    fun onAuthenticationFailure_wipesWalletAt20AttemptsAndNotBefore() = runTest {
+        // 19 attempts: escalation only, nothing is destroyed.
+        every { securityPreferences.failedAttemptCount } returns flowOf(18)
+        coEvery { securityPreferences.incrementFailedAttempts() } returns 19
+
+        assertTrue(appStateManager.onAuthenticationFailure() is AuthFailureResult.Warning)
+        coVerify(exactly = 0) { walletStore.wipeAll() }
+        verify(exactly = 0) { keyStoreManager.deleteAllKeys() }
+        coVerify(exactly = 0) { securityPreferences.clearAll() }
+
+        // 20 attempts: terminal state — the wallet is really wiped, not just locked out.
         coEvery { securityPreferences.incrementFailedAttempts() } returns 20
 
-        val result = appStateManager.onAuthenticationFailure()
-
-        assertTrue(result is AuthFailureResult.WalletWiped)
+        assertTrue(appStateManager.onAuthenticationFailure() is AuthFailureResult.WalletWiped)
+        coVerify { walletStore.wipeAll() }
+        verify { keyStoreManager.deleteAllKeys() }
+        coVerify { userPreferences.clearAll() }
+        coVerify { securityPreferences.clearAll() }
+        coVerify { walletMetadata.clearAll() }
     }
 
     @Test

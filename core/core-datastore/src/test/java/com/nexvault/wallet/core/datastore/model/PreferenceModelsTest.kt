@@ -19,9 +19,9 @@ class PreferenceModelsTest {
         val values = NetworkType.entries
         assertEquals(4, values.size)
         assert(NetworkType.MAINNET in values)
-        assert(NetworkType.GOERLI in values)
         assert(NetworkType.SEPOLIA in values)
-        assert(NetworkType.CUSTOM in values)
+        assert(NetworkType.BSC in values)
+        assert(NetworkType.POLYGON in values)
     }
 
     @Test

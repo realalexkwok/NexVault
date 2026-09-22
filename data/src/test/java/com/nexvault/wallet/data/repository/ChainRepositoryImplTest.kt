@@ -8,6 +8,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -56,7 +57,24 @@ class ChainRepositoryImplTest {
         val result = repository.setSelectedChain(56)
 
         assertTrue(result is DataResult.Success)
-        coVerify { userPreferences.setSelectedNetwork(NetworkType.MAINNET) }
+        // BSC (56) must persist as its own network type — it used to collapse to MAINNET,
+        // which broke AC-2.1 (selection survives restart) for BSC and Polygon.
+        coVerify { userPreferences.setSelectedNetwork(NetworkType.BSC) }
+    }
+
+    @Test
+    fun setSelectedChain_bscAndPolygonRoundTripThroughStorage() = runTest {
+        listOf(56 to NetworkType.BSC, 137 to NetworkType.POLYGON).forEach { (chainId, networkType) ->
+            val stored = slot<NetworkType>()
+            coEvery { userPreferences.setSelectedNetwork(capture(stored)) } returns Unit
+            every { userPreferences.selectedNetwork } returns flowOf(networkType)
+
+            repository.setSelectedChain(chainId)
+            val chain = repository.getSelectedChain().first()
+
+            assertEquals(networkType, stored.captured)
+            assertEquals(chainId, chain.chainId)
+        }
     }
 
     @Test

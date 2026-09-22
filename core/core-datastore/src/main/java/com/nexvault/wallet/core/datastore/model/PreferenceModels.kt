@@ -6,11 +6,18 @@ enum class ThemeMode {
     SYSTEM
 }
 
+/**
+ * Networks that can be persisted as the selected chain.
+ *
+ * Mirrors the four supported chains (Ethereum mainnet, Sepolia, BNB Smart Chain, Polygon) so
+ * the selection round-trips through storage. Values that no longer exist — e.g. a legacy
+ * GOERLI or CUSTOM entry — degrade to [MAINNET] when read.
+ */
 enum class NetworkType {
     MAINNET,
-    GOERLI,
     SEPOLIA,
-    CUSTOM
+    BSC,
+    POLYGON
 }
 
 enum class AutoLockTimeout(val seconds: Long) {

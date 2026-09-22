@@ -13,8 +13,8 @@ object ChainMapper {
         return when (type) {
             NetworkType.MAINNET -> SupportedChains.ETHEREUM_MAINNET.chainId
             NetworkType.SEPOLIA -> SupportedChains.ETHEREUM_SEPOLIA.chainId
-            NetworkType.GOERLI -> SupportedChains.ETHEREUM_SEPOLIA.chainId // Goerli deprecated, use Sepolia
-            NetworkType.CUSTOM -> SupportedChains.ETHEREUM_MAINNET.chainId // Default fallback
+            NetworkType.BSC -> SupportedChains.BSC_MAINNET.chainId
+            NetworkType.POLYGON -> SupportedChains.POLYGON_MAINNET.chainId
         }
     }
 
@@ -22,9 +22,9 @@ object ChainMapper {
         return when (chainId) {
             SupportedChains.ETHEREUM_MAINNET.chainId -> NetworkType.MAINNET
             SupportedChains.ETHEREUM_SEPOLIA.chainId -> NetworkType.SEPOLIA
-            SupportedChains.BSC_MAINNET.chainId -> NetworkType.MAINNET
-            SupportedChains.POLYGON_MAINNET.chainId -> NetworkType.MAINNET
-            else -> NetworkType.CUSTOM
+            SupportedChains.BSC_MAINNET.chainId -> NetworkType.BSC
+            SupportedChains.POLYGON_MAINNET.chainId -> NetworkType.POLYGON
+            else -> NetworkType.MAINNET // Unsupported chains fall back to Ethereum mainnet
         }
     }
 

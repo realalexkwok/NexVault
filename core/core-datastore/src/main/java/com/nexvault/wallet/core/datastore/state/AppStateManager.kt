@@ -1,23 +1,17 @@
 package com.nexvault.wallet.core.datastore.state
 
 import com.nexvault.wallet.core.datastore.model.AutoLockTimeout
-import com.nexvault.wallet.core.datastore.model.NetworkType
 import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
 import com.nexvault.wallet.core.datastore.wallet.WalletMetadataDataStore
+import com.nexvault.wallet.core.security.keystore.KeyStoreManager
+import com.nexvault.wallet.core.security.wallet.WalletStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
-
-data class WalletDisplayInfo(
-    val walletName: String,
-    val accountName: String,
-    val address: String,
-    val network: NetworkType
-)
 
 sealed class AuthFailureResult {
     data class TemporaryLockout(val seconds: Long, val attemptCount: Int) : AuthFailureResult()
@@ -30,14 +24,16 @@ sealed class AuthFailureResult {
 class AppStateManager @Inject constructor(
     private val userPreferences: UserPreferencesDataStore,
     private val securityPreferences: SecurityPreferencesDataStore,
-    private val walletMetadata: WalletMetadataDataStore
+    private val walletMetadata: WalletMetadataDataStore,
+    private val walletStore: WalletStore,
+    private val keyStoreManager: KeyStoreManager
 ) {
     companion object {
         private const val LOCKOUT_5_ATTEMPTS = 30L
         private const val LOCKOUT_8_ATTEMPTS = 300L
         private const val LOCKOUT_10_ATTEMPTS = 900L
         private const val LOCKOUT_15_ATTEMPTS = 3600L
-        private const val LOCKOUT_20_ATTEMPTS = -1
+        private const val WIPE_ATTEMPT_THRESHOLD = 20
     }
 
     val isFirstRun: Flow<Boolean> = combine(
@@ -89,20 +85,6 @@ class AppStateManager @Inject constructor(
         }
     }
 
-    val currentWalletDisplayInfo: Flow<WalletDisplayInfo?> = combine(
-        walletMetadata.wallets,
-        userPreferences.selectedNetwork
-    ) { wallets, network ->
-        val activeWallet = wallets.find { it.isActive } ?: return@combine null
-
-        WalletDisplayInfo(
-            walletName = activeWallet.name,
-            accountName = "Account 1",
-            address = "",
-            network = network
-        )
-    }
-
     suspend fun onAuthenticationSuccess() {
         securityPreferences.resetFailedAttempts()
         securityPreferences.setLockoutEndTime(0L)
@@ -113,18 +95,9 @@ class AppStateManager @Inject constructor(
         val newCount = securityPreferences.incrementFailedAttempts()
         val currentTime = System.currentTimeMillis()
 
-        val lockoutSeconds = when {
-            newCount >= 20 -> LOCKOUT_20_ATTEMPTS
-            newCount >= 15 -> LOCKOUT_15_ATTEMPTS
-            newCount >= 10 -> LOCKOUT_10_ATTEMPTS
-            newCount >= 8 -> LOCKOUT_8_ATTEMPTS
-            newCount >= 5 -> LOCKOUT_5_ATTEMPTS
-            else -> 0L
-        }
-
         return when {
-            newCount >= 20 -> {
-                securityPreferences.setLockoutEndTime(0L)
+            newCount >= WIPE_ATTEMPT_THRESHOLD -> {
+                wipeWallet()
                 AuthFailureResult.WalletWiped
             }
             newCount >= 15 -> {
@@ -181,6 +154,16 @@ class AppStateManager @Inject constructor(
                 elapsedSeconds > autoLockTimeout.seconds
             }
         }
+    }
+
+    // Terminal state after WIPE_ATTEMPT_THRESHOLD failed attempts: destroy the wallet rather
+    // than merely locking it out. Encrypted material, KeyStore keys and every DataStore are
+    // cleared — including the failed-attempt counter and the wallet-set-up flag — so the app
+    // restarts in onboarding with no wallet and no credentials.
+    private suspend fun wipeWallet() {
+        walletStore.wipeAll()
+        keyStoreManager.deleteAllKeys()
+        resetApp()
     }
 
     suspend fun resetApp() {
