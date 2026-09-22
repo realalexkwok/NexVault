@@ -12,7 +12,7 @@
 | --- | --- | --- | --- |
 | 1.1 Project scaffolding | 2026-09-21 (A1–A8) + fix verification (V1–V8) | 2026-09-21 | `[x]` |
 | 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
-| 1.3 Security module | 2026-09-21 (S1–S6) | — | `[?]` |
+| 1.3 Security module | 2026-09-21 (S1–S6) + fix verification (V1–V8) | 2026-09-22 | `[x]` |
 | 1.4 DataStore & preferences | — | — | `[ ]` |
 | 1.5 Domain models & repository interfaces | — | — | `[ ]` |
 | 1.6 Data layer | — | — | `[ ]` |
@@ -187,7 +187,8 @@ planning knows `checksumAddress` is now EIP-55-correct and available for display
 
 ### Manual half
 
-Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
+Sign-off: **DONE 2026-09-22** — user-confirmed close per Q9 (fixes verified by the reviewer V1–V8,
+device run included per owner).
 
 ## Task 1.4 — DataStore & preferences
 
