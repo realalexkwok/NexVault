@@ -13,7 +13,7 @@
 | 1.1 Project scaffolding | 2026-09-21 (A1–A8) + fix verification (V1–V8) | 2026-09-21 | `[x]` |
 | 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
 | 1.3 Security module | 2026-09-21 (S1–S6) + fix verification (V1–V8) | 2026-09-22 | `[x]` |
-| 1.4 DataStore & preferences | 2026-09-22 (D1–D5) | — | `[?]` |
+| 1.4 DataStore & preferences | 2026-09-22 (D1–D5) + fix verification (V1–V7) | 2026-09-22 | `[x]` |
 | 1.5 Domain models & repository interfaces | — | — | `[ ]` |
 | 1.6 Data layer | — | — | `[ ]` |
 | 1.7 Onboarding | — | — | `[ ]` |
@@ -232,7 +232,8 @@ sweep only covered `feature/`).
 
 ### Manual half
 
-Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
+Sign-off: **DONE 2026-09-22** — user-confirmed close per Q9 (fixes verified by the reviewer V1–V7,
+clean-device run included). Open finding 1.4-4 (4.17) remains in the task file's findings table.
 
 ## Task 1.5 — Domain models & repository interfaces
 
