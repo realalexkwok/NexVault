@@ -208,7 +208,7 @@ device run included per owner).
 
 | ID | Severity | Owning roadmap item |
 | --- | --- | --- |
-| 1.4-1 | High | 4.7 + owner decision (wipe vs permanent-lock) |
+| 1.4-1 | High | 4.7 — **owner decision 2026-09-22: wipe at 20 attempts** |
 | 1.4-2 | Low | proposed new Phase 4 item (display-info cleanup) |
 | 1.4-3 | High | 2.3 (chain-management CR task) |
 
