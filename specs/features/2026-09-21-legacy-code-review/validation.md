@@ -143,7 +143,8 @@ transfer channel for their owning items.
 
 ## Task 1.3 — Security module
 
-> Status: **SCAN COMPLETE 2026-09-21 — 5 findings recorded (1.3-1 … 1.3-5) — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-22 — all 5 findings verified-fixed (rows deleted)
+> — ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -157,19 +158,36 @@ transfer channel for their owning items.
 | S6 | Test-vector strength | read `HDKeyManagerTest.kt:14–26` | canonical mnemonic vector but format-only assertion → **1.3-5**; also `KeyStoreManager.isStrongBoxAvailable` orphan key → **1.3-4** |
 | — | Warnings | fresh run log | no compiler warnings (C11 ✓) |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer commit `eb00e49` re-checked by the reviewer (2026-09-22)
 
-| ID | Severity | Owning roadmap item |
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | 1.3-1 Keccak-256 + EIP-55 | read `SecurityUtils.kt:78–100` + `SecurityUtilsTest.kt:87–113` | `Hash.sha3` (web3j Keccak-256) replaces `MessageDigest` SHA3-256; per-char nibble `(i % 2 == 0 → high else low)`, uppercase iff `>= 8`; `MessageDigest`/SHA3 code fully removed; tests assert the 4 official EIP-55 spec vectors + a web3j `Keys.toChecksumAddress` cross-check — the vectors would fail under NIST SHA3-256, so this is real regression protection | ✅ |
+| V2 | 1.3-2 clearPassword | read `SecurityUtils.kt` hash/verify paths | `spec.clearPassword()` in `finally` in both `hashPassword` and `verifyPassword` (matching EncryptionManager) | ✅ |
+| V3 | 1.3-3 WalletStore wipes | read `WalletStore.kt` | `mnemonicBytes.secureWipe()` / `passwordBytes.secureWipe()` in `finally` after encryption in `storeMnemonic` / `storeBiometricEncryptedPassword` | ✅ |
+| V4 | 1.3-4 StrongBox probe | read `KeyStoreManager.kt:102–140` | API < 28 → false before any `setIsStrongBoxBacked` (NoSuchMethodError avoided); `FEATURE_STRONGBOX_KEYSTORE` short-circuit; probe alias deleted in `finally` with cleanup failure swallowed | ✅ |
+| V5 | 1.3-5 exact vector | read `HDKeyManagerTest.kt` | `assertEquals("0x9858EfFD232B4033E47d90003D41EC34EcaEda94", address)` — the canonical BIP-39/BIP-44 vector | ✅ |
+| V6 | Fresh suite + build | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --rerun-tasks` | **PASS** — repo **224 tests, 0 failures, 0 errors, 1 skipped** (was 223; +1 new checksum cross-check test); core-security **62 / 0 / 1** | ✅ matches claim |
+| V7 | Gates | `detekt ktlintCheck --rerun-tasks` | detekt 10 failing tasks / **87 weighted** (unchanged from reviewer baseline — no regression; the developer's "72 vs 75" uses a different counting basis); ktlint 39 failing tasks (unchanged) | ✅ no regression |
+| V8 | Device (per owner) | `:app:connectedDebugAndroidTest` on Pixel 6a | `BackupPolicyTest` **3/3 pass**; `ExampleInstrumentedTest` 1 fail = **known open finding 1.1-3**, not a regression. Note: the first device attempt aborted (0 tests) because adb listed the same Pixel 6a twice (`10.42.0.139:45187` + adb-tls); the stale transport was disconnected and the run re-executed cleanly | ✅ |
+
+**Algorithm decision recorded (1.3-1):** the developer chose **fix, not delete** — rationale:
+"send/receive address display (2.6/2.7) needs correct checksums". Accepted and noted here so 2.6/2.7
+planning knows `checksumAddress` is now EIP-55-correct and available for display use.
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 1.3-1 | Medium | 4.12 |
-| 1.3-2 | Low | 4.7 |
-| 1.3-3 | Low | 4.7 |
-| 1.3-4 | Low | 4.7 |
-| 1.3-5 | Medium | 2.0.6 |
+| 1.3-1 | Medium | fixed + verified (V1, V6) → **row deleted** (decision recorded above) |
+| 1.3-2 | Low | fixed + verified (V2) → **row deleted** |
+| 1.3-3 | Low | fixed + verified (V3) → **row deleted** |
+| 1.3-4 | Low | fixed + verified (V4) → **row deleted** |
+| 1.3-5 | Medium | fixed + verified (V5) → **row deleted** |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 1.4 — DataStore & preferences
 
