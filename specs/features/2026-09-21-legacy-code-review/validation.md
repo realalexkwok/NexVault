@@ -13,7 +13,7 @@
 | 1.1 Project scaffolding | 2026-09-21 (A1–A8) + fix verification (V1–V8) | 2026-09-21 | `[x]` |
 | 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
 | 1.3 Security module | 2026-09-21 (S1–S6) + fix verification (V1–V8) | 2026-09-22 | `[x]` |
-| 1.4 DataStore & preferences | — | — | `[ ]` |
+| 1.4 DataStore & preferences | 2026-09-22 (D1–D5) | — | `[?]` |
 | 1.5 Domain models & repository interfaces | — | — | `[ ]` |
 | 1.6 Data layer | — | — | `[ ]` |
 | 1.7 Onboarding | — | — | `[ ]` |
@@ -192,7 +192,29 @@ device run included per owner).
 
 ## Task 1.4 — DataStore & preferences
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-22 — 3 findings recorded (1.4-1 … 1.4-3) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| D1 | Suite + build | `./gradlew :core:core-datastore:testDebugUnitTest :core:core-datastore:assembleDebug --rerun-tasks` | **BUILD SUCCESSFUL — 27 tests, 0 failures, 0 skipped** |
+| D2 | Logging | `grep -rnE 'Log\\.|println' core/core-datastore/src/main` | **0** |
+| D3 | Lockout terminal state | read `AppStateManager.kt` + `UnlockViewModel.kt:215–225` + usage greps | `WalletWiped` wipes nothing; VM navigates to onboarding with `is_wallet_set_up` true → **1.4-1**; thresholds 5/8/10/15/20 unit-tested |
+| D4 | Display info | read `AppStateManager.kt:88–99` + `WalletModels.kt` | hardcoded `address = ""` / `"Account 1"` despite `AccountMetadata.address`; no production consumer → **1.4-2** |
+| D5 | Chain persistence | read `PreferenceModels.kt` + `ChainMapper.kt:32–37` | `NetworkType` lacks BSC/POLYGON (has GOERLI); BSC/Polygon collapse to MAINNET on persistence → **1.4-3** (AC-2.1) |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 1.4-1 | High | 4.7 + owner decision (wipe vs permanent-lock) |
+| 1.4-2 | Low | proposed new Phase 4 item (display-info cleanup) |
+| 1.4-3 | High | 2.3 (chain-management CR task) |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.5 — Domain models & repository interfaces
 
