@@ -1,6 +1,6 @@
 package com.nexvault.wallet.core.security.util
 
-import java.security.MessageDigest
+import org.web3j.crypto.Hash
 import java.security.SecureRandom
 
 object SecureUtils {
@@ -81,18 +81,21 @@ object SecurityUtils {
         }
 
         val cleanAddress = address.removePrefix("0x").lowercase()
-        val hash = cleanAddress.toByteArray().sha3Keccak()
+        // EIP-55 hashes the lowercase hex form with Keccak-256 — NOT NIST SHA3-256, which uses
+        // different padding. Each character is uppercased when the matching nibble of the hash
+        // is >= 8.
+        val hash = Hash.sha3(cleanAddress.toByteArray(Charsets.UTF_8))
 
         return buildString {
             append("0x")
             for (i in cleanAddress.indices) {
                 val hashByte = hash[i / 2].toInt()
-                val hashChar = if (hashByte and 0xf0 != 0) {
+                val hashNibble = if (i % 2 == 0) {
                     (hashByte shr 4) and 0x0f
                 } else {
                     hashByte and 0x0f
                 }
-                if (hashChar and 0x10 != 0 || cleanAddress[i].isUpperCase()) {
+                if (hashNibble >= 8) {
                     append(cleanAddress[i].uppercaseChar())
                 } else {
                     append(cleanAddress[i])
@@ -117,15 +120,20 @@ object SecurityUtils {
             HASH_ITERATIONS,
             HASH_LENGTH * 8
         )
-        val factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val hash = factory.generateSecret(spec).encoded
 
-        // Combine salt and hash: salt(16 bytes) + hash(32 bytes)
-        val result = ByteArray(salt.size + hash.size)
-        System.arraycopy(salt, 0, result, 0, salt.size)
-        System.arraycopy(hash, 0, result, salt.size, hash.size)
+        try {
+            val factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val hash = factory.generateSecret(spec).encoded
 
-        return result.toHex()
+            // Combine salt and hash: salt(16 bytes) + hash(32 bytes)
+            val result = ByteArray(salt.size + hash.size)
+            System.arraycopy(salt, 0, result, 0, salt.size)
+            System.arraycopy(hash, 0, result, salt.size, hash.size)
+
+            return result.toHex()
+        } finally {
+            spec.clearPassword()
+        }
     }
 
     fun verifyPassword(password: String, storedHashHex: String): Boolean {
@@ -140,17 +148,17 @@ object SecurityUtils {
                 HASH_ITERATIONS,
                 HASH_LENGTH * 8
             )
-            val factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-            val actualHash = factory.generateSecret(spec).encoded
 
-            constantTimeEquals(expectedHash, actualHash)
+            try {
+                val factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+                val actualHash = factory.generateSecret(spec).encoded
+
+                constantTimeEquals(expectedHash, actualHash)
+            } finally {
+                spec.clearPassword()
+            }
         } catch (e: Exception) {
             false
         }
-    }
-
-    private fun ByteArray.sha3Keccak(): ByteArray {
-        val digest = MessageDigest.getInstance("SHA3-256")
-        return digest.digest(this)
     }
 }

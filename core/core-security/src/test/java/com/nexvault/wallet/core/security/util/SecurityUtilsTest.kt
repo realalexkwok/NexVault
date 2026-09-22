@@ -9,6 +9,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.web3j.crypto.Keys
 
 class SecurityUtilsTest {
 
@@ -86,11 +87,27 @@ class SecurityUtilsTest {
 
     @Test
     fun testChecksumAddress() {
-        // Known test vector
-        val address = "0x742d35Cc6634C0532925a3b844Bc9e7595f0eB1E"
-        val checksummed = SecurityUtils.checksumAddress(address)
-        assertTrue(checksummed.startsWith("0x"))
-        assertEquals(42, checksummed.length)
+        // EIP-55 reference vectors — a format-only assertion cannot catch a wrong hash
+        // algorithm (NIST SHA3-256 vs Ethereum Keccak-256 produce different casing).
+        val vectors =
+            listOf(
+                "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed",
+                "0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359",
+                "0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB",
+                "0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb",
+            )
+
+        vectors.forEach { expected ->
+            assertEquals(expected, SecurityUtils.checksumAddress(expected.lowercase()))
+        }
+    }
+
+    @Test
+    fun testChecksumAddressKeccakMatchesWeb3j() {
+        // Cross-check against web3j's canonical EIP-55 implementation.
+        val address = "0x742d35Cc6634C0532925a3b844Bc9e7595f0eB1E".lowercase()
+
+        assertEquals(Keys.toChecksumAddress(address), SecurityUtils.checksumAddress(address))
     }
 
     @Test

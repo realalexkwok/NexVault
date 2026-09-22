@@ -16,13 +16,12 @@ class HDKeyManagerTest {
 
     @Test
     fun testDeriveAddressFromKnownMnemonic() {
-        // Known test vector from BIP39
+        // Known test vector: "abandon … about" at m/44'/60'/0'/0/0
         val seed = org.web3j.crypto.MnemonicUtils.generateSeed(testMnemonic, "")
         val keyPair = hdKeyManager.deriveEthereumKeyPair(seed, 0, 0)
         val address = hdKeyManager.deriveAddress(keyPair)
 
-        // This is the expected address for the test mnemonic
-        assertTrue(SecurityUtils.isValidEthereumAddress(address))
+        assertEquals("0x9858EfFD232B4033E47d90003D41EC34EcaEda94", address)
     }
 
     @Test

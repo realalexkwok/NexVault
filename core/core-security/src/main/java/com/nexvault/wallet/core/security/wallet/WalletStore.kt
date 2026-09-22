@@ -4,6 +4,7 @@ import android.content.Context
 import com.nexvault.wallet.core.security.encryption.DoubleEncryptedData
 import com.nexvault.wallet.core.security.encryption.EncryptionManager
 import com.nexvault.wallet.core.security.encryption.PasswordEncryptedData
+import com.nexvault.wallet.core.security.util.SecureUtils.secureWipe
 import com.nexvault.wallet.core.security.util.SecurityUtils
 import com.nexvault.wallet.core.security.util.SecurityUtils.toHex
 import com.nexvault.wallet.core.security.util.SecurityUtils.hexToByteArray
@@ -34,10 +35,12 @@ class WalletStore @Inject constructor(
     }
 
     suspend fun storeMnemonic(mnemonic: String, password: String) = withContext(Dispatchers.IO) {
-        val encryptedData = encryptionManager.doubleEncrypt(
-            mnemonic.toByteArray(Charsets.UTF_8),
-            password
-        )
+        val mnemonicBytes = mnemonic.toByteArray(Charsets.UTF_8)
+        val encryptedData = try {
+            encryptionManager.doubleEncrypt(mnemonicBytes, password)
+        } finally {
+            mnemonicBytes.secureWipe()
+        }
 
         val json = JSONObject().apply {
             put("outerCiphertext", encryptedData.outerCiphertext.toHex())
@@ -110,10 +113,12 @@ class WalletStore @Inject constructor(
     }
 
     suspend fun storeBiometricEncryptedPassword(password: String, cipher: Cipher) = withContext(Dispatchers.IO) {
-        val encrypted = encryptionManager.encryptWithBiometric(
-            password.toByteArray(Charsets.UTF_8),
-            cipher
-        )
+        val passwordBytes = password.toByteArray(Charsets.UTF_8)
+        val encrypted = try {
+            encryptionManager.encryptWithBiometric(passwordBytes, cipher)
+        } finally {
+            passwordBytes.secureWipe()
+        }
 
         val json = JSONObject().apply {
             put("ciphertext", encrypted.toHex())

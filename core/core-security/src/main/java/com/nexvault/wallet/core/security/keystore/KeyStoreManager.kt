@@ -1,6 +1,8 @@
 package com.nexvault.wallet.core.security.keystore
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
@@ -21,6 +23,7 @@ class KeyStoreManager @Inject constructor(
         private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val MASTER_KEY_ALIAS = "nexvault_master_key"
         private const val BIOMETRIC_KEY_ALIAS = "nexvault_biometric_key"
+        private const val STRONGBOX_PROBE_ALIAS = "test_strongbox_key"
     }
 
     private val keyStore: KeyStore by lazy {
@@ -96,14 +99,25 @@ class KeyStoreManager @Inject constructor(
         return keyGenerator.generateKey()
     }
 
+    /**
+     * Probes StrongBox support without leaving state behind.
+     *
+     * The platform feature check short-circuits devices that cannot have StrongBox at all
+     * (the attribute only exists from API 28), so no probe key is generated there.
+     */
     fun isStrongBoxAvailable(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+        if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_STRONGBOX_KEYSTORE)) {
+            return false
+        }
+
         return try {
             val keyGenerator = KeyGenerator.getInstance(
                 KeyProperties.KEY_ALGORITHM_AES,
                 KEYSTORE_PROVIDER
             )
             val spec = KeyGenParameterSpec.Builder(
-                "test_strongbox_key",
+                STRONGBOX_PROBE_ALIAS,
                 KeyProperties.PURPOSE_ENCRYPT
             )
                 .setIsStrongBoxBacked(true)
@@ -114,6 +128,15 @@ class KeyStoreManager @Inject constructor(
             true
         } catch (e: Exception) {
             false
+        } finally {
+            // A probe must not persist a key in AndroidKeyStore.
+            try {
+                if (keyStore.containsAlias(STRONGBOX_PROBE_ALIAS)) {
+                    keyStore.deleteEntry(STRONGBOX_PROBE_ALIAS)
+                }
+            } catch (e: Exception) {
+                // Best effort; a failed cleanup must not change the probe result.
+            }
         }
     }
 
