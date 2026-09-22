@@ -192,7 +192,8 @@ device run included per owner).
 
 ## Task 1.4 — DataStore & preferences
 
-> Status: **SCAN COMPLETE 2026-09-22 — 3 findings recorded (1.4-1 … 1.4-3) — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-22 — 1.4-1 … 1.4-3 verified-fixed (rows deleted);
+> 1 open finding (1.4-4) — ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -204,17 +205,34 @@ device run included per owner).
 | D4 | Display info | read `AppStateManager.kt:88–99` + `WalletModels.kt` | hardcoded `address = ""` / `"Account 1"` despite `AccountMetadata.address`; no production consumer → **1.4-2** |
 | D5 | Chain persistence | read `PreferenceModels.kt` + `ChainMapper.kt:32–37` | `NetworkType` lacks BSC/POLYGON (has GOERLI); BSC/Polygon collapse to MAINNET on persistence → **1.4-3** (AC-2.1) |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer commit `4b20427` re-checked by the reviewer (2026-09-22)
 
-| ID | Severity | Owning roadmap item |
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | 1.4-1 wipe at 20 | read `AppStateManager.kt` + `AppStateManagerTest.kt:105–125` | ≥20 → `wipeWallet()` (`walletStore.wipeAll()` + `keyStoreManager.deleteAllKeys()` + `resetApp()` clearing all three stores incl. failed-attempt counter and `is_wallet_set_up`) before `WalletWiped`; test asserts **0 wipes at 19** and full wipe at 20; cumulative counter kept per decision | ✅ matches owner decision |
+| V2 | 1.4-2 display info | read `AppStateManager.kt` | `WalletDisplayInfo` + `currentWalletDisplayInfo` **deleted** (the allowed delete option); no remaining consumers | ✅ |
+| V3 | 1.4-3 NetworkType | read `PreferenceModels.kt` + `ChainMapper.kt` + `ChainMapperTest.kt` | enum = MAINNET/SEPOLIA/BSC/POLYGON; both mapper directions round-trip all four chains; unknown → MAINNET; legacy GOERLI/CUSTOM stored values degrade via the existing `valueOf` catch; no stray refs (only the KDoc mention) | ✅ |
+| V4 | Fresh suite + build | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --rerun-tasks` | **PASS** — repo **227 tests, 0 failures, 1 skipped** (matches claim; 224 + 3 new ChainMapperTest cases); datastore module 30/0/0 | ✅ |
+| V5 | Gates | `detekt ktlintCheck --rerun-tasks` | detekt 10 failing tasks / **85 weighted** (reviewer baseline 87 → improved by 2; developer's "71 vs 75" is a different basis); ktlint 39 tasks unchanged | ✅ no regression |
+| V6 | Device (clean env per owner) | fresh install + launch + `connectedDebugAndroidTest` on Pixel 6a | `BackupPolicyTest` **3/3 pass**; `ExampleInstrumentedTest` fail = known **1.1-3**; `installDebug` → `am start` → process alive (pid 24501), **0 FATAL**, `MainActivity` topResumed | ✅ |
+| V7 | Adb environment | `adb devices -l` | the Pixel 6a appeared **twice** again (fresh `10.42.0.139:41999` endpoint + adb-tls); the stale transport was disconnected before the clean runs — noted for future device runs | ✅ handled |
+
+**New finding recorded during verification:** 1.4-4 (Low, 4.17) — the 15-attempt warning message at
+`AppStateManager.kt:107` is a hardcoded English user-facing string in `core-datastore` (the 1.2
+sweep only covered `feature/`).
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 1.4-1 | High | 4.7 — **owner decision 2026-09-22: wipe at 20 attempts** |
-| 1.4-2 | Low | proposed new Phase 4 item (display-info cleanup) |
-| 1.4-3 | High | 2.3 (chain-management CR task) |
+| 1.4-1 (High, wipe at 20) | fixed + verified (V1, V4) → **row deleted** (owner decision recorded) | Closed |
+| 1.4-2 (Low, display info) | fixed + verified (V2) → **row deleted** | Closed |
+| 1.4-3 (High, NetworkType) | fixed + verified (V3, V4) → **row deleted** | Closed |
+| 1.4-4 (Low, hardcoded warning string) | **Open** (4.17) | Open |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 1.5 — Domain models & repository interfaces
 
