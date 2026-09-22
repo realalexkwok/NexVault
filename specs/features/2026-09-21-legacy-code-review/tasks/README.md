@@ -21,7 +21,7 @@
 | [1.2](1.2-design-system-theme.md) | Design system & theme | `core:core-ui` | 0 | `02` | `[x]` |
 | [1.3](1.3-security-module.md) | Security module | `core:core-security` | 62 (1 skipped) | `03` | `[x]` |
 | [1.4](1.4-datastore-preferences.md) | DataStore & preferences | `core:core-datastore` | 30 | `04` | `[x]` |
-| [1.5](1.5-domain-models-repositories.md) | Domain models & repository interfaces | `domain` | 63 | `05` | `[ ]` |
+| [1.5](1.5-domain-models-repositories.md) | Domain models & repository interfaces | `domain` | 63 | `05` | `[?]` |
 | [1.6](1.6-data-layer.md) | Data layer | `data` | 27 | `06` | `[ ]` |
 | [1.7](1.7-onboarding.md) | Onboarding | `feature:feature-onboarding` | 30 | `07`+`08` | `[ ]` |
 | [1.8](1.8-auth-unlock.md) | Auth / unlock | `feature:feature-auth` | 14 | `09` | `[ ]` |

@@ -14,7 +14,7 @@
 | 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
 | 1.3 Security module | 2026-09-21 (S1–S6) + fix verification (V1–V8) | 2026-09-22 | `[x]` |
 | 1.4 DataStore & preferences | 2026-09-22 (D1–D5) + fix verification (V1–V7) | 2026-09-22 | `[x]` |
-| 1.5 Domain models & repository interfaces | — | — | `[ ]` |
+| 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) | — | `[?]` |
 | 1.6 Data layer | — | — | `[ ]` |
 | 1.7 Onboarding | — | — | `[ ]` |
 | 1.8 Auth / unlock | — | — | `[ ]` |
@@ -237,7 +237,28 @@ clean-device run included). Open finding 1.4-4 (4.17) remains in the task file's
 
 ## Task 1.5 — Domain models & repository interfaces
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-22 — 2 findings recorded (1.5-1, 1.5-2) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| M1 | Purity | `grep -rn 'android\\.' domain/src/main` | **0** Android imports |
+| M2 | Tests | `./gradlew :domain:test --rerun-tasks` | **BUILD SUCCESSFUL — 63 tests, 0 failures, 0 skipped** |
+| M3 | Use-case convention | `grep -rc 'operator fun invoke' usecase` + `grep -rL '@Inject' usecase` | 19 of 20 invoke; `ImportWalletUseCase` non-conforming → **1.5-1**; all `@Inject` |
+| M4 | Model discipline | `grep -rn '^    var ' model` + `grep -rc 'data class' model` | **0** `var` fields, 16 data classes |
+| M5 | Seeding reconciliation | `grep -rn 'seedDefaultTokens'` call sites | creation paths only (WalletRepositoryImpl:93/154/210), no chain-switch call → **1.5-2**; Chain.rpcUrl empty for ETH/Sepolia + iconResName mismatch handed to 2.3 |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 1.5-1 | Low | proposed new Phase 4 item (domain API alignment) |
+| 1.5-2 | Medium | 2.9 re-planning (roadmap accuracy) |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.6 — Data layer
 
