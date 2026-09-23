@@ -283,8 +283,8 @@ at close**.
 
 ## Task 1.6 — Data layer
 
-> Status: **SCAN COMPLETE 2026-09-23 — 3 findings recorded (1.6-1 Critical, 1.6-2 High, 1.6-3 Low)
-> — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-23 — 1.6-2/1.6-3 verified-fixed (rows deleted);
+> 1.6-1 open (deferred to 2.0.2b) — ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -297,17 +297,32 @@ at close**.
 | L5 | DI + mappers | read `RepositoryModule` + mapper function counts | all 5 impls bound `@Singleton`; mappers present (Auth 3 / Chain 3 / Token 1 / Transaction 4 / Wallet 6) |
 | L6 | Strings | `grep -rn '"Account 1"' data/src/main` | 3 sites (:82/:143/:199) → **1.6-3 (Low)** |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer commit `508e087` re-checked by the reviewer (2026-09-23)
 
-| ID | Severity | Owning roadmap item |
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | 1.6-2 store-before-wipe | read `WalletRepositoryImpl` + `WalletStore` diffs + `WalletRepositoryImplTest:149–177` | `storePrivateKey` called **before** the `finally` wipe; `WalletStore.storePrivateKey` wipes its copy after encryption (also on throw) with a destructive-contract KDoc; the new test captures the array at call time (32 non-zero bytes reached the store) and asserts the same reference is zeroed after return — it fails under the old order | ✅ |
+| V2 | 1.6-3 constant | read `WalletRepositoryImpl` | single `DEFAULT_ACCOUNT_NAME` constant replaces all 3 literals | ✅ |
+| V3 | 1.6-1 untouched | `git show --stat HEAD` + grep | no changes to the walletId-as-password chain or retrieval gating — deferred per owner decision | ✅ |
+| V4 | Fresh suite + build | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --rerun-tasks` | **PASS** — repo **232 tests, 0 failures, 1 skipped** (matches claim; data 31 → 32) | ✅ |
+| V5 | Gates | `detekt ktlintCheck` same run | detekt 10 tasks / **85 weighted** unchanged; ktlint 39 tasks unchanged (developer's "71" / "+2" use different bases) | ✅ no regression |
+
+**Reviewer note (not a finding):** in `importFromPrivateKey`, `hexStringToByteArray` sits outside
+the try — a malformed input there would propagate a raw exception instead of `DataResult.Error`.
+Pre-validated upstream by `ImportFromPrivateKeyUseCase` (64-hex check), so no live path is affected;
+flagging for the 4.x API-cleanliness pass.
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 1.6-1 | Critical | 2.0.2b (extends its remediation scope) |
-| 1.6-2 | High | developer fix round (this CR) |
-| 1.6-3 | Low | 4.17 |
+| 1.6-1 (Critical, wallet-UUID password) | **Open** — deferred to 2.0.2b per owner decision 2026-09-23 | Open |
+| 1.6-2 (High, wipe-before-store) | fixed + verified (V1, V4) → **row deleted** | Closed |
+| 1.6-3 (Low, "Account 1") | fixed + verified (V2) → **row deleted** | Closed |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 1.7 — Onboarding
 
