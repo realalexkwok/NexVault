@@ -49,6 +49,7 @@ class WalletRepositoryImpl @Inject constructor(
     companion object {
         private const val DEFAULT_DERIVATION_PATH = "m/44'/60'/0'/0/0"
         private const val DERIVATION_PATH_PREFIX = "m/44'/60'/0'/0/"
+        private const val DEFAULT_ACCOUNT_NAME = "Account 1"
     }
 
     override suspend fun createWallet(walletName: String): DataResult<WalletCreationResult> {
@@ -79,7 +80,7 @@ class WalletRepositoryImpl @Inject constructor(
                 walletId = walletId,
                 accountIndex = 0,
                 address = address,
-                name = "Account 1",
+                name = DEFAULT_ACCOUNT_NAME,
                 derivationPath = DEFAULT_DERIVATION_PATH,
                 isActive = true,
                 addedAt = System.currentTimeMillis(),
@@ -140,7 +141,7 @@ class WalletRepositoryImpl @Inject constructor(
                 walletId = walletId,
                 accountIndex = 0,
                 address = address,
-                name = "Account 1",
+                name = DEFAULT_ACCOUNT_NAME,
                 derivationPath = DEFAULT_DERIVATION_PATH,
                 isActive = true,
                 addedAt = System.currentTimeMillis(),
@@ -171,15 +172,17 @@ class WalletRepositoryImpl @Inject constructor(
         privateKey: String,
         walletName: String,
     ): DataResult<WalletCreationResult> {
+        val privateKeyBytes = hexStringToByteArray(privateKey)
         return try {
-            val privateKeyBytes = hexStringToByteArray(privateKey)
             val keyPair = ECKeyPair.create(BigInteger(1, privateKeyBytes))
             val address = Keys.toChecksumAddress(Keys.getAddress(keyPair))
 
-            privateKeyBytes.secureWipe()
-
             val walletId = UUID.randomUUID().toString()
 
+            // Store first, wipe afterwards: wiping before this call persisted an all-zero key,
+            // so the imported wallet could never sign (CR 1.6-2). [WalletStore.storePrivateKey]
+            // also zeroes the array once encryption is done; this finally is the belt-and-braces
+            // wipe for every exit path (including failures before the store).
             walletStore.storePrivateKey(address, privateKeyBytes, walletId)
 
             val walletMetadata = WalletMetadata(
@@ -196,7 +199,7 @@ class WalletRepositoryImpl @Inject constructor(
                 walletId = walletId,
                 accountIndex = 0,
                 address = address,
-                name = "Account 1",
+                name = DEFAULT_ACCOUNT_NAME,
                 derivationPath = "",
                 isActive = true,
                 addedAt = System.currentTimeMillis(),
@@ -220,6 +223,8 @@ class WalletRepositoryImpl @Inject constructor(
             DataResult.Error(
                 InvalidPrivateKeyException("Failed to import private key: ${e.message}"),
             )
+        } finally {
+            privateKeyBytes.secureWipe()
         }
     }
 

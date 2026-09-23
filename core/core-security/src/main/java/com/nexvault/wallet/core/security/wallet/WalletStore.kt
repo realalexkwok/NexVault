@@ -70,6 +70,13 @@ class WalletStore @Inject constructor(
         String(decrypted, Charsets.UTF_8)
     }
 
+    /**
+     * Stores the encrypted private key for [address].
+     *
+     * The call is deliberately destructive: [privateKey] is zeroed as soon as encryption
+     * finishes (also when it throws), so no live plaintext copy survives the call. Callers
+     * must not reuse the array afterwards.
+     */
     suspend fun storePrivateKey(address: String, privateKey: ByteArray, password: String) = withContext(Dispatchers.IO) {
         val keysFile = File(walletDir, PRIVATE_KEYS_FILE)
 
@@ -79,7 +86,12 @@ class WalletStore @Inject constructor(
             JSONObject()
         }
 
-        val encryptedData = encryptionManager.encryptWithPassword(privateKey, password)
+        val encryptedData =
+            try {
+                encryptionManager.encryptWithPassword(privateKey, password)
+            } finally {
+                privateKey.secureWipe()
+            }
 
         val keyData = JSONObject().apply {
             put("ciphertext", encryptedData.ciphertext.toHex())

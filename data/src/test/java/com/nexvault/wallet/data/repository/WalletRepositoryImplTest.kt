@@ -146,6 +146,37 @@ class WalletRepositoryImplTest {
     }
 
     @Test
+    fun importFromPrivateKey_storesLiveKeyThenWipesIt() = runTest {
+        val keyHex = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+        var bytesAtCallTime: ByteArray? = null
+        var referenceAtCallTime: ByteArray? = null
+        coEvery { walletStore.storePrivateKey(any(), any(), any()) } answers {
+            referenceAtCallTime = secondArg()
+            bytesAtCallTime = secondArg<ByteArray>().copyOf()
+        }
+        coEvery { walletMetadataStore.addWallet(any()) } returns Unit
+        coEvery { walletMetadataStore.addAccount(any()) } returns Unit
+        coEvery { securityPreferences.setActiveWalletId(any()) } returns Unit
+        coEvery { securityPreferences.setActiveAccountIndex(any()) } returns Unit
+        coEvery { securityPreferences.setWalletSetUp(any()) } returns Unit
+
+        val result = repository.importFromPrivateKey(keyHex, "PK Wallet")
+
+        assertTrue(result is DataResult.Success)
+        // CR 1.6-2: the store must receive the real key material, not the pre-wiped zeros.
+        val storedAtCallTime = bytesAtCallTime ?: error("storePrivateKey was never called")
+        assertEquals(32, storedAtCallTime.size)
+        assertTrue(
+            "the key handed to the store must not be all zeros",
+            storedAtCallTime.any { it != 0.toByte() },
+        )
+        assertTrue(
+            "the key must be wiped once the import returns",
+            referenceAtCallTime!!.all { it == 0.toByte() },
+        )
+    }
+
+    @Test
     fun getMnemonicForBackup_success_returnsWords() = runTest {
         // Given - use valid 12-word mnemonic
         coEvery { walletStore.retrieveMnemonic(any()) } returns "abandon about after again agent air allow almost always amount angle animal"
