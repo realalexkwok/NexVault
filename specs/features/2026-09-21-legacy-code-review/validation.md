@@ -237,7 +237,8 @@ clean-device run included). Open finding 1.4-4 (4.17) remains in the task file's
 
 ## Task 1.5 — Domain models & repository interfaces
 
-> Status: **SCAN COMPLETE 2026-09-22 — 2 findings recorded (1.5-1, 1.5-2) — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-23 — both findings verified-fixed (rows deleted)
+> — ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -249,16 +250,34 @@ clean-device run included). Open finding 1.4-4 (4.17) remains in the task file's
 | M4 | Model discipline | `grep -rn '^    var ' model` + `grep -rc 'data class' model` | **0** `var` fields, 16 data classes |
 | M5 | Seeding reconciliation | `grep -rn 'seedDefaultTokens'` call sites | creation paths only (WalletRepositoryImpl:93/154/210), no chain-switch call → **1.5-2**; Chain.rpcUrl empty for ETH/Sepolia + iconResName mismatch handed to 2.3 |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer commit `4c82993` re-checked by the reviewer (2026-09-23)
 
-| ID | Severity | Owning roadmap item |
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | 1.5-1 split | read `ImportFromMnemonicUseCase` + `ImportFromPrivateKeyUseCase` + `ImportWalletViewModel` diff | both new classes: `suspend operator fun invoke`, `@Inject`, identical validation logic; VM takes both and dispatches by mode; **0** remaining refs to `ImportWalletUseCase`; all 21 use cases conform | ✅ |
+| V2 | 1.5-2 chain-switch seeding | read `RefreshBalancesUseCase` + `RefreshBalancesUseCaseTest` | `seedDefaultTokens(chain.chainId)` before `refreshBalances`; best-effort (result not propagated); 4 tests: selected chain, after switch, seeding-failure → refresh still Success, no-address path | ✅ |
+| V3 | Fresh suite + build | `./gradlew :app:clean :app:assembleDebug testDebugUnitTest :domain:test --rerun-tasks` | **PASS** — repo **231 tests, 0 failures, 0 errors, 1 skipped** (matches claim; domain 63 → 67) | ✅ |
+| V4 | Stale-Hilt-cache ops note | ran `:app:clean` first per the note; suite passed | consistent with the claimed mechanism (deleting a Hilt-injected class leaves stale `hiltAggregateDeps` until clean); recorded as an ops note, not a code defect | ✅ |
+| V5 | Gates | `detekt ktlintCheck` in the same clean run | detekt 10 tasks / **85 weighted** (unchanged from reviewer baseline; developer's "71" is a different basis); ktlint 39 tasks unchanged | ✅ no regression |
+| V6 | Device | fresh `installDebug` + launch on Pixel 6a (single-device after disconnecting the duplicate adb transport) | process alive, **0 FATAL**, `MainActivity` topResumed. The developer's UI import walk-through (mnemonic.enc 420 B + `is_wallet_set_up`) is relayed evidence; the logic is JVM-covered (V3) | ✅ |
+
+**Process note:** the developer reports their required ask round timed out twice with no owner answer,
+so the decisions followed the task text's recommended options (split per convention; seed in
+`RefreshBalancesUseCase`; best-effort errors). **Owner sanction requested at sign-off.**
+
+**Roadmap update (same pass):** item **2.9** flipped `[ ]` → `[~]` with a note — both halves
+(wallet-creation + chain-switch seeding) now exist; verification follows the Phase 2 flow.
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 1.5-1 | Low | proposed new Phase 4 item (domain API alignment) |
-| 1.5-2 | Medium | 2.9 re-planning (roadmap accuracy) |
+| 1.5-1 (Low, use-case convention) | fixed + verified (V1) → **row deleted** | Closed |
+| 1.5-2 (Medium, 2.9 seeding) | fixed + verified (V2, V3) → **row deleted** | Closed |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 1.6 — Data layer
 
