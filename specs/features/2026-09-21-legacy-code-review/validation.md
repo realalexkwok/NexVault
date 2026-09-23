@@ -15,7 +15,7 @@
 | 1.3 Security module | 2026-09-21 (S1–S6) + fix verification (V1–V8) | 2026-09-22 | `[x]` |
 | 1.4 DataStore & preferences | 2026-09-22 (D1–D5) + fix verification (V1–V7) | 2026-09-22 | `[x]` |
 | 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) + fix verification (V1–V6) | 2026-09-23 | `[x]` |
-| 1.6 Data layer | — | — | `[ ]` |
+| 1.6 Data layer | 2026-09-23 (L1–L6) | — | `[?]` |
 | 1.7 Onboarding | — | — | `[ ]` |
 | 1.8 Auth / unlock | — | — | `[ ]` |
 | 1.9 Main scaffold & navigation shell | — | — | `[ ]` |
@@ -283,7 +283,31 @@ at close**.
 
 ## Task 1.6 — Data layer
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-23 — 3 findings recorded (1.6-1 Critical, 1.6-2 High, 1.6-3 Low)
+> — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| L1 | Suite + build | `./gradlew :data:testDebugUnitTest :data:assembleDebug --rerun-tasks` | **BUILD SUCCESSFUL — 31 tests, 0 failures, 0 skipped** |
+| L2 | TODO / throws | `grep -rn 'TODO()' data/src/main` · `grep -rnE 'throw ' data/src/main` | **0 / 0** — write paths return `DataResult.Error` |
+| L3 | Wipe discipline | `grep -rn 'secureWipe' data/src/main` + line-order reads | seeds wiped :62/:123/:293 ✓; **import-from-private-key wipes before storing** → 1.6-2 |
+| L4 | Encryption secret | reads of `WalletRepositoryImpl` + `WalletStore` signatures | `storeMnemonic(mnemonic, walletId)` / `storePrivateKey(..., walletId)` / `retrieveMnemonic(walletId)` — wallet UUID as the password, stored plaintext in wallet_metadata → **1.6-1 (Critical)**; retrieval has no auth gate |
+| L5 | DI + mappers | read `RepositoryModule` + mapper function counts | all 5 impls bound `@Singleton`; mappers present (Auth 3 / Chain 3 / Token 1 / Transaction 4 / Wallet 6) |
+| L6 | Strings | `grep -rn '"Account 1"' data/src/main` | 3 sites (:82/:143/:199) → **1.6-3 (Low)** |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 1.6-1 | Critical | 2.0.2b (extends its remediation scope) |
+| 1.6-2 | High | developer fix round (this CR) |
+| 1.6-3 | Low | 4.17 |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.7 — Onboarding
 
