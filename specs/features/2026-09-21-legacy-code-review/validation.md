@@ -14,7 +14,7 @@
 | 1.2 Design system & theme | 2026-09-21 (B1–B5) + fix verification (V1–V12) | 2026-09-21 | `[x]` |
 | 1.3 Security module | 2026-09-21 (S1–S6) + fix verification (V1–V8) | 2026-09-22 | `[x]` |
 | 1.4 DataStore & preferences | 2026-09-22 (D1–D5) + fix verification (V1–V7) | 2026-09-22 | `[x]` |
-| 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) | — | `[?]` |
+| 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) + fix verification (V1–V6) | 2026-09-23 | `[x]` |
 | 1.6 Data layer | — | — | `[ ]` |
 | 1.7 Onboarding | — | — | `[ ]` |
 | 1.8 Auth / unlock | — | — | `[ ]` |
@@ -277,7 +277,9 @@ so the decisions followed the task text's recommended options (split per convent
 
 ### Manual half
 
-Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
+Sign-off: **DONE 2026-09-23** — user-confirmed close per Q9; the ask-round-timeout decisions (split
+per convention, seed in `RefreshBalancesUseCase`, best-effort errors) are **sanctioned by the owner
+at close**.
 
 ## Task 1.6 — Data layer
 
