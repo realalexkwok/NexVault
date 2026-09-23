@@ -2,7 +2,8 @@ package com.nexvault.wallet.feature.onboarding.viewmodel
 
 import com.nexvault.wallet.domain.model.auth.WalletCreationResult
 import com.nexvault.wallet.domain.model.common.DataResult
-import com.nexvault.wallet.domain.usecase.wallet.ImportWalletUseCase
+import com.nexvault.wallet.domain.usecase.wallet.ImportFromMnemonicUseCase
+import com.nexvault.wallet.domain.usecase.wallet.ImportFromPrivateKeyUseCase
 import com.nexvault.wallet.feature.onboarding.R
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -15,7 +16,8 @@ import org.junit.Test
 
 class ImportWalletViewModelTest {
 
-    private lateinit var importWalletUseCase: ImportWalletUseCase
+    private lateinit var importFromMnemonicUseCase: ImportFromMnemonicUseCase
+    private lateinit var importFromPrivateKeyUseCase: ImportFromPrivateKeyUseCase
     private lateinit var viewModel: ImportWalletViewModel
 
     private val validMnemonic12 = "apple brave crane delta eagle frost grape house ivory jump king lamp"
@@ -23,8 +25,9 @@ class ImportWalletViewModelTest {
 
     @Before
     fun setup() {
-        importWalletUseCase = mockk()
-        viewModel = ImportWalletViewModel(importWalletUseCase)
+        importFromMnemonicUseCase = mockk()
+        importFromPrivateKeyUseCase = mockk()
+        viewModel = ImportWalletViewModel(importFromMnemonicUseCase, importFromPrivateKeyUseCase)
     }
 
     @Test

@@ -20,6 +20,13 @@ class RefreshBalancesUseCase @Inject constructor(
         val chain = chainRepository.getSelectedChain().first()
         val address = walletRepository.getActiveAddress().first()
             ?: return DataResult.Error(WalletNotFoundException())
+
+        // Default tokens must exist per chain: seed the selected chain before refreshing so a
+        // chain switch (or the first refresh on a newly selected chain) has tokens to refresh.
+        // Seeding is idempotent and best-effort — a seeding failure must not turn a successful
+        // balance refresh into a failure; the next refresh retries it.
+        tokenRepository.seedDefaultTokens(chain.chainId)
+
         return tokenRepository.refreshBalances(chain.chainId, address)
     }
 }

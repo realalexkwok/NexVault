@@ -2,38 +2,17 @@ package com.nexvault.wallet.domain.usecase.wallet
 
 import com.nexvault.wallet.domain.model.auth.WalletCreationResult
 import com.nexvault.wallet.domain.model.common.DataResult
-import com.nexvault.wallet.domain.model.common.InvalidMnemonicException
 import com.nexvault.wallet.domain.model.common.InvalidPrivateKeyException
 import com.nexvault.wallet.domain.repository.WalletRepository
 import javax.inject.Inject
 
 /**
- * Imports a wallet from a mnemonic phrase or private key.
+ * Imports a wallet from a raw private key (64 hex characters, optional 0x prefix).
  */
-class ImportWalletUseCase @Inject constructor(
+class ImportFromPrivateKeyUseCase @Inject constructor(
     private val walletRepository: WalletRepository,
 ) {
-    /**
-     * Import from BIP-39 mnemonic (12 or 24 words).
-     */
-    suspend fun fromMnemonic(
-        mnemonic: String,
-        walletName: String = "Imported Wallet",
-    ): DataResult<WalletCreationResult> {
-        val trimmed = mnemonic.trim().lowercase()
-        val words = trimmed.split("\\s+".toRegex())
-        if (words.size != 12 && words.size != 24) {
-            return DataResult.Error(
-                InvalidMnemonicException("Mnemonic must be 12 or 24 words, got ${words.size}"),
-            )
-        }
-        return walletRepository.importFromMnemonic(trimmed, walletName)
-    }
-
-    /**
-     * Import from raw private key (64 hex chars).
-     */
-    suspend fun fromPrivateKey(
+    suspend operator fun invoke(
         privateKey: String,
         walletName: String = "Imported Wallet",
     ): DataResult<WalletCreationResult> {

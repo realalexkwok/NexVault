@@ -4,7 +4,8 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.common.DataResult
-import com.nexvault.wallet.domain.usecase.wallet.ImportWalletUseCase
+import com.nexvault.wallet.domain.usecase.wallet.ImportFromMnemonicUseCase
+import com.nexvault.wallet.domain.usecase.wallet.ImportFromPrivateKeyUseCase
 import com.nexvault.wallet.feature.onboarding.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,7 +30,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class ImportWalletViewModel @Inject constructor(
-    private val importWalletUseCase: ImportWalletUseCase,
+    private val importFromMnemonicUseCase: ImportFromMnemonicUseCase,
+    private val importFromPrivateKeyUseCase: ImportFromPrivateKeyUseCase,
 ) : ViewModel() {
 
     enum class ImportMode {
@@ -127,13 +129,13 @@ class ImportWalletViewModel @Inject constructor(
                     val mnemonic = currentState.mnemonicInput.trim()
                         .lowercase()
                         .replace("\\s+".toRegex(), " ")
-                    importWalletUseCase.fromMnemonic(mnemonic)
+                    importFromMnemonicUseCase(mnemonic)
                 }
                 ImportMode.PRIVATE_KEY -> {
                     val key = currentState.privateKeyInput.trim()
                         .removePrefix("0x")
                         .removePrefix("0X")
-                    importWalletUseCase.fromPrivateKey(key)
+                    importFromPrivateKeyUseCase(key)
                 }
             }
 
