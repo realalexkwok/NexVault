@@ -200,6 +200,12 @@ non-custodial wallet. It is generated, encrypted and stored, but never shown and
 verified — the wallet is unbacked-up from birth, with no consent step. And the install is
 now unrecoverable: a PIN is demanded that was never set.
 
+**Planning must also re-read legacy CR finding 1.6-1** (deferred here 2026-09-23): the
+mnemonic's/private key's encryption "password" is the wallet UUID stored in plaintext in
+`wallet_metadata`, so the inner PBKDF2 layer holds zero secret and mnemonic retrieval has no auth
+gate — the remediation must decide (encrypt with the PIN once set / drop the inner layer / re-key)
+and enforce authentication before retrieval.
+
 Remediation options (A: move the flag write to the end of onboarding — smallest unblock;
 B: stop creating the wallet in `init` — matches the security intent; C: drop the reactive
 root router — kills the whole bug class). **Recommendation: B as the target, A as the
