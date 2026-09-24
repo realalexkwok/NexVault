@@ -328,7 +328,8 @@ roadmap section carries the re-read note.
 
 ## Task 1.7 — Onboarding
 
-> Status: **SCAN COMPLETE 2026-09-23 — 2 findings recorded (1.7-1 High, 1.7-2 Low) — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-24 — both findings verified-fixed (rows deleted)
+> — ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -340,16 +341,27 @@ roadmap section carries the re-read note.
 | O4 | Hygiene | `grep TODO()` · `grep Log\\.|println` in `feature-onboarding/src/main` | **0 / 0** |
 | O5 | Flow wiring | reads of the 5 VMs + navigation + routes | checkbox gating, verify order-check, import toggle/validation, SetPIN confirm/shake/biometric gating + pref save, `popUpTo(WELCOME)` back behavior, `walletId` arg keys — all present; init-block side effects recorded for 2.0.2b (pre-registered) |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer commit `e6091e1` re-checked by the reviewer (2026-09-24)
 
-| ID | Severity | Owning roadmap item |
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | 1.7-1 FLAG_SECURE | read `VerifyMnemonicScreen.kt:88–99` | `LocalView` + `DisposableEffect`: `setFlags(FLAG_SECURE)` on entry, `clearFlags` in `onDispose` — same convention as Create/Import; KDoc added | ✅ |
+| V2 | 1.7-2 grid | read `CreateWalletScreen.kt:243` | `GridCells.Fixed(4)` (4 columns × 3 rows); KDoc corrected; numbering unchanged (index + 1) | ✅ |
+| V3 | 2.0.2b untouched | `git show --stat e6091e1` | only the two screen files changed; no ViewModel touched | ✅ |
+| V4 | Fresh suite + build | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --rerun-tasks` | **PASS** — repo **232 tests, 0 failures, 1 skipped** (matches claim) | ✅ |
+| V5 | Gates | `detekt ktlintCheck` same run | detekt 10 tasks / **85 weighted** unchanged; ktlint 39 tasks unchanged (their "71" / "73→73" bases differ) | ✅ no regression |
+| V6 | Device | n/a this round | the developer's smoke was aborted (Pixel 6a dropped off adb mid-run); both affected screens are unreachable while 2.0.2b is open, so a device walk has nothing to exercise — accepted; a smoke can be re-run after 2.0.2b | ✅ (reasoned) |
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 1.7-1 | High | 4.7 |
-| 1.7-2 | Low | 4.17 (or developer fix round) |
+| 1.7-1 (High, FLAG_SECURE) | fixed + verified (V1) → **row deleted** | Closed |
+| 1.7-2 (Low, 4×3 grid) | fixed + verified (V2) → **row deleted** | Closed |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 1.8 — Auth / unlock
 
