@@ -20,7 +20,7 @@
 | 1.8 Auth / unlock | 2026-09-24 (A1–A4) | 2026-09-24 | `[x]` |
 | 1.9 Main scaffold & navigation shell | 2026-09-24 (N1–N4) | 2026-09-24 | `[x]` |
 | 2.1 Network module | 2026-09-24 (W1–W4) | 2026-09-24 | `[x]` |
-| 2.2 Database module | — | — | `[ ]` |
+| 2.2 Database module | 2026-09-24 (D2–D4) | — | `[?]` |
 | 2.3 Chain management | — | — | `[ ]` |
 | 2.4 Home dashboard | — | — | `[ ]` |
 | 2.5 Token detail | — | — | `[ ]` |
@@ -442,7 +442,25 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan W1–W4). Op
 
 ## Task 2.2 — Database module
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-24 — 1 finding recorded (2.2-1 Medium) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| D2 | Build | `./gradlew :core:core-database:assembleDebug` | **BUILD SUCCESSFUL** (2026-09-24; KSP impl generated) |
+| D3 | Schema discipline | reads of entities/DAOs/DB/DI + schema `1.json` presence | composite PKs + 4 indices; DESC ordering + upserts; LIMIT/OFFSET; LIKE + addressExists; version 1 + exportSchema; 5 `@Singleton` providers; no main-thread queries; no TODO |
+| D4 | Tests | `find core/core-database/src/test -name '*.kt'` | **0** → **2.2-1 (Medium)** |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 2.2-1 | Medium | 2.0.6 |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 2.3 — Chain management
 
