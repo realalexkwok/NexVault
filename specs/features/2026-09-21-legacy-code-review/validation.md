@@ -16,7 +16,7 @@
 | 1.4 DataStore & preferences | 2026-09-22 (D1–D5) + fix verification (V1–V7) | 2026-09-22 | `[x]` |
 | 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) + fix verification (V1–V6) | 2026-09-23 | `[x]` |
 | 1.6 Data layer | 2026-09-23 (L1–L6) + fix verification (V1–V5) | 2026-09-23 | `[x]` |
-| 1.7 Onboarding | 2026-09-23 (O1–O5) | — | `[?]` |
+| 1.7 Onboarding | 2026-09-23 (O1–O5) + fix verification (V1–V5) | 2026-09-24 | `[x]` |
 | 1.8 Auth / unlock | — | — | `[ ]` |
 | 1.9 Main scaffold & navigation shell | — | — | `[ ]` |
 | 2.1 Network module | — | — | `[ ]` |
@@ -361,7 +361,7 @@ roadmap section carries the re-read note.
 
 ### Manual half
 
-Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
+Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (fixes verified by the reviewer V1–V5).
 
 ## Task 1.8 — Auth / unlock
 
