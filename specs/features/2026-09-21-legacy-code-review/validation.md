@@ -18,7 +18,7 @@
 | 1.6 Data layer | 2026-09-23 (L1–L6) + fix verification (V1–V5) | 2026-09-23 | `[x]` |
 | 1.7 Onboarding | 2026-09-23 (O1–O5) + fix verification (V1–V5) | 2026-09-24 | `[x]` |
 | 1.8 Auth / unlock | 2026-09-24 (A1–A4) | 2026-09-24 | `[x]` |
-| 1.9 Main scaffold & navigation shell | — | — | `[ ]` |
+| 1.9 Main scaffold & navigation shell | 2026-09-24 (N1–N4) | — | `[?]` |
 | 2.1 Network module | — | — | `[ ]` |
 | 2.2 Database module | — | — | `[ ]` |
 | 2.3 Chain management | — | — | `[ ]` |
@@ -391,7 +391,30 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan A1–A4, 0 f
 
 ## Task 1.9 — Main scaffold & navigation shell
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-24 — 0 findings — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| N1 | Build | `./gradlew :app:assembleDebug` (after a full fresh `--rerun-tasks` compile of the app module) | **BUILD SUCCESSFUL** — app unit tests **1 / 0 / 0 / 0** |
+| N2 | Tabs & navigation | reads of `MainTab`, `MainNavigation`, `MainScreen` | 5 tabs with filled/outlined icons; Home start destination; 4 placeholders; saveState/restoreState/launchSingleTop flags; `MainRoutes.MAIN_GRAPH` used in `NexVaultApp` |
+| N3 | Callbacks | read `MainScreen.kt:130–137` | `onNavigateToSend/Receive/Swap = { }` (empty) — pre-registered **2.0.3**; Home → TokenDetail wired |
+| N4 | Hygiene | greps in `app/src/main` | 0 hardcoded `Color(0x`, 0 `TODO()`, 2 `@Preview` |
+
+### Reviewer notes (not findings)
+
+- **Environment quirk:** one full `--rerun-tasks` app build hung after `:app:packageDebug` (log
+  static, daemon idle, APK stopped at 21 MB); the job was killed and `:app:assembleDebug` re-run
+  incrementally → BUILD SUCCESSFUL. All compile/test tasks of the hung run had completed; not a code
+  defect, recorded for reproducibility.
+- **String debt (4.17 note):** `MainTab` labels/contentDescriptions and the tab/route strings are
+  hardcoded in the app module — outside the 1.2 feature sweep; 4.17's adoption pass should cover
+  `app/` too.
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 2.1 — Network module
 
