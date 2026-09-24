@@ -1,5 +1,6 @@
 package com.nexvault.wallet.feature.onboarding.screen
 
+import android.app.Activity
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -24,12 +25,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +66,8 @@ import kotlinx.coroutines.flow.collectLatest
  * - Selected words area shakes (horizontal shake animation)
  * - Error color briefly shown
  * - After 1.5s delay, selected words reset and user starts over
+ *
+ * FLAG_SECURE is set on this screen to prevent screenshots.
  */
 @Composable
 fun VerifyMnemonicScreen(
@@ -78,6 +83,18 @@ fun VerifyMnemonicScreen(
                 VerifyMnemonicViewModel.NavigationEvent.NavigateToSetPin ->
                     onNavigateToSetPin()
             }
+        }
+    }
+
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        val window = (view.context as? Activity)?.window
+        window?.setFlags(
+            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+        )
+        onDispose {
+            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 

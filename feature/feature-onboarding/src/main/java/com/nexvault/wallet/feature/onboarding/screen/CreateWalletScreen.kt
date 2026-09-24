@@ -231,7 +231,7 @@ private fun CreateWalletScreenContent(
 }
 
 /**
- * Displays mnemonic words in a 4×3 grid (4 rows, 3 columns).
+ * Displays mnemonic words in a 4×3 grid (3 rows, 4 columns).
  * Each cell shows the word number and the word.
  */
 @Composable
@@ -240,7 +240,7 @@ fun MnemonicGrid(
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+        columns = GridCells.Fixed(4),
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
         verticalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
