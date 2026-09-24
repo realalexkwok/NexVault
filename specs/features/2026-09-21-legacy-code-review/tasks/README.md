@@ -24,7 +24,7 @@
 | [1.5](1.5-domain-models-repositories.md) | Domain models & repository interfaces | `domain` | 67 | `05` | `[x]` |
 | [1.6](1.6-data-layer.md) | Data layer | `data` | 32 | `06` | `[x]` |
 | [1.7](1.7-onboarding.md) | Onboarding | `feature:feature-onboarding` | 30 | `07`+`08` | `[x]` |
-| [1.8](1.8-auth-unlock.md) | Auth / unlock | `feature:feature-auth` | 14 | `09` | `[?]` |
+| [1.8](1.8-auth-unlock.md) | Auth / unlock | `feature:feature-auth` | 14 | `09` | `[x]` |
 | [1.9](1.9-main-scaffold-navigation.md) | Main scaffold & navigation shell | `app` | 1 (template stub) | `10` | `[ ]` |
 | [2.1](2.1-network-module.md) | Network module | `core:core-network` | **0** | `11` | `[ ]` |
 | [2.2](2.2-database-module.md) | Database module | `core:core-database` | **0** | `12` | `[ ]` |

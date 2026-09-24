@@ -17,7 +17,7 @@
 | 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) + fix verification (V1–V6) | 2026-09-23 | `[x]` |
 | 1.6 Data layer | 2026-09-23 (L1–L6) + fix verification (V1–V5) | 2026-09-23 | `[x]` |
 | 1.7 Onboarding | 2026-09-23 (O1–O5) + fix verification (V1–V5) | 2026-09-24 | `[x]` |
-| 1.8 Auth / unlock | 2026-09-24 (A1–A4) | — | `[?]` |
+| 1.8 Auth / unlock | 2026-09-24 (A1–A4) | 2026-09-24 | `[x]` |
 | 1.9 Main scaffold & navigation shell | — | — | `[ ]` |
 | 2.1 Network module | — | — | `[ ]` |
 | 2.2 Database module | — | — | `[ ]` |
@@ -387,7 +387,7 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (fixes verified by
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan A1–A4, 0 findings).
 
 ## Task 1.9 — Main scaffold & navigation shell
 
