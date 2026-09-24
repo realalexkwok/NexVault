@@ -17,7 +17,7 @@
 | 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) + fix verification (V1–V6) | 2026-09-23 | `[x]` |
 | 1.6 Data layer | 2026-09-23 (L1–L6) + fix verification (V1–V5) | 2026-09-23 | `[x]` |
 | 1.7 Onboarding | 2026-09-23 (O1–O5) + fix verification (V1–V5) | 2026-09-24 | `[x]` |
-| 1.8 Auth / unlock | — | — | `[ ]` |
+| 1.8 Auth / unlock | 2026-09-24 (A1–A4) | — | `[?]` |
 | 1.9 Main scaffold & navigation shell | — | — | `[ ]` |
 | 2.1 Network module | — | — | `[ ]` |
 | 2.2 Database module | — | — | `[ ]` |
@@ -365,7 +365,29 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (fixes verified by
 
 ## Task 1.8 — Auth / unlock
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-24 — 0 findings — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| A1 | Suite + build | `./gradlew :feature:feature-auth:testDebugUnitTest :feature:feature-auth:assembleDebug --rerun-tasks` | **BUILD SUCCESSFUL — 14 tests, 0 failures, 0 skipped** |
+| A2 | Routing + auto-lock | reads of `NexVaultApp.kt` + `MainActivity.kt` | `routingKey` onboarding/auth/main; `onStop`/`onStart` timestamp auto-lock with NEVER/IMMEDIATE/default-5-min handling — all present |
+| A3 | Biometric wiring | reads of `UnlockViewModel` + `UnlockScreen` | auto-show on load when enabled (:131), retry (:307), cancel → PIN fallback |
+| A4 | Hygiene | `grep @Preview / TODO / Log` in `feature-auth` | 4 previews, 0 TODO, 0 logging |
+
+### Reviewer notes (not findings)
+
+- **Counter interplay:** after a lockout expiry the VM resets its local `failedAttempts` display while
+  the repository ladder (AppStateManager) stays cumulative (owner-kept decision from 1.4-1) — one
+  failure after expiry re-locks for 30 s while the UI shows a reset counter. Flagged for the 2.0.2b/
+  unlock rework round; no new row.
+- The `routingKey` + `key(...)` teardown remains the 2.0.2b pre-registered mechanism (recorded, not
+  re-created).
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.9 — Main scaffold & navigation shell
 
