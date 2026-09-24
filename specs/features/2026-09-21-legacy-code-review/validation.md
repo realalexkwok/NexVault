@@ -19,7 +19,7 @@
 | 1.7 Onboarding | 2026-09-23 (O1–O5) + fix verification (V1–V5) | 2026-09-24 | `[x]` |
 | 1.8 Auth / unlock | 2026-09-24 (A1–A4) | 2026-09-24 | `[x]` |
 | 1.9 Main scaffold & navigation shell | 2026-09-24 (N1–N4) | 2026-09-24 | `[x]` |
-| 2.1 Network module | 2026-09-24 (W1–W4) | — | `[?]` |
+| 2.1 Network module | 2026-09-24 (W1–W4) | 2026-09-24 | `[x]` |
 | 2.2 Database module | — | — | `[ ]` |
 | 2.3 Chain management | — | — | `[ ]` |
 | 2.4 Home dashboard | — | — | `[ ]` |
@@ -437,7 +437,8 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan N1–N4, 0 f
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan W1–W4). Open finding 2.1-1
+(no tests, TC-NET) remains in the task file's findings table — owned by 2.0.6.
 
 ## Task 2.2 — Database module
 
