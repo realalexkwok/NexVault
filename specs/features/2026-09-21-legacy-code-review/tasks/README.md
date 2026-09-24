@@ -26,7 +26,7 @@
 | [1.7](1.7-onboarding.md) | Onboarding | `feature:feature-onboarding` | 30 | `07`+`08` | `[x]` |
 | [1.8](1.8-auth-unlock.md) | Auth / unlock | `feature:feature-auth` | 14 | `09` | `[x]` |
 | [1.9](1.9-main-scaffold-navigation.md) | Main scaffold & navigation shell | `app` | 1 (template stub) | `10` | `[x]` |
-| [2.1](2.1-network-module.md) | Network module | `core:core-network` | **0** | `11` | `[ ]` |
+| [2.1](2.1-network-module.md) | Network module | `core:core-network` | **0** | `11` | `[?]` |
 | [2.2](2.2-database-module.md) | Database module | `core:core-database` | **0** | `12` | `[ ]` |
 | [2.3](2.3-chain-management.md) | Chain management | `domain` + `data` + `core:core-ui` | **0** | `13` | `[ ]` |
 | [2.4](2.4-home-dashboard.md) | Home dashboard | `feature:feature-home` (+ domain/data tokens) | **0** | `14` | `[ ]` |

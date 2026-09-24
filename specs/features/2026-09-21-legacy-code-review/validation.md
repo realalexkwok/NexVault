@@ -19,7 +19,7 @@
 | 1.7 Onboarding | 2026-09-23 (O1–O5) + fix verification (V1–V5) | 2026-09-24 | `[x]` |
 | 1.8 Auth / unlock | 2026-09-24 (A1–A4) | 2026-09-24 | `[x]` |
 | 1.9 Main scaffold & navigation shell | 2026-09-24 (N1–N4) | 2026-09-24 | `[x]` |
-| 2.1 Network module | — | — | `[ ]` |
+| 2.1 Network module | 2026-09-24 (W1–W4) | — | `[?]` |
 | 2.2 Database module | — | — | `[ ]` |
 | 2.3 Chain management | — | — | `[ ]` |
 | 2.4 Home dashboard | — | — | `[ ]` |
@@ -418,7 +418,26 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan N1–N4, 0 f
 
 ## Task 2.1 — Network module
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-24 — 1 finding recorded (2.1-1 Medium) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| W1 | Build | `./gradlew :core:core-network:assembleDebug` | **BUILD SUCCESSFUL** (2026-09-24) |
+| W2 | DTO annotations | `grep -rL '@JsonClass' core-network/src/main/.../dto` | empty — all 7 annotated |
+| W3 | Endpoints & adapters | reads of APIs, adapters, interceptor, validator | CoinGecko/BlockExplorer methods present; adapters handle number/string/0x; validator regex 42-char; interceptor key-blank aware; `ConcurrentHashMap` cache; 10MB/30s OkHttp; HTTPS-only |
+| W4 | Tests | `find core/core-network/src/test -name '*.kt'` | **0** → **2.1-1 (Medium)** |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 2.1-1 | Medium | 2.0.6 |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 2.2 — Database module
 
