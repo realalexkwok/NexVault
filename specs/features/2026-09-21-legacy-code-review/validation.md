@@ -21,7 +21,7 @@
 | 1.9 Main scaffold & navigation shell | 2026-09-24 (N1–N4) | 2026-09-24 | `[x]` |
 | 2.1 Network module | 2026-09-24 (W1–W4) | 2026-09-24 | `[x]` |
 | 2.2 Database module | 2026-09-24 (D2–D4) | 2026-09-24 | `[x]` |
-| 2.3 Chain management | — | — | `[ ]` |
+| 2.3 Chain management | 2026-09-24 (C1–C5) | — | `[?]` |
 | 2.4 Home dashboard | — | — | `[ ]` |
 | 2.5 Token detail | — | — | `[ ]` |
 
@@ -465,7 +465,27 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan D2–D4). Op
 
 ## Task 2.3 — Chain management
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-24 — 1 finding recorded (2.3-1 Medium) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| C1 | Builds | `./gradlew :domain:compileKotlin :data:assembleDebug :core:core-ui:assembleDebug` | **BUILD SUCCESSFUL** (2026-09-24) |
+| C2 | Selection flows | reads of `ChainRepositoryImpl` + `ChainMapper` + use cases | DataStore-backed selection round-trips all 4 chains (post-1.4 NetworkType); unsupported → `DataResult.Error` (prompt's throw judged obsolete) |
+| C3 | UI surface | reads of selector/badge/mappers/drawables | `ChainSelectorDropdown`, `ChainBadge`, `ChainUi`, `toChainUi()`, `ChainIconMapper` (4 chains + fallback), 4 drawables — all present; `setChainVisible` orphan surface noted (3.4) |
+| C4 | Dead-field evidence | `grep -rnE '\.rpcUrl|iconResName'` | no readers outside the model; `Chain.rpcUrl` `""` for ETH/Sepolia; `iconResName` matches no drawable → **2.3-1 (Medium)** |
+| C5 | Hygiene + tests | greps | 0 TODO; 4 chain-related test files exist — the roadmap's "no tests" claim refuted; core-ui composables remain untested (TC-UI → 2.0.6) |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 2.3-1 | Medium | developer fix round (this CR) |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 2.4 — Home dashboard
 
