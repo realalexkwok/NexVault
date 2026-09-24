@@ -16,7 +16,7 @@
 | 1.4 DataStore & preferences | 2026-09-22 (D1–D5) + fix verification (V1–V7) | 2026-09-22 | `[x]` |
 | 1.5 Domain models & repository interfaces | 2026-09-22 (M1–M5) + fix verification (V1–V6) | 2026-09-23 | `[x]` |
 | 1.6 Data layer | 2026-09-23 (L1–L6) + fix verification (V1–V5) | 2026-09-23 | `[x]` |
-| 1.7 Onboarding | — | — | `[ ]` |
+| 1.7 Onboarding | 2026-09-23 (O1–O5) | — | `[?]` |
 | 1.8 Auth / unlock | — | — | `[ ]` |
 | 1.9 Main scaffold & navigation shell | — | — | `[ ]` |
 | 2.1 Network module | — | — | `[ ]` |
@@ -328,7 +328,28 @@ roadmap section carries the re-read note.
 
 ## Task 1.7 — Onboarding
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-23 — 2 findings recorded (1.7-1 High, 1.7-2 Low) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| O1 | Suite + build | `./gradlew :feature:feature-onboarding:testDebugUnitTest :feature:feature-onboarding:assembleDebug --rerun-tasks` | **BUILD SUCCESSFUL — 30 tests, 0 failures, 0 skipped** |
+| O2 | FLAG_SECURE | `grep -rn 'FLAG_SECURE' feature/feature-onboarding/src/main` | Create + Import set it; **VerifyMnemonicScreen does not** → **1.7-1 (High)** |
+| O3 | Grid spec | read `CreateWalletScreen.kt:242–244` | `GridCells.Fixed(3)` vs required 4×3 → **1.7-2 (Low)** |
+| O4 | Hygiene | `grep TODO()` · `grep Log\\.|println` in `feature-onboarding/src/main` | **0 / 0** |
+| O5 | Flow wiring | reads of the 5 VMs + navigation + routes | checkbox gating, verify order-check, import toggle/validation, SetPIN confirm/shake/biometric gating + pref save, `popUpTo(WELCOME)` back behavior, `walletId` arg keys — all present; init-block side effects recorded for 2.0.2b (pre-registered) |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 1.7-1 | High | 4.7 |
+| 1.7-2 | Low | 4.17 (or developer fix round) |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 1.8 — Auth / unlock
 
