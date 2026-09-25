@@ -3,6 +3,9 @@ package com.nexvault.wallet.domain.model.chain
 /**
  * Represents a blockchain network.
  *
+ * RPC endpoints are provided by `ChainConfigProvider` (core:core-network) and
+ * chain icons by `ChainIconMapper` (core:core-ui); this model carries neither.
+ *
  * @property nativeCoinName Display name for the chain native asset.
  * @property nativeCoinCoinGeckoId CoinGecko id for the native coin (used for charts and prices).
  */
@@ -10,10 +13,8 @@ data class Chain(
     val chainId: Int,
     val name: String,
     val symbol: String,
-    val rpcUrl: String,
     val explorerUrl: String,
     val isTestnet: Boolean,
-    val iconResName: String?,
     /** Display name for the chain's native coin (e.g. "Ethereum"). */
     val nativeCoinName: String,
     /** CoinGecko API id for the native coin (e.g. "ethereum"). */
@@ -28,10 +29,8 @@ object SupportedChains {
         chainId = 1,
         name = "Ethereum",
         symbol = "ETH",
-        rpcUrl = "",
         explorerUrl = "https://etherscan.io",
         isTestnet = false,
-        iconResName = "ic_ethereum",
         nativeCoinName = "Ethereum",
         nativeCoinCoinGeckoId = "ethereum",
     )
@@ -40,10 +39,8 @@ object SupportedChains {
         chainId = 11155111,
         name = "Sepolia Testnet",
         symbol = "ETH",
-        rpcUrl = "",
         explorerUrl = "https://sepolia.etherscan.io",
         isTestnet = true,
-        iconResName = "ic_ethereum",
         nativeCoinName = "Sepolia ETH",
         nativeCoinCoinGeckoId = "ethereum",
     )
@@ -52,10 +49,8 @@ object SupportedChains {
         chainId = 56,
         name = "BNB Smart Chain",
         symbol = "BNB",
-        rpcUrl = "https://bsc-dataseed.binance.org",
         explorerUrl = "https://bscscan.com",
         isTestnet = false,
-        iconResName = "ic_bnb",
         nativeCoinName = "BNB",
         nativeCoinCoinGeckoId = "binancecoin",
     )
@@ -64,10 +59,8 @@ object SupportedChains {
         chainId = 137,
         name = "Polygon",
         symbol = "MATIC",
-        rpcUrl = "https://polygon-rpc.com",
         explorerUrl = "https://polygonscan.com",
         isTestnet = false,
-        iconResName = "ic_polygon",
         nativeCoinName = "Polygon",
         nativeCoinCoinGeckoId = "matic-network",
     )
