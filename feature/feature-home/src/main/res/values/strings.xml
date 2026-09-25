@@ -2,6 +2,7 @@
     <string name="home_action_receive">Receive</string>
     <string name="home_action_send">Send</string>
     <string name="home_action_swap">Swap</string>
+    <string name="home_actions_coming_soon">Send and receive arrive in Phase 2; swap in Phase 3.</string>
     <string name="home_add_token">Add Token</string>
     <string name="home_add_token_cancel">Cancel</string>
     <string name="home_add_token_confirm">Add</string>

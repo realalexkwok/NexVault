@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,9 +69,6 @@ import java.math.BigDecimal
 @Composable
 fun HomeScreen(
     onNavigateToTokenDetail: (contractAddress: String, chainId: Int) -> Unit,
-    onNavigateToSend: () -> Unit,
-    onNavigateToReceive: () -> Unit,
-    onNavigateToSwap: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -134,11 +132,7 @@ fun HomeScreen(
                     )
                 }
                 item(key = "actions") {
-                    QuickActionsRow(
-                        onSend = onNavigateToSend,
-                        onReceive = onNavigateToReceive,
-                        onSwap = onNavigateToSwap,
-                    )
+                    QuickActionsRow()
                 }
                 item(key = "tokens_header") {
                     Row(
@@ -331,31 +325,35 @@ private fun PortfolioChartSection(
 }
 
 @Composable
-private fun QuickActionsRow(
-    onSend: () -> Unit,
-    onReceive: () -> Unit,
-    onSwap: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        QuickActionButton(
-            icon = Icons.Default.ArrowUpward,
-            label = stringResource(R.string.home_action_send),
-            onClick = onSend,
-        )
-        QuickActionButton(
-            icon = Icons.Default.ArrowDownward,
-            label = stringResource(R.string.home_action_receive),
-            onClick = onReceive,
-        )
-        QuickActionButton(
-            icon = Icons.Default.SwapHoriz,
-            label = stringResource(R.string.home_action_swap),
-            onClick = onSwap,
+private fun QuickActionsRow() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            QuickActionButton(
+                icon = Icons.Default.ArrowUpward,
+                label = stringResource(R.string.home_action_send),
+            )
+            QuickActionButton(
+                icon = Icons.Default.ArrowDownward,
+                label = stringResource(R.string.home_action_receive),
+            )
+            QuickActionButton(
+                icon = Icons.Default.SwapHoriz,
+                label = stringResource(R.string.home_action_swap),
+            )
+        }
+        // Roadmap 2.0.3: these actions have no destination yet (Send 2.6, Receive 2.7,
+        // Swap 3.3), so the buttons are disabled and the reason is stated right under them.
+        Text(
+            text = stringResource(R.string.home_actions_coming_soon),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = NexVaultDimens.spacingMd),
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -364,13 +362,13 @@ private fun QuickActionsRow(
 private fun QuickActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    onClick: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         FilledTonalIconButton(
-            onClick = onClick,
+            onClick = { },
+            enabled = false,
             modifier = Modifier.size(NexVaultDimens.actionButtonSize),
         ) {
             Icon(imageVector = icon, contentDescription = label)
@@ -379,6 +377,7 @@ private fun QuickActionButton(
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
     }
 }

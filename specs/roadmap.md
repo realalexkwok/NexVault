@@ -257,7 +257,21 @@ Spec: `specs/features/2026-09-25-2.0.2b-onboarding-repair/`.
 Exit criteria: with cleared app data, onboarding runs Welcome → mnemonic shown → verify →
 Set PIN → main, and the mnemonic that appears is the one that decrypts `mnemonic.enc`.
 
-### 2.0.3 — Close the navigation dead ends `[ ]`
+### 2.0.3 — Close the navigation dead ends `[~]`
+**IMPLEMENTED + DEVICE-WALKED 2026-09-25 — awaiting owner confirmation.** Own spec:
+`specs/features/2026-09-25-2.0.3-navigation-dead-ends/`. Branch `feature/2.0.3-navigation-dead-ends`
+(committed for review). Owner decision: **disable + visible explanation** (no destinations exist yet:
+Send 2.6, Receive 2.7, Swap 3.3, History 2.8).
+
+- Home's Send/Receive/Swap and TokenDetail's Send/Receive/See All are disabled, each row with a
+  phase-explaining caption; the empty-lambda wiring in `MainScreen` is deleted.
+- The four placeholder tabs were already informative ("Coming in Phase X") — not dead ends,
+  unchanged.
+- Verified: build green, **249 tests / 0 failures / 1 skipped**, gates **identical to main**
+  (detekt 65, ktlint 1454), device walk passed (captions render, buttons disabled, taps inert,
+  Home → TokenDetail and all tabs still work, 0 crashes). The disabled See All is diff-verified
+  only — no transaction data exists without API keys (2.0.4).
+
 `app/src/main/java/com/nexvault/wallet/ui/main/MainScreen.kt` wires Home → TokenDetail,
 but passes empty lambdas for send, receive, swap, and history. Combined with the four
 placeholder tabs, the app currently has no path to any Phase 2 feature.

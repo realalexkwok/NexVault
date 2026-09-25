@@ -131,9 +131,6 @@ fun MainScreen(
                         onNavigateToTokenDetail = { contractAddress, chainId ->
                             tabNavController.navigate("token_detail/$contractAddress/$chainId")
                         },
-                        onNavigateToSend = { },
-                        onNavigateToReceive = { },
-                        onNavigateToSwap = { },
                     )
                 }
                 composable(
@@ -145,9 +142,6 @@ fun MainScreen(
                 ) {
                     TokenDetailScreen(
                         onNavigateBack = { tabNavController.popBackStack() },
-                        onNavigateToSend = { _, _ -> },
-                        onNavigateToReceive = { },
-                        onNavigateToHistory = { _, _ -> },
                     )
                 }
             }

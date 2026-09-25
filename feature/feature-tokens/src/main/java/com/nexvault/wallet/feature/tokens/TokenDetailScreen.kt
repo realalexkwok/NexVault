@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,18 +60,16 @@ import com.nexvault.wallet.feature.tokens.R
 /**
  * Token detail: balance, chart, stats, actions, and recent transactions.
  *
+ * Send / Receive / See All are **disabled with a visible explanation** until their
+ * destinations land (roadmap 2.0.3: Send 2.6, Receive 2.7, History 2.8) — the navigation
+ * callbacks return with those items.
+ *
  * @param onNavigateBack Back navigation.
- * @param onNavigateToSend Opens send flow for this token (wired in a later task).
- * @param onNavigateToReceive Opens receive flow.
- * @param onNavigateToHistory Opens full history for this token filter.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TokenDetailScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToSend: (contractAddress: String, chainId: Int) -> Unit,
-    onNavigateToReceive: () -> Unit,
-    onNavigateToHistory: (contractAddress: String, chainId: Int) -> Unit,
     viewModel: TokenDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -134,10 +133,7 @@ fun TokenDetailScreen(
                             TokenPriceStats(token = token)
                         }
                         item(key = "actions") {
-                            TokenActionButtons(
-                                onSend = { onNavigateToSend(token.contractAddress, token.chainId) },
-                                onReceive = onNavigateToReceive,
-                            )
+                            TokenActionButtons()
                         }
                         if (uiState.recentTransactions.isNotEmpty()) {
                             item(key = "tx_header") {
@@ -155,9 +151,8 @@ fun TokenDetailScreen(
                                         fontWeight = FontWeight.Bold,
                                     )
                                     TextButton(
-                                        onClick = {
-                                            onNavigateToHistory(token.contractAddress, token.chainId)
-                                        },
+                                        onClick = { },
+                                        enabled = false,
                                     ) {
                                         Text(stringResource(R.string.token_detail_see_all))
                                         Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
@@ -393,39 +388,49 @@ private fun TokenStatRow(
 }
 
 @Composable
-private fun TokenActionButtons(
-    onSend: () -> Unit,
-    onReceive: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
-        horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacing12),
-    ) {
-        Button(
-            onClick = onSend,
-            modifier = Modifier.weight(1f),
+private fun TokenActionButtons() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
+            horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacing12),
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowUpward,
-                contentDescription = null,
-                modifier = Modifier.size(NexVaultDimens.iconSizeXs),
-            )
-            Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
-            Text(stringResource(R.string.token_detail_send))
+            Button(
+                onClick = { },
+                enabled = false,
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowUpward,
+                    contentDescription = null,
+                    modifier = Modifier.size(NexVaultDimens.iconSizeXs),
+                )
+                Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
+                Text(stringResource(R.string.token_detail_send))
+            }
+            OutlinedButton(
+                onClick = { },
+                enabled = false,
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowDownward,
+                    contentDescription = null,
+                    modifier = Modifier.size(NexVaultDimens.iconSizeXs),
+                )
+                Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
+                Text(stringResource(R.string.token_detail_receive))
+            }
         }
-        OutlinedButton(
-            onClick = onReceive,
-            modifier = Modifier.weight(1f),
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowDownward,
-                contentDescription = null,
-                modifier = Modifier.size(NexVaultDimens.iconSizeXs),
-            )
-            Spacer(modifier = Modifier.width(NexVaultDimens.spacingSm))
-            Text(stringResource(R.string.token_detail_receive))
-        }
+        // Roadmap 2.0.3: Send (2.6), Receive (2.7) and full history (2.8) have no destination
+        // yet, so their controls are disabled and the reason is stated right under them.
+        Text(
+            text = stringResource(R.string.token_detail_actions_coming_soon),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = NexVaultDimens.spacingMd),
+            textAlign = TextAlign.Center,
+        )
     }
 }
