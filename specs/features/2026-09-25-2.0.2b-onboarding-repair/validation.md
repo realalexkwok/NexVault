@@ -1,12 +1,22 @@
 # 2.0.2b — Repair the onboarding flow — Validation record
 
-> Status: **BOTH HALVES EXECUTED 2026-09-25 — AWAITING OWNER CONFIRMATION.**
+> Status: **CLOSED 2026-09-25 — owner-directed close after both halves passed.**
 > Requirements: `requirements.md` (owner Q1–Q3, D1–D6). Plan: `plan.md`.
-> Branch: `feature/2.0.2b-onboarding-repair`; the change set is committed there as **`db2c104`**
-> (owner-directed commit for review, 2026-09-25).
+> Committed on the temporary branch `feature/2.0.2b-onboarding-repair` as **`db2c104`** (+ `e96106c`
+> records), then merged to `main` and the branch deleted, on the owner's direction.
 > Manual half: the owner reconnected the Pixel 6a and directed the walk; it ran on
-> 2026-09-25 13:36–13:44 HKT and **passed** (M1–M9 below, plus two defects it found and that
+> 2026-09-25 13:36–13:44 HKT and **passed** (M1–M11 below, plus two defects it found and that
 > were fixed before the walk was repeated from clean data).
+
+## Sign-off
+
+| Field | Value |
+| --- | --- |
+| Automatic half | PASS — build green, **249 tests / 0 failures / 1 skipped**, gate counts lower than at HEAD (A1–A6) |
+| Manual half | PASS — device walk M1–M11 on the Pixel 6a, 2026-09-25 (executed by the agent on the owner's direction; the owner reconnected the device and read the result) |
+| Owner sign-off | **2026-09-25 — owner directed the close** (merge `main`, push, delete the temporary branch) |
+| Optional human checks offered | Visual mnemonic grid (FLAG_SECURE blocks screenshots), biometric toggle/unlock, back-navigation mid-onboarding — **not separately reported**; the walk covered them structurally, they remain un-eyeballed |
+| CR 1.6-1 record row | The fix is verified by this walk; resolving/deleting the stale row in `specs/features/2026-09-21-legacy-code-review/tasks/1.6-data-layer.md` is the **reviewer's** action, not taken here |
 
 ## What was wrong (confirmed in code, 2026-09-25)
 

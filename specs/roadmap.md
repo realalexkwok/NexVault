@@ -45,13 +45,16 @@ without evidence.
 > unusable and the wallet unbacked-up. Nothing else in Phase 2.0 can be verified until
 > this is fixed, because no flow can get past the first screen.
 >
-> **2.0.2b fix implemented and device-walked 2026-09-25 — awaiting the owner's confirmation.**
-> Build green, **249 tests / 0 failures / 1 skipped**, both gate counts lower than at HEAD, and the
-> full onboarding flow observed on the Pixel 6a (create, verify, Set PIN, cold-start unlock,
-> mnemonic and private-key import, abandoned-attempt recovery). Evidence:
-> `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md` (branch
-> `feature/2.0.2b-onboarding-repair`, committed as `db2c104`). The item stays `[~]` until the owner
-> confirms; the walk also found and fixed two defects the code alone did not show.
+> **2.0.2b fix implemented, device-walked and CLOSED 2026-09-25.** Build green,
+> **249 tests / 0 failures / 1 skipped**, both gate counts lower than at HEAD, and the full
+> onboarding flow observed on the Pixel 6a (create, verify, Set PIN, cold-start unlock, mnemonic
+> and private-key import, abandoned-attempt recovery). The walk also found and fixed two defects
+> the code alone did not show. Evidence:
+> `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md`; merged to `main` on the
+> owner's direction.
+>
+> **The next open entry point is 2.0.3 (navigation dead ends)**, then 2.0.4 → 2.0.7 — singly or as
+> owner-approved grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
 >
 > What the first run has already bought, beyond the two defects it found: the app is
 > confirmed to build, install, launch, and render on a Pixel 6a, and one prediction
@@ -186,10 +189,10 @@ Not done: the rest of the happy path. One tap past Welcome it hits **2.0.2b**.
 Exit criteria: the main happy path has been observed on a device, with screenshots or a
 written trace, and any crash is filed as its own roadmap item.
 
-### 2.0.2b — Repair the onboarding flow `[~]`
-**FIX IMPLEMENTED 2026-09-25 — awaiting the device walk.** Own spec:
+### 2.0.2b — Repair the onboarding flow `[x]`
+**CLOSED 2026-09-25 — owner-directed close after the device walk passed.** Own spec:
 `specs/features/2026-09-25-2.0.2b-onboarding-repair/` (requirements with owner decisions Q1–Q3,
-plan, validation with the automatic-half evidence). Branch `feature/2.0.2b-onboarding-repair`.
+plan, validation with both halves). Merged to `main`; the temporary feature branch is deleted.
 
 What landed (owner decisions: **B + A** for the flow, **KeyStore-only + session gate** for
 CR 1.6-1, single item):
@@ -216,7 +219,9 @@ Pixel 6a: create → mnemonic → verify → Set PIN → Home; cold start → Un
 (canonical vector → address `0x9858EfFD…Eda94`); private-key import (key `1` → address
 `0x7E5F4552…95Bdf`); abandoned attempt → Welcome + single wallet row; no crashes after the fixes.
 Per-step evidence: `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md` (M1–M11).
-**Owner confirmation is the only thing left** — the item stays `[~]` until it is given.
+**Signed off by owner direction 2026-09-25** (close: merge to `main`, push, delete the temporary
+branch). The three optional human checks (visual grid, biometric, back-navigation) were offered and
+not separately reported — recorded as such in the validation record, not silently omitted.
 
 **BLOCKER, found 2026-09-21 by the first real run.** The wallet is created but the user
 never sees the mnemonic, and the app is left unusable on the device.

@@ -262,7 +262,7 @@ device with `targetSdk 37`, which the platform accepts.
 
 # 2.0.2b — First run of the onboarding flow: the wallet is created but never backed up
 
-> Status: **DEFECT FIXED AND DEVICE-WALKED 2026-09-25 — awaiting the owner's confirmation.** The fix
+> Status: **CLOSED 2026-09-25 — owner-directed close after the device walk passed.** The fix
 > round, its owner decisions and all evidence (automatic + the M1–M11 device walk) live in the
 > item's own spec:
 > [`../2026-09-25-2.0.2b-onboarding-repair/validation.md`](../2026-09-25-2.0.2b-onboarding-repair/validation.md)
