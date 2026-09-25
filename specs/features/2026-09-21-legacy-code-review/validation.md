@@ -22,7 +22,7 @@
 | 2.1 Network module | 2026-09-24 (W1–W4) | 2026-09-24 | `[x]` |
 | 2.2 Database module | 2026-09-24 (D2–D4) | 2026-09-24 | `[x]` |
 | 2.3 Chain management | 2026-09-24 (C1–C5) + fix verification (V1–V5) | 2026-09-25 | `[x]` |
-| 2.4 Home dashboard | 2026-09-25 (H1–H4) | — | `[?]` |
+| 2.4 Home dashboard | 2026-09-25 (H1–H4) | 2026-09-25 | `[x]` |
 | 2.5 Token detail | — | — | `[ ]` |
 
 ---
@@ -520,7 +520,8 @@ device run included).
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **DONE 2026-09-25** — user-confirmed close per Q9 (scan H1–H4). Open finding 2.4-1
+(no tests, TC-VM/TC-UI) remains in the task file's findings table — owned by 2.0.6.
 
 ## Task 2.5 — Token detail
 

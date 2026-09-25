@@ -29,7 +29,7 @@
 | [2.1](2.1-network-module.md) | Network module | `core:core-network` | **0** | `11` | `[x]` |
 | [2.2](2.2-database-module.md) | Database module | `core:core-database` | **0** | `12` | `[x]` |
 | [2.3](2.3-chain-management.md) | Chain management | `domain` + `data` + `core:core-ui` | 4 test files | `13` | `[x]` |
-| [2.4](2.4-home-dashboard.md) | Home dashboard | `feature:feature-home` (+ domain/data tokens) | **0** | `14` | `[?]` |
+| [2.4](2.4-home-dashboard.md) | Home dashboard | `feature:feature-home` (+ domain/data tokens) | **0** | `14` | `[x]` |
 | [2.5](2.5-token-detail.md) | Token detail | `feature:feature-tokens` (+ domain/data tx) | **0** | `15` | `[ ]` |
 
 Order is strict 1.1 → 2.5; a later task does not start before the previous one is closed, per the
