@@ -21,7 +21,7 @@
 | 1.9 Main scaffold & navigation shell | 2026-09-24 (N1–N4) | 2026-09-24 | `[x]` |
 | 2.1 Network module | 2026-09-24 (W1–W4) | 2026-09-24 | `[x]` |
 | 2.2 Database module | 2026-09-24 (D2–D4) | 2026-09-24 | `[x]` |
-| 2.3 Chain management | 2026-09-24 (C1–C5) | — | `[?]` |
+| 2.3 Chain management | 2026-09-24 (C1–C5) + fix verification (V1–V5) | 2026-09-25 | `[x]` |
 | 2.4 Home dashboard | — | — | `[ ]` |
 | 2.5 Token detail | — | — | `[ ]` |
 
@@ -496,7 +496,8 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan D2–D4). Op
 
 ### Manual half
 
-Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
+Sign-off: **DONE 2026-09-25** — user-confirmed close per Q9 (fix verified by the reviewer V1–V5,
+device run included).
 
 ## Task 2.4 — Home dashboard
 
