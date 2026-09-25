@@ -36,9 +36,9 @@ without evidence.
 > signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
 > gate closure and every finding handed to its owning item).
 >
-> **The only open entry point is now the Phase 2.0 remainder — 2.0.2b first** — proceeded singly or
-> as owner-approved grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on
-> Phase 2.0.
+> **The next open entry point is 2.0.3 (navigation dead ends)** — the Phase 2.0 remainder
+> (2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7) is proceeded singly or as owner-approved grouped items
+> (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
