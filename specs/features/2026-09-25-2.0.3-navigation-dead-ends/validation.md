@@ -1,9 +1,18 @@
 # 2.0.3 — Close the navigation dead ends — Validation record
 
-> Status: **IMPLEMENTED + DEVICE-WALKED 2026-09-25 — AWAITING OWNER CONFIRMATION.**
+> Status: **CLOSED 2026-09-25 — reviewer accepted, owner directed the close.**
 > Requirements: `requirements.md` (Q1, D1–D4). Plan: `plan.md`.
-> Branch: `feature/2.0.3-navigation-dead-ends`; the change set is committed there
-> (owner-directed commit for review, 2026-09-25).
+> Branch: `feature/2.0.3-navigation-dead-ends`; merged to `main` and the branch deleted.
+
+## Sign-off
+
+| Field | Value |
+| --- | --- |
+| Automatic half | PASS — build green, 249 tests / 0 failures / 1 skipped, gates identical to `main` (A1–A4) |
+| Manual half | PASS — Pixel 6a walk M1–M8 (developer) and the reviewer's device re-walk (`c3858cf`: captions render, controls disabled, taps inert, 0 crashes) |
+| Reviewer | **ACCEPTED** — `da3d9ff` (verification of `72732f2`) + `c3858cf` (device re-walk), 2026-09-25 |
+| Owner | **Confirmed and directed the close** 2026-09-25 (merge `main`, push, delete branch) |
+| Not exercisable on device | Disabled "See All" — diff-verified only (no transaction data without API keys; owners: 2.0.4/2.8) |
 
 ## Automatic half
 

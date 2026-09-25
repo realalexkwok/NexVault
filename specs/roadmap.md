@@ -53,8 +53,12 @@ without evidence.
 > `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md`; merged to `main` on the
 > owner's direction.
 >
-> **The next open entry point is 2.0.3 (navigation dead ends)**, then 2.0.4 → 2.0.7 — singly or as
-> owner-approved grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
+> **The next open entry point is 2.0.4 (API-key strategy)**, then 2.0.5 → 2.0.7 — singly or as
+> owner-approved grouped items (the G1–G5 grouping precedent). The owner filled all five keys in
+> `local.properties` (2026-09-25), so 2.0.4 now plans around real keys; note for its planning: the
+> build does **not** currently load `local.properties` (`app/build.gradle.kts` reads
+> `project.findProperty`, which sees neither that file nor `~/.gradle/gradle.properties`), so the
+> wiring must be added there. Phase 2.6+ still waits on Phase 2.0.
 >
 > What the first run has already bought, beyond the two defects it found: the app is
 > confirmed to build, install, launch, and render on a Pixel 6a, and one prediction
@@ -257,11 +261,12 @@ Spec: `specs/features/2026-09-25-2.0.2b-onboarding-repair/`.
 Exit criteria: with cleared app data, onboarding runs Welcome → mnemonic shown → verify →
 Set PIN → main, and the mnemonic that appears is the one that decrypts `mnemonic.enc`.
 
-### 2.0.3 — Close the navigation dead ends `[~]`
-**IMPLEMENTED + DEVICE-WALKED 2026-09-25 — awaiting owner confirmation.** Own spec:
-`specs/features/2026-09-25-2.0.3-navigation-dead-ends/`. Branch `feature/2.0.3-navigation-dead-ends`
-(committed for review). Owner decision: **disable + visible explanation** (no destinations exist yet:
-Send 2.6, Receive 2.7, Swap 3.3, History 2.8).
+### 2.0.3 — Close the navigation dead ends `[x]`
+**CLOSED 2026-09-25 — reviewer accepted (verification commits `da3d9ff`/`c3858cf`, incl. a device
+re-walk: captions render, controls disabled, taps inert, 0 crashes) and the owner directed the
+close (merge `main`, push, delete the branch).** Own spec:
+`specs/features/2026-09-25-2.0.3-navigation-dead-ends/`. Owner decision: **disable + visible
+explanation** (no destinations exist yet: Send 2.6, Receive 2.7, Swap 3.3, History 2.8).
 
 - Home's Send/Receive/Swap and TokenDetail's Send/Receive/See All are disabled, each row with a
   phase-explaining caption; the empty-lambda wiring in `MainScreen` is deleted.
