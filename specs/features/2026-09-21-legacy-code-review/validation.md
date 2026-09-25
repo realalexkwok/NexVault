@@ -22,7 +22,7 @@
 | 2.1 Network module | 2026-09-24 (W1–W4) | 2026-09-24 | `[x]` |
 | 2.2 Database module | 2026-09-24 (D2–D4) | 2026-09-24 | `[x]` |
 | 2.3 Chain management | 2026-09-24 (C1–C5) + fix verification (V1–V5) | 2026-09-25 | `[x]` |
-| 2.4 Home dashboard | — | — | `[ ]` |
+| 2.4 Home dashboard | 2026-09-25 (H1–H4) | — | `[?]` |
 | 2.5 Token detail | — | — | `[ ]` |
 
 ---
@@ -501,7 +501,26 @@ device run included).
 
 ## Task 2.4 — Home dashboard
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-25 — 1 finding recorded (2.4-1 Medium) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| H1 | Builds | `./gradlew :feature:feature-home:assembleDebug :data:assembleDebug` | **BUILD SUCCESSFUL** (2026-09-25) |
+| H2 | Dashboard surface | reads of `HomeScreen`/`HomeViewModel`/`HomeUiState`/`AddTokenDialog` | portfolio total, 1D/7D/1M/3M/ALL FilterChips, PullToRefreshBox, chain selector wiring, token-row nav, shimmer/empty/error/no-data states — all present |
+| H3 | Seeding + IO discipline | reads of `RefreshBalancesUseCase` + `TokenRepositoryImpl` | chain-switch seeding (1.5 fix); `withContext(Dispatchers.IO)` around Web3j calls |
+| H4 | Tests | `find feature/feature-home/src/test -name '*.kt'` | **0** → **2.4-1 (Medium)** |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 2.4-1 | Medium | 2.0.6 |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
 
 ## Task 2.5 — Token detail
 
