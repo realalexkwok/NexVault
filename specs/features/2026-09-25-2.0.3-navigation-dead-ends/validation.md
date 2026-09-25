@@ -71,11 +71,13 @@ Screenshots: `/tmp/t203-home.png`, `/tmp/t203-token_detail.png`, `/tmp/t203-toke
 | --- | --- | --- | --- |
 | R7 | Build + tests | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --continue` | **PASS** — **249 tests, 0 failures, 0 errors, 1 skipped** (unchanged, matches claim) |
 | R8 | Gates (reviewer basis) | `detekt ktlintCheck` | detekt 10 tasks / **78 weighted** — unchanged from the reviewer's 2.0.2b baseline (their 65→65 uses raw counts); ktlint 39 tasks unchanged. **No new findings in the touched files.** |
-| R9 | Device | `adb devices` | **No device attached during the review** (the Pixel 6a was offline) — the M1–M8 walk evidence remains developer-recorded; the manual half is the owner's confirmation. |
+| R9 | Device (reviewer re-walk, 2026-09-25) | Pixel 6a over adb-tls; Unlock via PIN → Home | **Verified by the reviewer:** Home caption renders; Send/Receive/Swap nodes `enabled="false"` (indices 9/11/13); tap on disabled Send is inert (screen unchanged, same activity); token row → TokenDetail navigates; TokenDetail Send/Receive nodes `enabled="false"` (indices 13/14) and the caption renders after scrolling the lazy list; a placeholder tab renders its informative "Coming in Phase 3" text; `logcat` `FATAL EXCEPTION` count **0**. See All not rendered (no transactions without API keys — 2.0.4), diff-verified only, consistent with M6. | ✅
 
 ### Verdict
 
-**PASS (automatic + diff).** The change set satisfies the 2.0.3 exit criteria in code: every formerly
-silent control is now disabled with a persistent, phase-naming caption, and the empty-lambda wiring
-is gone rather than hidden. Remaining for closure: the owner's manual-half confirmation of the
-device walk (M1–M8) and the owner merge of `feature/2.0.3-navigation-dead-ends` to `main`.
+**PASS (automatic + diff + device).** The change set satisfies the 2.0.3 exit criteria in code and
+on device: every formerly silent control is disabled with a persistent, phase-naming caption, the
+empty-lambda wiring is gone rather than hidden, and the reviewer re-walked the key transitions on
+the Pixel 6a (caption renders, disabled semantics, inert taps, token navigation intact, 0 crashes).
+Remaining for closure: the owner merge of `feature/2.0.3-navigation-dead-ends` to `main` (the
+device half is now reviewer-verified; the owner's own confirmation is still welcome).
