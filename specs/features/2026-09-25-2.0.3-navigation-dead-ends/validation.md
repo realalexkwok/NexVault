@@ -46,3 +46,36 @@ Screenshots: `/tmp/t203-home.png`, `/tmp/t203-token_detail.png`, `/tmp/t203-toke
 | Re-enabling the buttons with real navigation callbacks | The destinations arrive with their items (Send 2.6, Receive 2.7, Swap 3.3, History 2.8); each item must restore the removed `HomeScreen`/`TokenDetailScreen` callback parameters and the `MainScreen` wiring | **2.6 / 2.7 / 2.8 / 3.3** |
 | Exercising the disabled "See All" on a device | Needs real transaction history, which needs API keys (2.0.4) and the history implementation (2.8) | **2.8** |
 | Hardcoded placeholder-tab strings in `app` | Out of scope here; string adoption is 4.17 | **4.17** |
+
+---
+
+## Reviewer verification — commit 72732f2 (2026-09-25)
+
+> Code-reviewer session (read-only on production code; record files only). Re-verified from the
+> tree and by fresh runs; nothing taken on trust.
+
+### Diff review — verdicts
+
+| # | Criterion | Check | Verdict |
+| --- | --- | --- | --- |
+| R1 | AC-1 no empty-lambda wiring | `grep -nE '= \{ \}|= \{ _, _ -> \}'` on `MainScreen.kt` → **0**; the six callback **parameters are fully deleted** from `HomeScreen`/`TokenDetailScreen` and their call sites — no dead affordance survives anywhere in `app`/`feature` | ✅ |
+| R2 | AC-2 Home controls | `QuickActionButton` is unconditionally `onClick = { }` + `enabled = false` (label dimmed `alpha 0.5f`); caption `home_actions_coming_soon` renders under the row ("Send and receive arrive in Phase 2; swap in Phase 3.") | ✅ |
+| R3 | AC-3 TokenDetail controls | Send/Receive `Button`/`OutlinedButton` disabled + caption `token_detail_actions_coming_soon`; **See All** `TextButton` `onClick = { }` + `enabled = false`; KDoc updated; the three callback params deleted | ✅ |
+| R4 | V1 deviation | The plan's `enabled` parameter was dropped in favour of unconditionally disabled buttons — correct call: dead API until 2.6/2.7/3.3 land; documented in the spec's deviations table | ✅ |
+| R5 | D2 strings | The two captions are new English strings in each feature module's `values/strings.xml` (ZH i18n is 3.7) | ✅ |
+| R6 | Placeholders untouched | The 4 tab placeholders are informative by design (not dead ends) and unchanged — consistent with the requirements' reading of 2.0.3 | ✅ |
+
+### Fresh automatic evidence (reviewer's own runs)
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| R7 | Build + tests | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --continue` | **PASS** — **249 tests, 0 failures, 0 errors, 1 skipped** (unchanged, matches claim) |
+| R8 | Gates (reviewer basis) | `detekt ktlintCheck` | detekt 10 tasks / **78 weighted** — unchanged from the reviewer's 2.0.2b baseline (their 65→65 uses raw counts); ktlint 39 tasks unchanged. **No new findings in the touched files.** |
+| R9 | Device | `adb devices` | **No device attached during the review** (the Pixel 6a was offline) — the M1–M8 walk evidence remains developer-recorded; the manual half is the owner's confirmation. |
+
+### Verdict
+
+**PASS (automatic + diff).** The change set satisfies the 2.0.3 exit criteria in code: every formerly
+silent control is now disabled with a persistent, phase-naming caption, and the empty-lambda wiring
+is gone rather than hidden. Remaining for closure: the owner's manual-half confirmation of the
+device walk (M1–M8) and the owner merge of `feature/2.0.3-navigation-dead-ends` to `main`.
