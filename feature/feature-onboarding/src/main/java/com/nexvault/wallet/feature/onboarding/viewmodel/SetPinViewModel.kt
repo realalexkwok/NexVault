@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.repository.AuthRepository
 import com.nexvault.wallet.domain.usecase.auth.SetPinUseCase
+import com.nexvault.wallet.domain.usecase.wallet.CompleteOnboardingUseCase
 import com.nexvault.wallet.feature.onboarding.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,14 +26,19 @@ import javax.inject.Inject
  * 1. "Set Your PIN" — user enters a 6-digit PIN
  * 2. "Confirm Your PIN" — user re-enters the same PIN
  *
- * If PINs match, the PIN is stored and biometric preference is set.
- * If PINs don't match, error is shown and user resets to phase 1.
+ * If PINs match, the PIN is stored, onboarding is marked complete and biometric preference is
+ * set. If PINs don't match, error is shown and user resets to phase 1.
+ *
+ * Onboarding completion (which writes `is_wallet_set_up` and unlocks the session) happens here
+ * and nowhere earlier — that is what stops the root router from swapping graphs mid-flow
+ * (roadmap 2.0.2b, option A).
  *
  * Also handles optional biometric enable toggle.
  */
 @HiltViewModel
 class SetPinViewModel @Inject constructor(
     private val setPinUseCase: SetPinUseCase,
+    private val completeOnboardingUseCase: CompleteOnboardingUseCase,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
@@ -165,11 +171,28 @@ class SetPinViewModel @Inject constructor(
 
                 when (result) {
                     is DataResult.Success -> {
+                        // Save the biometric choice *before* onboarding completes: completion
+                        // switches the root router to `main`, which destroys this screen and
+                        // cancels this ViewModel's scope (found by the 2.0.2b device walk).
                         if (_uiState.value.isBiometricEnabled) {
                             authRepository.setBiometricEnabled(true)
                         }
-                        _uiState.update { it.copy(isLoading = false) }
-                        _navigationEvent.tryEmit(NavigationEvent.NavigateToMain)
+                        when (val completion = completeOnboardingUseCase()) {
+                            is DataResult.Success -> {
+                                _uiState.update { it.copy(isLoading = false) }
+                                _navigationEvent.tryEmit(NavigationEvent.NavigateToMain)
+                            }
+                            is DataResult.Error -> {
+                                _uiState.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        errorRes = R.string.set_pin_failed,
+                                        errorArgs = emptyList(),
+                                        errorMessage = completion.message,
+                                    )
+                                }
+                            }
+                        }
                     }
                     is DataResult.Error -> {
                         _uiState.update {

@@ -4,18 +4,14 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.nexvault.wallet.core.datastore.model.AutoLockTimeout
 import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
+import com.nexvault.wallet.core.datastore.state.AppStateManager
 import com.nexvault.wallet.core.security.biometric.BiometricHelper
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,8 +28,8 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var securityPreferences: SecurityPreferencesDataStore
 
-    private val _isAuthenticated = MutableStateFlow(false)
-    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
+    @Inject
+    lateinit var appStateManager: AppStateManager
 
     private var backgroundedAt: Long = 0L
 
@@ -45,9 +41,13 @@ class MainActivity : FragmentActivity() {
             NexVaultTheme(darkTheme = true) {
                 NexVaultApp(
                     biometricHelper = biometricHelper,
-                    isAuthenticated = isAuthenticated,
-                    onAuthSuccess = { _isAuthenticated.value = true },
-                    onAuthRequired = { _isAuthenticated.value = false },
+                    // One session source: the AppStateManager flag that also gates wallet
+                    // material retrieval (roadmap 2.0.2b). Completing onboarding unlocks it, so
+                    // the router reaches `main` without a detour through the auth graph, and
+                    // process-scoped it survives configuration changes.
+                    isAuthenticated = appStateManager.isUnlocked,
+                    onAuthSuccess = { appStateManager.unlock() },
+                    onAuthRequired = { appStateManager.lock() },
                     securityPreferences = securityPreferences,
                 )
             }
@@ -56,14 +56,14 @@ class MainActivity : FragmentActivity() {
 
     override fun onStop() {
         super.onStop()
-        if (_isAuthenticated.value) {
+        if (appStateManager.isUnlocked.value) {
             backgroundedAt = System.currentTimeMillis()
         }
     }
 
     override fun onStart() {
         super.onStart()
-        if (backgroundedAt > 0L && _isAuthenticated.value) {
+        if (backgroundedAt > 0L && appStateManager.isUnlocked.value) {
             val elapsedMs = System.currentTimeMillis() - backgroundedAt
 
             lifecycleScope.launch {
@@ -76,7 +76,7 @@ class MainActivity : FragmentActivity() {
                 }
 
                 if (elapsedMs > timeoutMillis) {
-                    _isAuthenticated.value = false
+                    appStateManager.lock()
                 }
                 backgroundedAt = 0L
             }

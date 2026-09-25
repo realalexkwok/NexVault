@@ -6,7 +6,10 @@ import javax.inject.Inject
 
 /**
  * Retrieves the mnemonic for backup display.
- * Caller must ensure authentication has been performed before calling.
+ *
+ * The repository enforces the authentication gate: the session must be unlocked, except
+ * during onboarding (while `is_wallet_set_up` is still false), where the Verify screen
+ * reads back the phrase it has just stored.
  */
 class GetMnemonicForBackupUseCase @Inject constructor(
     private val walletRepository: WalletRepository,

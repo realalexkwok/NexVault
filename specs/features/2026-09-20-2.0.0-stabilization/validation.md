@@ -262,8 +262,21 @@ device with `targetSdk 37`, which the platform accepts.
 
 # 2.0.2b — First run of the onboarding flow: the wallet is created but never backed up
 
-> Status: **BLOCKED — new critical defect found. The app is currently unusable on the
-> test device and the wallet it created is unrecoverable by the user.**
+> Status: **DEFECT FIXED AND DEVICE-WALKED 2026-09-25 — awaiting the owner's confirmation.** The fix
+> round, its owner decisions and all evidence (automatic + the M1–M11 device walk) live in the
+> item's own spec:
+> [`../2026-09-25-2.0.2b-onboarding-repair/validation.md`](../2026-09-25-2.0.2b-onboarding-repair/validation.md)
+> (requirements / plan / validation). Summary: the wallet is no longer persisted before the user
+> acknowledges the mnemonic (option B), `is_wallet_set_up` is written only at Set PIN completion
+> (option A), the root router checks the session first, and CR 1.6-1 is remediated by
+> KeyStore-only wallet encryption plus an unlocked-session retrieval gate. Build green,
+> **249 tests / 0 failures / 1 skipped**; the flow now runs Welcome → mnemonic → verify → Set PIN →
+> Home, cold-start unlock works, and both import paths land on Home (the walk also found and fixed
+> a mnemonic-grid crash and a completion-cancellation defect). The original finding below is kept
+> as the record of what the first run observed.
+>
+> Status before the fix: **BLOCKED — new critical defect found. The app is currently unusable on
+> the test device and the wallet it created is unrecoverable by the user.**
 > Reached the welcome screen and one tap further. Reported to the owner 2026-09-21.
 
 ## What was observed

@@ -22,17 +22,20 @@ import kotlinx.coroutines.flow.StateFlow
  * Root composable for the NexVault app.
  *
  * Determines the start destination based on:
- * 1. Is a wallet created? (from SecurityPreferencesDataStore.isWalletSetUp)
+ * 1. Is the user authenticated? (the `AppStateManager` session, supplied as
+ *    [isAuthenticated]) — YES → main_graph (home, history, dapp, nft, settings)
+ * 2. Is a wallet set up? (from SecurityPreferencesDataStore.isWalletSetUp)
  *    - NO  → onboarding_graph (create or import wallet)
- *    - YES → check authentication state
- * 2. Is the user authenticated? (from isAuthenticated StateFlow)
- *    - NO  → auth_graph (unlock screen)
- *    - YES → main_graph (home, history, dapp, nft, settings)
+ *    - YES → auth_graph (unlock screen)
  *
  * Navigation flow:
  * - First launch: onboarding_graph → (after PIN set) → main_graph
  * - Returning user: auth_graph → (after unlock) → main_graph
  * - After auto-lock: auth_graph → (after unlock) → main_graph
+ *
+ * The session is checked **first** on purpose (roadmap 2.0.2b): completing onboarding writes
+ * `is_wallet_set_up` and unlocks the session, and if the flag were checked first the root
+ * NavHost would be rebuilt at the auth graph in between — the defect this item fixes.
  */
 @Composable
 fun NexVaultApp(
@@ -52,12 +55,18 @@ fun NexVaultApp(
         initialValue = false
     )
 
-    // Determine routing key based on state
+    // Determine routing key based on state.
+    //
+    // Order matters (roadmap 2.0.2b): the session wins over the wallet flag, so once
+    // CompleteOnboardingUseCase unlocks, a later `is_wallet_set_up` write cannot bounce the
+    // graph through Unlock. The unlock itself is the last step of that use case and runs in
+    // the same main-thread continuation as the flag write, so the intermediate
+    // flag-set/session-locked state is not observable on screen.
     val routingKey = remember(isWalletSetUp, isAuthed) {
         when {
+            isAuthed -> "main"
             !isWalletSetUp -> "onboarding"
-            !isAuthed -> "auth"
-            else -> "main"
+            else -> "auth"
         }
     }
 

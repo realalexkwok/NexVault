@@ -7,6 +7,9 @@ import com.nexvault.wallet.core.datastore.wallet.WalletMetadataDataStore
 import com.nexvault.wallet.core.security.keystore.KeyStoreManager
 import com.nexvault.wallet.core.security.wallet.WalletStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -34,6 +37,25 @@ class AppStateManager @Inject constructor(
         private const val LOCKOUT_10_ATTEMPTS = 900L
         private const val LOCKOUT_15_ATTEMPTS = 3600L
         private const val WIPE_ATTEMPT_THRESHOLD = 20
+    }
+
+    /**
+     * In-memory authentication session.
+     *
+     * Wallet material may only be decrypted while this is `true`; the flag is never
+     * persisted, so a cold start always begins locked. Onboarding completion and a
+     * successful unlock ([onAuthenticationSuccess]) set it; backgrounding past the
+     * auto-lock timeout, an explicit lock request and a wallet wipe clear it.
+     */
+    private val _isUnlocked = MutableStateFlow(false)
+    val isUnlocked: StateFlow<Boolean> = _isUnlocked.asStateFlow()
+
+    fun unlock() {
+        _isUnlocked.value = true
+    }
+
+    fun lock() {
+        _isUnlocked.value = false
     }
 
     val isFirstRun: Flow<Boolean> = combine(
@@ -89,6 +111,7 @@ class AppStateManager @Inject constructor(
         securityPreferences.resetFailedAttempts()
         securityPreferences.setLockoutEndTime(0L)
         securityPreferences.setLastAuthTimestamp(System.currentTimeMillis())
+        unlock()
     }
 
     suspend fun onAuthenticationFailure(): AuthFailureResult {
@@ -170,5 +193,6 @@ class AppStateManager @Inject constructor(
         userPreferences.clearAll()
         securityPreferences.clearAll()
         walletMetadata.clearAll()
+        lock()
     }
 }

@@ -138,22 +138,4 @@ class EncryptionManagerTest {
 
         assertTrue(data1 == data2)
     }
-
-    @Test
-    fun testDoubleEncryptedDataEquality() {
-        val data1 = DoubleEncryptedData(
-            outerCiphertext = "outer".toByteArray(),
-            innerIv = "inner".toByteArray(),
-            outerIv = "outer".toByteArray(),
-            salt = "salt".toByteArray()
-        )
-        val data2 = DoubleEncryptedData(
-            outerCiphertext = "outer".toByteArray(),
-            innerIv = "inner".toByteArray(),
-            outerIv = "outer".toByteArray(),
-            salt = "salt".toByteArray()
-        )
-
-        assertTrue(data1 == data2)
-    }
 }

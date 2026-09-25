@@ -99,47 +99,6 @@ class EncryptionManager @Inject constructor(
         return plaintext
     }
 
-    fun doubleEncrypt(plaintext: ByteArray, password: String): DoubleEncryptedData {
-        val salt = SecurityUtils.generateSecureRandom(SALT_LENGTH)
-        val derivedKeyResult = deriveKeyFromPassword(password, salt)
-
-        val innerIv = SecurityUtils.generateSecureRandom(GCM_IV_LENGTH)
-        val innerCipher = Cipher.getInstance(AES_GCM_ALGORITHM)
-        val innerSpec = GCMParameterSpec(GCM_TAG_LENGTH, innerIv)
-        innerCipher.init(Cipher.ENCRYPT_MODE, derivedKeyResult.key, innerSpec)
-        val innerCiphertext = innerCipher.doFinal(plaintext)
-
-        derivedKeyResult.key.encoded?.let { keyBytes ->
-            keyBytes.secureWipe()
-        }
-
-        val outerEncrypted = encryptWithKeystore(innerCiphertext)
-
-        val outerIv = outerEncrypted.copyOfRange(0, GCM_IV_LENGTH)
-        val outerCiphertext = outerEncrypted.copyOfRange(GCM_IV_LENGTH, outerEncrypted.size)
-
-        return DoubleEncryptedData(outerCiphertext, innerIv, outerIv, salt)
-    }
-
-    fun doubleDecrypt(data: DoubleEncryptedData, password: String): ByteArray {
-        val outerEncrypted = data.outerIv + data.outerCiphertext
-        val innerCiphertext = decryptWithKeystore(outerEncrypted)
-
-        val derivedKeyResult = deriveKeyFromPassword(password, data.salt)
-
-        val cipher = Cipher.getInstance(AES_GCM_ALGORITHM)
-        val spec = GCMParameterSpec(GCM_TAG_LENGTH, data.innerIv)
-        cipher.init(Cipher.DECRYPT_MODE, derivedKeyResult.key, spec)
-
-        val plaintext = cipher.doFinal(innerCiphertext)
-
-        derivedKeyResult.key.encoded?.let { keyBytes ->
-            keyBytes.secureWipe()
-        }
-
-        return plaintext
-    }
-
     fun encryptWithBiometric(plaintext: ByteArray, cipher: Cipher): ByteArray {
         return cipher.doFinal(plaintext)
     }

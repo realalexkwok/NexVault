@@ -50,32 +50,3 @@ data class PasswordEncryptedData(
         return result
     }
 }
-
-data class DoubleEncryptedData(
-    val outerCiphertext: ByteArray,
-    val innerIv: ByteArray,
-    val outerIv: ByteArray,
-    val salt: ByteArray
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as DoubleEncryptedData
-
-        if (!outerCiphertext.contentEquals(other.outerCiphertext)) return false
-        if (!innerIv.contentEquals(other.innerIv)) return false
-        if (!outerIv.contentEquals(other.outerIv)) return false
-        if (!salt.contentEquals(other.salt)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = outerCiphertext.contentHashCode()
-        result = 31 * result + innerIv.contentHashCode()
-        result = 31 * result + outerIv.contentHashCode()
-        result = 31 * result + salt.contentHashCode()
-        return result
-    }
-}

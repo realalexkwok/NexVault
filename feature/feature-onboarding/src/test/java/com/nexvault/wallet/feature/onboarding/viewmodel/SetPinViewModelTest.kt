@@ -1,10 +1,15 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
-import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.repository.AuthRepository
 import com.nexvault.wallet.domain.usecase.auth.SetPinUseCase
+import com.nexvault.wallet.domain.usecase.wallet.CompleteOnboardingUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -15,15 +20,24 @@ import org.junit.Test
 class SetPinViewModelTest {
 
     private lateinit var setPinUseCase: SetPinUseCase
+    private lateinit var completeOnboardingUseCase: CompleteOnboardingUseCase
     private lateinit var authRepository: AuthRepository
     private lateinit var viewModel: SetPinViewModel
+    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setup() {
+        Dispatchers.setMain(testDispatcher)
         setPinUseCase = mockk(relaxed = true)
+        completeOnboardingUseCase = mockk(relaxed = true)
         authRepository = mockk(relaxed = true)
         coEvery { authRepository.isBiometricAvailable() } returns false
-        viewModel = SetPinViewModel(setPinUseCase, authRepository)
+        viewModel = SetPinViewModel(setPinUseCase, completeOnboardingUseCase, authRepository)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test

@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -233,27 +230,43 @@ private fun CreateWalletScreenContent(
 /**
  * Displays mnemonic words in a 4×3 grid (3 rows, 4 columns).
  * Each cell shows the word number and the word.
+ *
+ * Plain [Row]s rather than a `LazyVerticalGrid`: this grid sits inside the screen's
+ * `verticalScroll` column, and a lazy grid there is measured with an infinite maximum height
+ * — Compose throws `IllegalStateException` and the screen crashes (found by the 2.0.2b device
+ * walk). The phrase is at most 24 items, so laziness buys nothing anyway.
  */
 @Composable
 fun MnemonicGrid(
     words: List<String>,
     modifier: Modifier = Modifier,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
+    Column(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
         verticalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
-        userScrollEnabled = false,
     ) {
-        itemsIndexed(words) { index, word ->
-            MnemonicWordCell(
-                number = index + 1,
-                word = word,
-            )
+        words.chunked(MNEMONIC_COLUMNS).forEachIndexed { rowIndex, rowWords ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingSm),
+            ) {
+                rowWords.forEachIndexed { columnIndex, word ->
+                    MnemonicWordCell(
+                        number = rowIndex * MNEMONIC_COLUMNS + columnIndex + 1,
+                        word = word,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                // Keep a short last row aligned with the 4-column grid.
+                repeat(MNEMONIC_COLUMNS - rowWords.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }
+
+private const val MNEMONIC_COLUMNS = 4
 
 @Composable
 private fun MnemonicWordCell(

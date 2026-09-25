@@ -45,6 +45,14 @@ without evidence.
 > unusable and the wallet unbacked-up. Nothing else in Phase 2.0 can be verified until
 > this is fixed, because no flow can get past the first screen.
 >
+> **2.0.2b fix implemented and device-walked 2026-09-25 — awaiting the owner's confirmation.**
+> Build green, **249 tests / 0 failures / 1 skipped**, both gate counts lower than at HEAD, and the
+> full onboarding flow observed on the Pixel 6a (create, verify, Set PIN, cold-start unlock,
+> mnemonic and private-key import, abandoned-attempt recovery). Evidence:
+> `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md` (branch
+> `feature/2.0.2b-onboarding-repair`, changes uncommitted). The item stays `[~]` until the owner
+> confirms; the walk also found and fixed two defects the code alone did not show.
+>
 > What the first run has already bought, beyond the two defects it found: the app is
 > confirmed to build, install, launch, and render on a Pixel 6a, and one prediction
 > (a stray ActionBar) was refuted rather than acted on — which is the whole argument for
@@ -178,7 +186,38 @@ Not done: the rest of the happy path. One tap past Welcome it hits **2.0.2b**.
 Exit criteria: the main happy path has been observed on a device, with screenshots or a
 written trace, and any crash is filed as its own roadmap item.
 
-### 2.0.2b — Repair the onboarding flow `[!]`
+### 2.0.2b — Repair the onboarding flow `[~]`
+**FIX IMPLEMENTED 2026-09-25 — awaiting the device walk.** Own spec:
+`specs/features/2026-09-25-2.0.2b-onboarding-repair/` (requirements with owner decisions Q1–Q3,
+plan, validation with the automatic-half evidence). Branch `feature/2.0.2b-onboarding-repair`.
+
+What landed (owner decisions: **B + A** for the flow, **KeyStore-only + session gate** for
+CR 1.6-1, single item):
+
+- The wallet is no longer created in `CreateWalletViewModel.init`: a draft (mnemonic + address) is
+  generated and shown, and persisted only when the user acknowledges it and taps Continue.
+- `is_wallet_set_up` is now written only by the new `CompleteOnboardingUseCase`, called after the
+  PIN is stored. The root router checks the `AppStateManager` session first, so completing
+  onboarding cannot bounce the graph through Unlock mid-flow (import path included).
+- CR 1.6-1: wallet material is encrypted with the KeyStore-wrapped layer only (the void
+  wallet-UUID PBKDF2 layer — `doubleEncrypt`/`DoubleEncryptedData` — is gone), and
+  `getMnemonicForBackup`/`addAccount` are gated on the unlocked session, with an onboarding
+  exemption for the Verify step.
+- Abandoned onboarding attempts are wiped before a new wallet is persisted, so `mnemonic.enc`
+  (single-file) cannot be silently overwritten.
+- Two further defects surfaced by the device walk and were fixed in the same pass: the mnemonic
+  grid crashed (`LazyVerticalGrid` inside a scrolling column — it had never rendered before), and
+  onboarding completion was cancelled mid-write by the router tear-down (now unlocks first, inside
+  `NonCancellable`).
+
+Evidence: build passes; **249 tests, 0 failures, 1 skipped**; detekt 71 → 65 and ktlint 1462 → 1454
+versus HEAD, with **no file's detekt count increased**. **Device walk PASSED 2026-09-25** on the
+Pixel 6a: create → mnemonic → verify → Set PIN → Home; cold start → Unlock → Home; mnemonic import
+(canonical vector → address `0x9858EfFD…Eda94`); private-key import (key `1` → address
+`0x7E5F4552…95Bdf`); abandoned attempt → Welcome + single wallet row; no crashes after the fixes.
+Per-step evidence: `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md` (M1–M11).
+**Owner confirmation is the only thing left** — the item stays `[~]` until it is given.
+
 **BLOCKER, found 2026-09-21 by the first real run.** The wallet is created but the user
 never sees the mnemonic, and the app is left unusable on the device.
 
@@ -206,9 +245,9 @@ and enforce authentication before retrieval.
 
 Remediation options (A: move the flag write to the end of onboarding — smallest unblock;
 B: stop creating the wallet in `init` — matches the security intent; C: drop the reactive
-root router — kills the whole bug class). **Recommendation: B as the target, A as the
-immediate unblock.** Needs its own feature spec and an owner decision before any code is
-written.
+root router — kills the whole bug class). **Owner decision 2026-09-25: B + A** (C out of scope);
+CR 1.6-1 remediated by **dropping the inner layer and enforcing an unlocked-session gate**.
+Spec: `specs/features/2026-09-25-2.0.2b-onboarding-repair/`.
 
 Exit criteria: with cleared app data, onboarding runs Welcome → mnemonic shown → verify →
 Set PIN → main, and the mnemonic that appears is the one that decrypts `mnemonic.enc`.
