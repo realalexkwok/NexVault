@@ -23,7 +23,7 @@
 | 2.2 Database module | 2026-09-24 (D2–D4) | 2026-09-24 | `[x]` |
 | 2.3 Chain management | 2026-09-24 (C1–C5) + fix verification (V1–V5) | 2026-09-25 | `[x]` |
 | 2.4 Home dashboard | 2026-09-25 (H1–H4) | 2026-09-25 | `[x]` |
-| 2.5 Token detail | — | — | `[ ]` |
+| 2.5 Token detail | 2026-09-25 (T1–T4) | — | `[?]` |
 
 ---
 
@@ -525,4 +525,23 @@ Sign-off: **DONE 2026-09-25** — user-confirmed close per Q9 (scan H1–H4). Op
 
 ## Task 2.5 — Token detail
 
-_(filled during the review)_
+> Status: **SCAN COMPLETE 2026-09-25 — 1 finding recorded (2.5-1 Medium) — AWAITING SIGN-OFF.**
+
+### Automatic half — commands and observed results
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| T1 | Builds | `./gradlew :feature:feature-tokens:assembleDebug :data:assembleDebug` | **BUILD SUCCESSFUL** (2026-09-25) |
+| T2 | Screen + VM | reads of `TokenDetailScreen`/`TokenDetailViewModel`/`TokenDetailUiState` | arg keys match; icon/name/symbol/balance/fiat; chart no-data branch; 1D/7D/1M/1Y chips; 24h stats; Send/Receive; See All; back; recent tx list — all present |
+| T3 | Tolerance + use cases | reads of VM + 4 use cases | `refreshTransactionHistory` try/catch ×2; 4 use cases `@Inject` + `invoke` |
+| T4 | Tests | `find feature/feature-tokens/src/test -name '*.kt'` | **0** → **2.5-1 (Medium)** |
+
+### Findings recorded (transfer channel)
+
+| ID | Severity | Owning roadmap item |
+| --- | --- | --- |
+| 2.5-1 | Medium | 2.0.6 |
+
+### Manual half
+
+Sign-off: **pending** (date: —).
