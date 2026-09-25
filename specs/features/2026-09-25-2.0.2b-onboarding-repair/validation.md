@@ -16,7 +16,7 @@
 | Manual half | PASS — device walk M1–M11 on the Pixel 6a, 2026-09-25 (executed by the agent on the owner's direction; the owner reconnected the device and read the result) |
 | Owner sign-off | **2026-09-25 — owner directed the close** (merge `main`, push, delete the temporary branch) |
 | Optional human checks offered | Visual mnemonic grid (FLAG_SECURE blocks screenshots), biometric toggle/unlock, back-navigation mid-onboarding — **not separately reported**; the walk covered them structurally, they remain un-eyeballed |
-| CR 1.6-1 record row | The fix is verified by this walk; resolving/deleting the stale row in `specs/features/2026-09-21-legacy-code-review/tasks/1.6-data-layer.md` is the **reviewer's** action, not taken here |
+| CR 1.6-1 record row | **Closed by the reviewer** on 2026-09-25 in `5c61404` — the row in `specs/features/2026-09-21-legacy-code-review/tasks/1.6-data-layer.md` is marked Closed with the verification pointer, and the reviewer's own section below (`§Reviewer verification`) records R5/R6 |
 
 ## What was wrong (confirmed in code, 2026-09-25)
 
