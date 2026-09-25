@@ -316,7 +316,7 @@ flagging for the 4.x API-cleanliness pass.
 
 | ID | Severity | State |
 | --- | --- | --- |
-| 1.6-1 (Critical, wallet-UUID password) | **Open** — deferred to 2.0.2b per owner decision 2026-09-23 | Open |
+| 1.6-1 (Critical, wallet-UUID password) | **Closed 2026-09-25** — fixed by 2.0.2b (db2c104) and verified by the reviewer: KeyStore-only wallet storage + `isUnlocked` session gate (see the 2.0.2b spec's Reviewer verification, R5/R6) | Closed |
 | 1.6-2 (High, wipe-before-store) | fixed + verified (V1, V4) → **row deleted** | Closed |
 | 1.6-3 (Low, "Account 1") | fixed + verified (V2) → **row deleted** | Closed |
 

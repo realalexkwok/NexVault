@@ -161,3 +161,51 @@ decision is **2.0.5** and was deliberately not taken here.
 | PIN-based re-key of wallet material, biometric PIN recovery, change-PIN re-key | Owner decision Q2 chose KeyStore-only + session gate for this round | Unassigned — security hardening (**4.7**-adjacent) |
 | Replacing the reactive root router (roadmap option C) | Out of scope per Q1; the session-first ordering plus `NonCancellable` completion removes the mid-flow class for onboarding | Unassigned — revisit if another mid-flow swap appears |
 | Settings-screen behaviour after deleting the last wallet (`V2`) | No production caller yet; 3.4 will exercise it | **3.4** |
+
+---
+
+## Reviewer verification — commits db2c104 + e96106c (2026-09-25)
+
+> Code-reviewer session (role: read-only on production code; record files only). Every claim below
+> was re-verified from the tree and by fresh runs; nothing was taken on trust.
+
+### Diff review — verdicts
+
+| # | Area | Check | Verdict |
+| --- | --- | --- | --- |
+| R1 | Flow (AC-1/3/4) | `CreateWalletViewModel`: `init` → `generateDraft()` only; `onContinueClicked` guards double-tap + acknowledgment, then `persistDraft()` → `NavigateToVerifyMnemonic`. Retry: generation failure regenerates, persist failure retries the **same** draft. | ✅ matches plan TG5 |
+| R2 | Flag semantics (D1, option A) | `persistWalletAndActivate` deliberately writes **no** `is_wallet_set_up`; the flag is written only by `completeOnboarding()` after the PIN is stored; `hasCompletedOnboarding` written there too. | ✅ |
+| R3 | Completion ordering (V5/D2) | `completeOnboarding()` runs `appStateManager.unlock()` **first**, inside `withContext(NonCancellable)`, then flag + completion writes; `SetPinViewModel` saves the biometric choice **before** calling it, and handles the completion `DataResult.Error`. | ✅ |
+| R4 | Routing (V1/V2) | `NexVaultApp` checks the session first (`isAuthed -> "main"`); `MainActivity` passes `appStateManager.isUnlocked` (single session source); `deleteWallet`/`deleteAllWallets` lock when no wallet remains. | ✅ |
+| R5 | CR 1.6-1 fix (AC-5) | `WalletStore` mnemonic/private-key signatures are password-free and use `encryptWithKeystore`/`decryptWithKeystore` only; `doubleEncrypt`/`doubleDecrypt`/`DoubleEncryptedData` deleted; grep sweep: **no 2-arg `storeMnemonic`/`storePrivateKey` calls, no double-layer remnants anywhere**. | ✅ Critical finding verified-fixed |
+| R6 | Session gate (AC-6) | `getMnemonicForBackup` gated on `isUnlocked || !isWalletSetUp` (onboarding exemption); `addAccount` gated on `isUnlocked`; `AppStateManager.isUnlocked` is in-memory (cold start locked); `onAuthenticationSuccess` unlocks; `resetApp` locks. | ✅ |
+| R7 | Orphan guard (AC-7) | `clearAbandonedOnboarding()` wipes wallet files + metadata + active-wallet refs when the flag is false, before every create/import persist. | ✅ |
+| R8 | D1 (grid crash) | `MnemonicGrid` is now `Column` + `Row`s over `words.chunked(4)` — no lazy container nested in a scrolling column. | ✅ |
+
+### Fresh automatic evidence (reviewer's own runs)
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| R9 | Unit tests | `./gradlew testDebugUnitTest :domain:test --rerun-tasks` (420 tasks executed) | **BUILD SUCCESSFUL — 249 tests, 0 failures, 0 errors, 1 skipped** — matches the developer's claim exactly |
+| R10 | Build | `:app:assembleDebug` | **PASS**; APK `/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` (46,124,248 B) |
+| R11 | Gates (reviewer's counting basis) | `detekt ktlintCheck --continue` | detekt 10 failing tasks / **78 weighted** (reviewer baseline 85 → improved by 7; the developer's 71→65 uses raw counts — same direction); ktlint 39 failing tasks (unchanged task count; their 1462→1454 violation basis) |
+| R12 | Device (reviewer) | `pm clear` → launch → `uiautomator` | Welcome renders (title, tagline, Create/Import buttons) ✅. The in-flow tap walk was **not re-driven**: the owner took the device over mid-walk (another app foregrounded); the M1–M11 walk evidence is developer-recorded and the manual half remains the owner's confirmation. |
+
+### Reviewer notes (not findings)
+
+1. **Completion-failure edge:** if `setWalletSetUp`/`setHasCompletedOnboarding` throws after
+   `unlock()`, the session is unlocked while the flag is false — the session-first router would
+   show `main` with onboarding incomplete. Self-heals on the next cold start (the session is
+   in-memory). Alternative orderings were demonstrably worse (D2); accepted.
+2. **Set PIN completion error** leaves the user on the Set PIN screen with an error; re-entering
+   the PIN retries (`setPin` overwrites the hash — idempotent). Acceptable UX for the failure path.
+3. **Onboarding exemption window:** while `is_wallet_set_up` is false, `getMnemonicForBackup` is
+   exempt — an abandoned mid-onboarding install can read its own mnemonic without auth. By design
+   (the Verify step needs it); the orphan guard wipes on the next persist attempt.
+
+### Verdict
+
+**PASS** — the change set implements the owner decisions (B + A, KeyStore-only + session gate)
+correctly, the AC-5/AC-6 criteria hold in code, and the fresh automatic evidence matches the
+developer's claims. Remaining for closure: the owner's manual-half confirmation of the device walk
+and the owner merge of `feature/2.0.2b-onboarding-repair` to `main`.
