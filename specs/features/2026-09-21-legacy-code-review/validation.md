@@ -23,7 +23,7 @@
 | 2.2 Database module | 2026-09-24 (D2–D4) | 2026-09-24 | `[x]` |
 | 2.3 Chain management | 2026-09-24 (C1–C5) + fix verification (V1–V5) | 2026-09-25 | `[x]` |
 | 2.4 Home dashboard | 2026-09-25 (H1–H4) | 2026-09-25 | `[x]` |
-| 2.5 Token detail | 2026-09-25 (T1–T4) | — | `[?]` |
+| 2.5 Token detail | 2026-09-25 (T1–T4) | 2026-09-25 | `[x]` |
 
 ---
 
@@ -544,4 +544,15 @@ Sign-off: **DONE 2026-09-25** — user-confirmed close per Q9 (scan H1–H4). Op
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **DONE 2026-09-25** — user-confirmed close per Q9 (scan T1–T4). Open finding 2.5-1
+(no tests, TC-VM/TC-UI) remains in the task file's findings table — owned by 2.0.6.
+
+---
+
+## Gate closure — Phase 1.9 COMPLETE (2026-09-25)
+
+All 15 legacy CR tasks are **closed with owner sign-offs** (1.1 → 2.5). Open findings handed to their
+owning items: 1.1-3 (developer follow-up), 1.2-5/2.1-1/2.2-1/2.4-1/2.5-1 → 2.0.6, 1.2-6/1.2-7/1.4-4 →
+4.17, 1.4-1 → 2.0.2b (Critical, wipe-at-20 already implemented), 1.6-1 → 2.0.2b (Critical, wallet-UUID
+password). Per the roadmap, the next undone roadmap item — **Phase 2.0 remainder, 2.0.2b first** —
+proceeds, singly or as owner-approved grouped items.

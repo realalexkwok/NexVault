@@ -32,15 +32,13 @@ without evidence.
 
 ## Current position
 
-> **The only open entry point is Phase 1.9 — Legacy code review** (pre-SDD, Tasks 1.1–2.5).
-> Those 15 features were implemented before the SDD cut-over with **no code review**, so
-> the legacy CR gate must close before any further roadmap work proceeds. Spec:
-> `specs/features/2026-09-21-legacy-code-review/` (15 task files under `tasks/`; the
-> status table there is authoritative for the gate).
+> **Phase 1.9 (Legacy code review) is CLOSED 2026-09-25 — all 15 pre-SDD features reviewed and
+> signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
+> gate closure and every finding handed to its owning item).
 >
-> **After the legacy CR tasks are done, the next undone roadmap item — the Phase 2.0
-> remainder, 2.0.2b first — is proceeded**, singly or as owner-approved grouped items
-> (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
+> **The only open entry point is now the Phase 2.0 remainder — 2.0.2b first** — proceeded singly or
+> as owner-approved grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on
+> Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -90,7 +88,7 @@ the spec workflow — no prompt file will be authored for it.
 
 ---
 
-## Phase 1.9 — Legacy code review (pre-SDD, Tasks 1.1–2.5) `← current gate`
+## Phase 1.9 — Legacy code review (pre-SDD, Tasks 1.1–2.5) `✓ closed 2026-09-25 — 15/15 signed off`
 
 **Goal:** code-review every feature implemented in the prompt-driven era, because none of
 them ever received one. The reviewer records findings only; a separate **developer

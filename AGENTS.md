@@ -12,10 +12,9 @@ Before every write to disk, an **ask-user-question round** covering requirements
 (scope/decisions/context), plan (task groups), and validation (success criteria)
 must be answered by the user.
 
-**Standing gate:** Phase 1.9 — Legacy code review (pre-SDD, Tasks 1.1–2.5) is the
-only open entry point in the roadmap (spec:
-`specs/features/2026-09-21-legacy-code-review/`). The Phase 2.0 remainder
-(2.0.2b first) and Phase 2.6+ do not start until the legacy CR gate closes.
+**Standing gate:** the Phase 1.9 legacy code review gate is **closed** (2026-09-25,
+15/15 signed off). The only open entry point is now the **Phase 2.0 remainder —
+2.0.2b first** (`specs/roadmap.md`); Phase 2.6+ still waits on Phase 2.0.
 
 ## Part B — Project Constitution (authoritative)
 
