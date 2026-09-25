@@ -50,7 +50,7 @@ without evidence.
 > full onboarding flow observed on the Pixel 6a (create, verify, Set PIN, cold-start unlock,
 > mnemonic and private-key import, abandoned-attempt recovery). Evidence:
 > `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md` (branch
-> `feature/2.0.2b-onboarding-repair`, changes uncommitted). The item stays `[~]` until the owner
+> `feature/2.0.2b-onboarding-repair`, committed as `db2c104`). The item stays `[~]` until the owner
 > confirms; the walk also found and fixed two defects the code alone did not show.
 >
 > What the first run has already bought, beyond the two defects it found: the app is

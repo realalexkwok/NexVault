@@ -1,8 +1,9 @@
 # 2.0.2b — Repair the onboarding flow — Technical plan
 
 > Approved 2026-09-25 (plan mode). Requirements: `requirements.md` (Q1–Q3, D1–D6).
-> Evidence: `validation.md`. Branch: `feature/2.0.2b-onboarding-repair` — changes stay
-> **uncommitted** for owner review; merging/committing is an owner action.
+> Evidence: `validation.md`. Branch: `feature/2.0.2b-onboarding-repair` — implemented and
+> committed there as **`db2c104`** (owner-directed, for review); merging to `main` is an owner
+> action.
 
 ## Target flow
 

@@ -2,8 +2,8 @@
 
 > Status: **BOTH HALVES EXECUTED 2026-09-25 — AWAITING OWNER CONFIRMATION.**
 > Requirements: `requirements.md` (owner Q1–Q3, D1–D6). Plan: `plan.md`.
-> Branch: `feature/2.0.2b-onboarding-repair`. Changes are **uncommitted** in the working tree
-> per the owner-commit rule.
+> Branch: `feature/2.0.2b-onboarding-repair`; the change set is committed there as **`db2c104`**
+> (owner-directed commit for review, 2026-09-25).
 > Manual half: the owner reconnected the Pixel 6a and directed the walk; it ran on
 > 2026-09-25 13:36–13:44 HKT and **passed** (M1–M9 below, plus two defects it found and that
 > were fixed before the walk was repeated from clean data).
