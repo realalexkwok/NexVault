@@ -465,7 +465,8 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan D2–D4). Op
 
 ## Task 2.3 — Chain management
 
-> Status: **SCAN COMPLETE 2026-09-24 — 1 finding recorded (2.3-1 Medium) — AWAITING SIGN-OFF.**
+> Status: **SCAN + FIX VERIFICATION COMPLETE 2026-09-25 — finding verified-fixed (row deleted) —
+> ready to close on user confirmation.**
 
 ### Automatic half — commands and observed results
 
@@ -477,15 +478,25 @@ Sign-off: **DONE 2026-09-24** — user-confirmed close per Q9 (scan D2–D4). Op
 | C4 | Dead-field evidence | `grep -rnE '\.rpcUrl|iconResName'` | no readers outside the model; `Chain.rpcUrl` `""` for ETH/Sepolia; `iconResName` matches no drawable → **2.3-1 (Medium)** |
 | C5 | Hygiene + tests | greps | 0 TODO; 4 chain-related test files exist — the roadmap's "no tests" claim refuted; core-ui composables remain untested (TC-UI → 2.0.6) |
 
-### Findings recorded (transfer channel)
+### Fix verification — developer commit `8362e6a` re-checked by the reviewer (2026-09-25)
 
-| ID | Severity | Owning roadmap item |
+| # | Claim | Reviewer's check | Observed result | Verdict |
+| --- | --- | --- | --- | --- |
+| V1 | Fields removed | read `Chain.kt` diff + `grep -rnE 'rpcUrl|iconResName'` | both fields + all 8 `SupportedChains` literals gone; **no residual references** anywhere; the KDoc now names `ChainConfigProvider`/`ChainIconMapper` as the single sources | ✅ |
+| V2 | No broken call sites | `grep -rnE 'Chain\('` | no constructor call site passed either field (matches claim) | ✅ |
+| V3 | Fresh suite + build | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --rerun-tasks` | **PASS** — repo **232 tests, 0 failures, 1 skipped**; domain 67 (matches claim) | ✅ |
+| V4 | Gates | `detekt ktlintCheck` same run | detekt 10 tasks / **85 weighted** unchanged; ktlint 39 tasks unchanged | ✅ no regression |
+| V5 | Device (per owner) | `installDebug` + launch on Pixel 6a (single-device adb) | process alive, **0 FATAL**, `MainActivity` topResumed | ✅ |
+
+### Findings lifecycle record
+
+| ID | Severity | State |
 | --- | --- | --- |
-| 2.3-1 | Medium | developer fix round (this CR) |
+| 2.3-1 (Medium, dead chain fields) | fixed + verified (V1–V5) → **row deleted** | Closed |
 
 ### Manual half
 
-Sign-off: **pending** (date: —).
+Sign-off: **pending** — verification complete; ready to close on user confirmation (date: —).
 
 ## Task 2.4 — Home dashboard
 
