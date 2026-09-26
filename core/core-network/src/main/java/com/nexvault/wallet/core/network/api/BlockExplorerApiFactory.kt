@@ -12,14 +12,14 @@ import javax.inject.Singleton
 /**
  * Factory that creates and caches BlockExplorerApi Retrofit instances per chain.
  *
- * Since each chain has a different block explorer base URL, we need a separate
- * Retrofit instance for each chain. This factory creates and caches them using
- * a ConcurrentHashMap.
+ * Roadmap 2.0.4b: every supported chain now shares the single Etherscan V2 base URL, so the cache
+ * is no longer about different hosts — it keeps one Retrofit instance per chain id and keeps the
+ * per-chain base URL lookup in one place.
  *
  * Example:
  * ```
  * val api = blockExplorerApiFactory.getApi(chainId = 1)
- * val txs = api.getTransactions(address = "0x...", apiKey = "...")
+ * val txs = api.getTransactions(chainId = 1, address = "0x...", apiKey = "...")
  * ```
  */
 @Singleton

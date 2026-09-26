@@ -78,6 +78,15 @@ Two 2.0.4 decisions have to move with it:
 | AC-7 | Build green; full suite green; detekt/ktlint totals not worse than the merge base with no touched file worse; no new dependency outside `specs/tech-stack.md`. |
 | AC-8 | A plan-gated chain is reported **as such**: the explorer's plan-gate message maps to a distinct exception and a persistent, explicit notice (not a generic error, not a silent empty); the mapping is message-driven, so no chain id is hard-coded, and the unit test covers the exact observed wire body. |
 
+> **SUSPENDED 2026-09-26 (owner decision): funding the walk wallet is on hold — the relative test
+> cases are suspended until the balance is not zero.** The owner is not buying or transferring funds
+> for the device walk for now, and the imported wallet's active account holds 0 wei on every readable
+> chain, so the balance-dependent part of AC-6 (mainnet/Polygon history on a funded address) cannot be
+> exercised. **Suspend M1 and M2** (and precondition P4) until the active account's balance is
+> non-zero; M3 (BSC plan notice), M4 (blank-key state) and M5 (crash watch) need no balance and remain
+> walkable. The criteria above are unchanged — only their evidence is deferred. Details, the
+> zero-balance probe and the exact resume condition: `validation.md` §Suspended.
+
 ## Non-goals
 
 - `getTransactionHistory` true pagination (`page`/`pageSize` are ignored today) and the History UI —

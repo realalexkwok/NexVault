@@ -57,6 +57,28 @@ class ApiKeyNotConfiguredException(
     message: String = "API key not configured",
 ) : NexVaultException(message)
 
+/**
+ * The block explorer rejected the call (roadmap 2.0.4b).
+ *
+ * Carries the explorer's own explanation (for example its "deprecated endpoint" or
+ * "invalid API key" text) so the failure is visible instead of a silent empty list.
+ */
+class ExplorerApiException(
+    message: String = "Block explorer error",
+) : NexVaultException(message)
+
+/**
+ * The configured explorer key cannot reach this chain because the current API plan does not
+ * cover it (roadmap 2.0.4b: observed on BNB Smart Chain with the free Etherscan plan).
+ *
+ * Distinct from [ApiKeyNotConfiguredException] (no key at all) and from [ExplorerApiException]
+ * (a genuine rejection): the key works, the plan does not include this chain. A paid plan
+ * removes the state without a code change.
+ */
+class ExplorerPlanUnsupportedException(
+    message: String = "This chain is not covered by the current Etherscan plan",
+) : NexVaultException(message)
+
 class EncryptionException(
     message: String = "Encryption error",
     cause: Throwable? = null,

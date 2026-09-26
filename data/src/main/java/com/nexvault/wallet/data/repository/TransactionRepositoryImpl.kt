@@ -94,15 +94,16 @@ class TransactionRepositoryImpl @Inject constructor(
             }
             val api = blockExplorerApiFactory.getApi(chainId)
             val apiKey = blockExplorerApiFactory.getApiKey(chainId)
-            val native = api.getTransactions(address = address, apiKey = apiKey, offset = 100)
-            val tokenTx = api.getTokenTransfers(address = address, apiKey = apiKey, offset = 100)
+            // Roadmap 2.0.4b: Etherscan V2 requires the chain id on every call.
+            val native = api.getTransactions(chainId = chainId, address = address, apiKey = apiKey, offset = 100)
+            // Roadmap 2.0.4b: a rejected envelope (bad key, plan gate, …) is an error with the
+            // explorer's own message — never a silently empty history.
+            native.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
+            val tokenTx = api.getTokenTransfers(chainId = chainId, address = address, apiKey = apiKey, offset = 100)
+            tokenTx.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
             val merged = buildList {
-                if (native.isSuccess) {
-                    addAll(native.result.map { it.toEntity(chainId, address) })
-                }
-                if (tokenTx.isSuccess) {
-                    addAll(tokenTx.result.map { it.toEntity(chainId, address) })
-                }
+                addAll(native.result.orEmpty().map { it.toEntity(chainId, address) })
+                addAll(tokenTx.result.orEmpty().map { it.toEntity(chainId, address) })
             }
             if (merged.isNotEmpty()) {
                 transactionDao.upsertTransactions(merged)

@@ -1,9 +1,9 @@
 # 2.0.4b — Migrate the explorer to Etherscan API V2 — Technical plan
 
-> **Status: PLANNED 2026-09-26 — not implemented, nothing verified.** Requirements (Q1–Q6, AC-1–AC-8)
-> in `requirements.md`; evidence goes to `validation.md` when the work runs.
+> **Status: IMPLEMENTED 2026-09-26 — automatic half green, manual half pending (`validation.md`).**
+> Requirements (Q1–Q6, AC-1–AC-8) in `requirements.md`; evidence in `validation.md`.
 > Entry condition: `feature/2.0.4-api-key-strategy` merged to `main` and the branch deleted; this
-> item's branch is then cut from the updated `main` (never stacked on 2.0.4).
+> item's branch is cut from the updated `main` (never stacked on 2.0.4) — both done 2026-09-26.
 
 ## Task groups
 
@@ -21,9 +21,9 @@
     benefit to protect.
 - `data/TransactionRepositoryImpl.kt:97-98` (`refreshTransactionHistory`): pass the `chainId` the
   method already receives into both calls.
-- `BlockExplorerApi.getBalance` is declared but has **no caller** (grep: only the interface). Migrate
-  it with the others (one endpoint contract, no dead V1 surface) or delete it as unused — decide at
-  implementation time and record the choice in `validation.md`.
+- `BlockExplorerApi.getBalance` is declared but has **no caller** (grep: only the interface).
+  **Decided 2026-09-26: migrated, not deleted** — one extra `@Query("chainid")` keeps the whole
+  interface on V2 at no risk, and 2.8's history work may want it (`validation.md` §Decisions).
 
 ### TG2 — Key model: one V2 key, all chains keyed (`core:core-network`)
 
@@ -57,10 +57,16 @@ Implementation notes:
 
 - The current `result: List<TransactionDto>` cannot express row 3: Moshi throws while parsing the
   String, the repository's generic `catch` converts it to a message-less error, and the explorer's
-  own explanation is lost. The DTO binding must become tolerant — nullable list plus an explicit
-  `status`/`message` decision, or a small lenient Moshi adapter, or an `Any?` field mapped by hand.
-  **Choose in TG3 and prove it with a Moshi round-trip test over all four wire shapes** (the choice
-  is not free: `Any?` with `@JsonClass(generateAdapter = true)` and codegen has its own pitfalls).
+  own explanation is lost. **Decided and done 2026-09-26:** the two list DTOs lose
+  `@JsonClass(generateAdapter = true)` and carry `result: List<…>?` + `resultText: String?`, bound by
+  a lenient `JsonAdapter.Factory` (`EtherscanEnvelopeAdapterFactory` +
+  `LenientListEnvelopeAdapter`) registered in `NetworkModule.provideMoshi()`; `EtherscanBalanceResponse`
+  stays on codegen (its `result` is a String in both shapes and it has no caller). The proof is the
+  Moshi round-trip test over all four wire shapes (TG4).
+  - Tried first and rejected: `@FromJson`/`@ToJson` methods with an extra `JsonAdapter<List<…>>`
+    parameter. Moshi 1.x refuses that signature at adapter-registration time
+    (`IllegalArgumentException: Unexpected signature for … transactionListToJson`), which failed the
+    whole suite until the factory replaced it.
 - New `ExplorerApiException(message)` and `ExplorerPlanUnsupportedException(message)` in
   `domain/.../model/common/Exceptions.kt`, beside `ApiKeyNotConfiguredException` — the UI needs
   "explorer rejected the call", "the plan does not cover this chain" and "key not configured"
@@ -73,11 +79,13 @@ Implementation notes:
   `DataResult.Error(ExplorerPlanUnsupportedException(...))`. Do not change the key-absent guard's
   position (before the network call).
 - UI mapping: `ExplorerPlanUnsupportedException` gets a **persistent inline notice** in TokenDetail
-  (the 2.0.4 V1-deviation pattern — a standing condition is not a snackbar), e.g. "Transaction history
-  for this chain needs a paid Etherscan plan."; `ExplorerApiException` reuses the existing generic
-  error strings unless a distinct message is clearly better. Add the new string to
-  `feature-tokens/src/main/res/values/strings.xml` (and Home only if Home surfaces history). Record
-  whatever is chosen in `validation.md`. Keep the UX change inside this item's scope (Q3) and out of 2.8.
+  (the 2.0.4 V1-deviation pattern — a standing condition is not a snackbar). **Decided and done
+  2026-09-26:** `TokenDetailUiState.isHistoryPlanGated`, set by `TokenDetailViewModel`, rendered by a
+  second notice item next to 2.0.4's, with
+  `token_detail_history_plan_gated` = "Transaction history for this chain is not covered by the
+  current Etherscan plan." `ExplorerApiException` deliberately gets **no** new banner in this item —
+  it reaches the caller as `DataResult.Error` with the explorer's message (AC-4) and richer history
+  surfacing stays with 2.8 (recorded in `validation.md`). Home surfaces no history, so no Home change.
 
 ### TG4 — Tests (JVM unit tests; no new dependency)
 
@@ -117,6 +125,10 @@ Implementation notes:
   - **Prerequisite (manual half):** addresses with real history on mainnet/Polygon, supplied by the
     owner. The wallet used in 2.0.4 holds 0 wei, where an empty history is a legitimate result and
     therefore proves nothing.
+  - **Suspended 2026-09-26 (owner decision):** funding the walk wallet is on hold, so the
+    balance-dependent walk rows (mainnet/Polygon history) are suspended until the active account's
+    balance is non-zero. The BSC plan notice, the blank-key state and the crash watch need no balance
+    and stay walkable. Resume condition and evidence: `validation.md` §Suspended.
 - **Not evidence:** a green build, a passing parse test, or a curl run alone. Both halves must pass
   before the roadmap row leaves `[ ]`.
 
