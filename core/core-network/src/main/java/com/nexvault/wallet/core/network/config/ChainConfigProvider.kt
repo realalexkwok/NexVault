@@ -25,6 +25,11 @@ class ChainConfigProvider @Inject constructor(
     private val alchemyApiKey: String,
     private val etherscanApiKey: String,
 ) {
+    companion object {
+        /** Chains whose RPC and explorer endpoints require an injected API key. */
+        private val KEYED_CHAIN_IDS = setOf(1, 11155111)
+    }
+
     /**
      * Returns the network config for a given chain ID.
      *
@@ -37,6 +42,31 @@ class ChainConfigProvider @Inject constructor(
      * Returns all supported chain configurations.
      */
     fun getAllConfigs(): List<ChainNetworkConfig> = configs.values.toList()
+
+    /**
+     * Whether the RPC endpoint for [chainId] is usable in this build.
+     *
+     * Ethereum mainnet and Sepolia are served by Infura, so they are unusable without
+     * [infuraApiKey]; BNB Smart Chain and Polygon use public endpoints and never need a key.
+     *
+     * Used by the repositories to fail with an explicit "not configured" error instead of
+     * attempting a call that cannot succeed (roadmap 2.0.4).
+     */
+    fun isRpcConfigured(chainId: Int): Boolean {
+        if (!configs.containsKey(chainId)) return false
+        return chainId !in KEYED_CHAIN_IDS || infuraApiKey.isNotBlank()
+    }
+
+    /**
+     * Whether the block-explorer API for [chainId] is usable in this build.
+     *
+     * Mainnet and Sepolia are keyed through Etherscan; BscScan/PolygonScan are queried with an
+     * empty key by design.
+     */
+    fun isExplorerConfigured(chainId: Int): Boolean {
+        if (!configs.containsKey(chainId)) return false
+        return chainId !in KEYED_CHAIN_IDS || etherscanApiKey.isNotBlank()
+    }
 
     private val configs: Map<Int, ChainNetworkConfig> = mapOf(
         1 to ChainNetworkConfig(

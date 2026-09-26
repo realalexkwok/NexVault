@@ -2,6 +2,7 @@ package com.nexvault.wallet.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.chain.GetSelectedChainUseCase
 import com.nexvault.wallet.domain.usecase.chain.GetSupportedChainsUseCase
@@ -96,15 +97,25 @@ class HomeViewModel @Inject constructor(
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorRes = null, errorMessage = null) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    errorRes = null,
+                    errorMessage = null,
+                    isRpcNotConfigured = false,
+                )
+            }
             when (val result = refreshBalancesUseCase()) {
                 is DataResult.Error -> {
+                    val notConfigured = result.exception is ApiKeyNotConfiguredException
                     val message = result.message
+                    val showGenericError = !notConfigured && message == null
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorRes = if (message == null) R.string.home_error_load_balances else null,
-                            errorMessage = message,
+                            isRpcNotConfigured = notConfigured,
+                            errorRes = if (showGenericError) R.string.home_error_load_balances else null,
+                            errorMessage = if (notConfigured) null else message,
                         )
                     }
                 }
@@ -117,16 +128,29 @@ class HomeViewModel @Inject constructor(
 
     fun onRefresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true, errorRes = null, errorMessage = null) }
+            _uiState.update {
+                it.copy(
+                    isRefreshing = true,
+                    errorRes = null,
+                    errorMessage = null,
+                    isRpcNotConfigured = false,
+                )
+            }
             try {
                 when (val result = refreshBalancesUseCase()) {
                     is DataResult.Error -> {
-                        val errorRes =
-                            when (result.exception) {
-                                is IOException -> R.string.home_error_network
-                                else -> R.string.home_error_refresh_failed
-                            }
-                        _uiState.update { it.copy(errorRes = errorRes) }
+                        // Key-absent is a persistent, explicit state, not a transient snackbar;
+                        // genuine failures keep the existing network/refresh messages.
+                        if (result.exception is ApiKeyNotConfiguredException) {
+                            _uiState.update { it.copy(isRpcNotConfigured = true) }
+                        } else {
+                            val errorRes =
+                                when (result.exception) {
+                                    is IOException -> R.string.home_error_network
+                                    else -> R.string.home_error_refresh_failed
+                                }
+                            _uiState.update { it.copy(errorRes = errorRes) }
+                        }
                     }
                     is DataResult.Success -> { }
                 }

@@ -14,6 +14,8 @@ import com.nexvault.wallet.domain.model.transaction.Transaction
  * @param selectedChartDays Selected range in days (1, 7, 30, or 365).
  * @param isChartLoading Whether the chart request is in flight.
  * @param recentTransactions Recent transactions for this token.
+ * @param isHistoryConfigured False when the block-explorer API key is missing, so the screen can
+ *        say so explicitly instead of showing an empty history (roadmap 2.0.4).
  * @param isLoading Initial token observation not yet completed.
  * @param isRefreshing Pull-to-refresh in progress.
  * @param errorRes Static error text when the token cannot be shown.
@@ -28,6 +30,7 @@ data class TokenDetailUiState(
     val selectedChartDays: Int = 7,
     val isChartLoading: Boolean = false,
     val recentTransactions: List<Transaction> = emptyList(),
+    val isHistoryConfigured: Boolean = true,
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     @StringRes val errorRes: Int? = null,

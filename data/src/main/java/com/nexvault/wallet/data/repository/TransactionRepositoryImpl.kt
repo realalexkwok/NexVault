@@ -2,8 +2,10 @@ package com.nexvault.wallet.data.repository
 
 import com.nexvault.wallet.core.database.dao.TransactionDao
 import com.nexvault.wallet.core.network.api.BlockExplorerApiFactory
+import com.nexvault.wallet.core.network.config.ChainConfigProvider
 import com.nexvault.wallet.data.mapper.toDomain
 import com.nexvault.wallet.data.mapper.toEntity
+import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.model.transaction.GasEstimate
 import com.nexvault.wallet.domain.model.transaction.SendTransactionParams
@@ -34,6 +36,7 @@ private val notImplementedGas =
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao,
     private val blockExplorerApiFactory: BlockExplorerApiFactory,
+    private val chainConfigProvider: ChainConfigProvider,
     private val walletRepository: WalletRepository,
 ) : TransactionRepository {
 
@@ -83,6 +86,12 @@ class TransactionRepositoryImpl @Inject constructor(
         address: String,
     ): DataResult<Unit> = withContext(Dispatchers.IO) {
         try {
+            // Roadmap 2.0.4: fail explicitly instead of calling an explorer API with no key.
+            if (!chainConfigProvider.isExplorerConfigured(chainId)) {
+                return@withContext DataResult.Error(
+                    ApiKeyNotConfiguredException("Block explorer API is not configured"),
+                )
+            }
             val api = blockExplorerApiFactory.getApi(chainId)
             val apiKey = blockExplorerApiFactory.getApiKey(chainId)
             val native = api.getTransactions(address = address, apiKey = apiKey, offset = 100)

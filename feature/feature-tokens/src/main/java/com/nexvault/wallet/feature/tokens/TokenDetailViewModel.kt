@@ -3,6 +3,7 @@ package com.nexvault.wallet.feature.tokens
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.token.GetRecentTokenTransactionsUseCase
 import com.nexvault.wallet.domain.usecase.token.GetTokenPriceChartUseCase
@@ -85,8 +86,12 @@ class TokenDetailViewModel @Inject constructor(
     }
 
     private suspend fun loadRecentTransactionsSync() {
+        var historyConfigured = true
         try {
-            refreshTransactionHistoryUseCase(chainId)
+            val result = refreshTransactionHistoryUseCase(chainId)
+            if (result is DataResult.Error && result.exception is ApiKeyNotConfiguredException) {
+                historyConfigured = false
+            }
         } catch (_: Exception) {
         }
         val transactions = getRecentTokenTransactionsUseCase(
@@ -94,7 +99,9 @@ class TokenDetailViewModel @Inject constructor(
             tokenContractAddress = contractAddress,
             limit = 5,
         )
-        _uiState.update { it.copy(recentTransactions = transactions) }
+        _uiState.update {
+            it.copy(recentTransactions = transactions, isHistoryConfigured = historyConfigured)
+        }
     }
 
     /**

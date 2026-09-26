@@ -53,12 +53,15 @@ without evidence.
 > `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md`; merged to `main` on the
 > owner's direction.
 >
-> **The next open entry point is 2.0.4 (API-key strategy)**, then 2.0.5 → 2.0.7 — singly or as
-> owner-approved grouped items (the G1–G5 grouping precedent). The owner filled all five keys in
-> `local.properties` (2026-09-25), so 2.0.4 now plans around real keys; note for its planning: the
-> build does **not** currently load `local.properties` (`app/build.gradle.kts` reads
-> `project.findProperty`, which sees neither that file nor `~/.gradle/gradle.properties`), so the
-> wiring must be added there. Phase 2.6+ still waits on Phase 2.0.
+> **2.0.4 (API-key strategy) implemented + device-walked 2026-09-25 — awaiting owner confirmation**,
+> with one open finding: the Etherscan **V1 endpoint is deprecated** (D2 in the item's
+> `validation.md`), so transaction history cannot return data until the V2 migration — owner
+> decision (migrate here / defer to 2.8). The **next open entry point is 2.0.5** (quality gates),
+> then 2.0.6 → 2.0.7 — singly or as owner-approved grouped items (the G1–G5 grouping precedent).
+> Phase 2.6+ still waits on Phase 2.0.
+>
+> Note for later items: the build now loads `local.properties` into `BuildConfig`, and
+> `core:core-network` runs the Moshi codegen (`ksp`) — both were broken/absent before 2.0.4.
 >
 > What the first run has already bought, beyond the two defects it found: the app is
 > confirmed to build, install, launch, and render on a Pixel 6a, and one prediction
@@ -285,15 +288,45 @@ Exit criteria: either the callbacks navigate somewhere real, or the buttons that
 on them are disabled with a visible explanation. A click that silently does nothing is
 the defect — not the absence of the destination.
 
-### 2.0.4 — Decide the API-key strategy `[ ]`
+### 2.0.4 — Decide the API-key strategy `[~]`
+**IMPLEMENTED + DEVICE-WALKED 2026-09-25 — awaiting owner confirmation; one open finding (D2).**
+Own spec: `specs/features/2026-09-25-2.0.4-api-key-strategy/`. Branch
+`feature/2.0.4-api-key-strategy` (committed for review).
+
+Owner decisions: **real keys are the supported path** (supplied 2026-09-25); a missing keyed
+dependency shows an explicit **"Not configured"** state, distinct from network errors; CoinGecko
+stays key-optional.
+
+What landed:
+
+- `app/build.gradle.kts` finally **loads `local.properties`** (previously `project.findProperty`
+  saw neither it nor `~/.gradle/gradle.properties`, so `BuildConfig` carried empty strings).
+- The Alchemy/CoinGecko lines' inline `#` notes were moved to their own lines first — under
+  `java.util.Properties` an inline `#` is part of the value.
+- `ChainConfigProvider.isRpcConfigured/isExplorerConfigured` + `ApiKeyNotConfiguredException`; the
+  RPC/explorer repository paths fail before touching the network; Home shows a persistent
+  "not configured" notice and TokenDetail says why its history is empty.
+- **D1 (found by the walk, fixed):** `core:core-network` never declared
+  `ksp(moshi-kotlin-codegen)` — the `@JsonClass` DTOs had no generated adapters, so **every
+  Retrofit call died with "Unable to create converter" before any I/O**. That is why every
+  network-backed screen has looked empty since Phase 2; the owner's keys could not have helped.
+  Now 42 adapters generate, CoinGecko answers 200, and the app shows live prices.
+- **D2 (open, owner decision):** the explorer base URL is Etherscan **V1**, which Etherscan now
+  rejects with `NOTOK — deprecated V1 endpoint`. Options (A migrate to V2 here / B defer to 2.8 /
+  C mainnet-only V2) and the recommendation are in `validation.md` §D2.
+
+Evidence: build green; **255 tests, 0 failures, 1 skipped**; detekt/ktlint identical to `main`
+(65 / 1471, no file worse); device walk — live price `$2,691.24`, 24h `+0.58%`, chart renders,
+key-absent notice renders when `INFURA_API_KEY` is blanked, 0 crashes.
+
 All five `local.properties` keys are `your_key_here`. Determine, per screen, what the
 correct behaviour without keys is (explicit "not configured" state vs. empty state vs.
 retry), and make the network-backed screens honour it. Faking data to make a screen look
 populated is forbidden.
 
-**Owner decision required:** supply real keys, or keep placeholders and treat
-key-absent degradation as the supported path for now. Either answer is acceptable; it
-must be written down.
+**Owner decision (answered 2026-09-25):** real keys supplied and are the supported path;
+key-absent degradation is the documented fallback, with an explicit "Not configured" state per
+keyed surface (recorded in the item's `validation.md`).
 
 ### 2.0.5 — Turn both quality gates green `[ ]`
 Current: **1656 ktlint violations across 178 of 221 Kotlin files**, and **75 detekt

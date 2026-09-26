@@ -5,6 +5,7 @@
     <string name="token_detail_send">Send</string>
     <string name="token_detail_receive">Receive</string>
     <string name="token_detail_actions_coming_soon">Send, receive and full transaction history arrive in Phase 2.</string>
+    <string name="token_detail_history_not_configured">Transaction history is not configured. Add ETHERSCAN_API_KEY to local.properties and rebuild.</string>
     <string name="token_detail_recent_transactions">Recent Transactions</string>
     <string name="token_detail_see_all">See All</string>
     <string name="token_detail_see_all_transactions">See all transactions</string>

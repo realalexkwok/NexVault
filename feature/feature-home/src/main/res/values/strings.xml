@@ -21,6 +21,7 @@
     <string name="home_empty_tokens">No tokens yet. Pull to refresh.</string>
     <string name="home_error_load_balances">Failed to load balances. Pull to refresh.</string>
     <string name="home_error_network">Network error. Please check your connection.</string>
+    <string name="home_error_not_configured">Ethereum RPC is not configured. Add INFURA_API_KEY to local.properties and rebuild.</string>
     <string name="home_error_refresh_failed">Failed to refresh. Please try again.</string>
     <string name="home_tokens_header">Tokens</string>
     <string name="home_total_balance">Total Balance</string>

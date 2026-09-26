@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -13,6 +15,24 @@ plugins {
 //        }
 //    }
 //}
+
+// API keys live in local.properties (git-ignored). Gradle project properties do NOT include that
+// file, so it is loaded explicitly here; a -P property (CI) still overrides it. Values are never
+// printed — only injected into BuildConfig.
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { stream ->
+        localProperties.load(stream)
+    }
+}
+
+fun apiKey(name: String): String {
+    val fromFile: String? = localProperties.getProperty(name)
+    if (!fromFile.isNullOrBlank()) return fromFile
+    val fromProject = project.findProperty(name)
+    return if (fromProject is String && fromProject.isNotBlank()) fromProject else ""
+}
 
 android {
     namespace = "com.nexvault.wallet"
@@ -35,31 +55,11 @@ android {
         }
 
         // BuildConfig fields for API keys
-        buildConfigField(
-            "String",
-            "INFURA_API_KEY",
-            "\"${project.findProperty("INFURA_API_KEY") ?: ""}\""
-        )
-        buildConfigField(
-            "String",
-            "ALCHEMY_API_KEY",
-            "\"${project.findProperty("ALCHEMY_API_KEY") ?: ""}\""
-        )
-        buildConfigField(
-            "String",
-            "COINGECKO_API_KEY",
-            "\"${project.findProperty("COINGECKO_API_KEY") ?: ""}\""
-        )
-        buildConfigField(
-            "String",
-            "ETHERSCAN_API_KEY",
-            "\"${project.findProperty("ETHERSCAN_API_KEY") ?: ""}\""
-        )
-        buildConfigField(
-            "String",
-            "WALLETCONNECT_PROJECT_ID",
-            "\"${project.findProperty("WALLETCONNECT_PROJECT_ID") ?: ""}\""
-        )
+        buildConfigField("String", "INFURA_API_KEY", "\"${apiKey("INFURA_API_KEY")}\"")
+        buildConfigField("String", "ALCHEMY_API_KEY", "\"${apiKey("ALCHEMY_API_KEY")}\"")
+        buildConfigField("String", "COINGECKO_API_KEY", "\"${apiKey("COINGECKO_API_KEY")}\"")
+        buildConfigField("String", "ETHERSCAN_API_KEY", "\"${apiKey("ETHERSCAN_API_KEY")}\"")
+        buildConfigField("String", "WALLETCONNECT_PROJECT_ID", "\"${apiKey("WALLETCONNECT_PROJECT_ID")}\"")
     }
 
     buildTypes {
