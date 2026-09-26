@@ -1,9 +1,10 @@
 # 2.0.4 — API-key strategy — Validation record
 
-> Status: **IMPLEMENTED + DEVICE-WALKED 2026-09-25 — AWAITING OWNER CONFIRMATION.** The single open
-> finding (D2, Etherscan V1) was **decided by the owner on 2026-09-26**: the migration becomes its
-> own roadmap item, **2.0.4b** — see §D2 below. What still blocks 2.0.4's own closure is the owner's
-> confirmation and the merge of `feature/2.0.4-api-key-strategy` to `main`.
+> Status: **CLOSED 2026-09-26 — owner-directed close after the reviewer's verification PASS.** Both
+> halves are recorded: automatic (A1–A5) plus the reviewer's fresh re-runs (R8–R9), and the manual
+> device walk (M1–M7) confirmed by the owner in the close round (see §Close / sign-off). The single
+> open finding (D2, Etherscan V1) was decided the same day: the migration becomes roadmap item
+> **2.0.4b** — see §D2.
 > Requirements: `requirements.md` (Q1–Q3, per-screen table). Plan: `plan.md`.
 > Branch: `feature/2.0.4-api-key-strategy`; the change set is committed there (owner-directed
 > commit for review, 2026-09-25).
@@ -145,3 +146,27 @@ never touch the network, CoinGecko stays key-optional, and the D1 Moshi-codegen 
 every network screen looked empty — is fixed and covered by the green suite. **Blocking for
 closure: the owner's decision on D2 (Etherscan V1 → V2 migration), then the owner merge of
 `feature/2.0.4-api-key-strategy` to `main`.**
+
+---
+
+## Close / sign-off (2026-09-26, owner-directed)
+
+| # | Step | State |
+| --- | --- | --- |
+| C1 | Reviewer verification of `3b57c48` (commit `bf8daf5`) | **PASS** — automatic half re-run (R8: 255 tests, 0 fail, 1 skip), gates unchanged (R9), diff review R1–R7; D2 left open. |
+| C2 | Owner decision on the blocking D2 finding | **Decided 2026-09-26**: the migration becomes roadmap item **2.0.4b — Migrate the explorer to Etherscan API V2** (`specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/`), not options A/B/C verbatim. |
+| C3 | Owner confirmation of closure | **Given 2026-09-26**, in an explicit close round: mark the item done, commit, merge to `main`, delete the local branch, push `main`. |
+| C4 | Roadmap status | `[~]` → **`[x]`** (verified) in `specs/roadmap.md`, next open entry point 2.0.4b. |
+| C5 | Merge / push / branch | `main` merged with `--no-ff`, pushed to `origin`, local `feature/2.0.4-api-key-strategy` deleted — performed as part of this close (see the close commit on `main`). |
+
+**Honesty notes carried into the close**
+
+- The manual half rests on the **developer-recorded** device walk M1–M7. The reviewer's R10 launched
+  the app but found the screen locked, so the live-data walk and the key-blanked notice were not
+  independently re-observed; the owner confirmed the close on that basis. Recorded here rather than
+  smoothed over.
+- The ktlint baseline correction stands: 1471 is the fresh `main` count (not the 1454 quoted in
+  earlier records), and no file is worse than `main` (A4).
+- **D2 is not fixed by this close.** With a real key the explorer still answers `NOTOK — deprecated
+  V1 endpoint`, so transaction history stays empty until **2.0.4b** lands. That is a named, tracked
+  limitation, not silent debt.

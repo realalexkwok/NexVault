@@ -53,13 +53,12 @@ without evidence.
 > `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md`; merged to `main` on the
 > owner's direction.
 >
-> **2.0.4 (API-key strategy) implemented + device-walked 2026-09-25 — awaiting owner confirmation.**
-> Its one open finding, **D2 — the Etherscan V1 endpoint is deprecated**, was decided by the owner on
-> **2026-09-26**: the migration becomes its own item, **2.0.4b** (below), to be executed right after
-> 2.0.4 and before 2.0.5. The **next open entry point is therefore 2.0.4b**, and it may not start
-> until `feature/2.0.4-api-key-strategy` is merged to `main` and deleted (branches are never stacked);
-> then 2.0.5 → 2.0.6 → 2.0.7 — singly or as owner-approved grouped items (the G1–G5 grouping
-> precedent). Phase 2.6+ still waits on Phase 2.0.
+> **2.0.4 (API-key strategy) CLOSED 2026-09-26 — reviewer verification PASS, owner-directed close;
+> merged to `main` and the feature branch deleted.** Its one open finding, **D2 — the Etherscan V1
+> endpoint is deprecated**, was decided by the owner the same day: the migration becomes its own item,
+> **2.0.4b** (below). The **next open entry point is therefore 2.0.4b**, whose branch is cut from the
+> updated `main`; then 2.0.5 → 2.0.6 → 2.0.7 — singly or as owner-approved grouped items (the G1–G5
+> grouping precedent). Phase 2.6+ still waits on Phase 2.0.
 >
 > Note for later items: the build now loads `local.properties` into `BuildConfig`, and
 > `core:core-network` runs the Moshi codegen (`ksp`) — both were broken/absent before 2.0.4.
@@ -292,10 +291,12 @@ Exit criteria: either the callbacks navigate somewhere real, or the buttons that
 on them are disabled with a visible explanation. A click that silently does nothing is
 the defect — not the absence of the destination.
 
-### 2.0.4 — Decide the API-key strategy `[~]`
-**IMPLEMENTED + DEVICE-WALKED 2026-09-25 — awaiting owner confirmation; one open finding (D2).**
-Own spec: `specs/features/2026-09-25-2.0.4-api-key-strategy/`. Branch
-`feature/2.0.4-api-key-strategy` (committed for review).
+### 2.0.4 — Decide the API-key strategy `[x]`
+**CLOSED 2026-09-26 — owner-directed close after the reviewer's verification PASS (`bf8daf5`, of
+`3b57c48`).** Own spec: `specs/features/2026-09-25-2.0.4-api-key-strategy/` (requirements with the
+per-screen table, plan, validation with both halves and the D2 resolution). Merged to `main` with a
+merge commit and pushed; the local `feature/2.0.4-api-key-strategy` branch is deleted.
+**Next open entry point: 2.0.4b** (Etherscan API V2 migration), then 2.0.5.
 
 Owner decisions: **real keys are the supported path** (supplied 2026-09-25); a missing keyed
 dependency shows an explicit **"Not configured"** state, distinct from network errors; CoinGecko
