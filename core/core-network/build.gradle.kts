@@ -49,6 +49,10 @@ dependencies {
 
     // Networking
     implementation(libs.bundles.networking)
+    // Moshi codegen — without the KSP processor the @JsonClass(generateAdapter = true) DTOs have
+    // no adapters at runtime and every Retrofit call dies with "Unable to create converter"
+    // before any I/O (found by the 2.0.4 device walk).
+    ksp(libs.moshi.kotlin.codegen)
     implementation(libs.web3j.android)
 
     // Kotlin Serialization

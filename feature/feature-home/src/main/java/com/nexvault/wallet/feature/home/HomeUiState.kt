@@ -19,6 +19,8 @@ data class HomeUiState(
     val supportedChains: List<Chain> = emptyList(),
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
+    /** True when the RPC API key is missing, so the screen says so instead of showing stale data. */
+    val isRpcNotConfigured: Boolean = false,
     @StringRes val errorRes: Int? = null,
     @PluralsRes val errorPluralsRes: Int? = null,
     val errorQuantity: Int = 0,

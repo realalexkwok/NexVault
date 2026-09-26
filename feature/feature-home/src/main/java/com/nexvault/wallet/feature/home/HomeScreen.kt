@@ -134,6 +134,18 @@ fun HomeScreen(
                 item(key = "actions") {
                     QuickActionsRow()
                 }
+                if (uiState.isRpcNotConfigured) {
+                    // Roadmap 2.0.4: key-absent is a persistent state, not a transient snackbar.
+                    item(key = "not_configured") {
+                        Text(
+                            text = stringResource(R.string.home_error_not_configured),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
                 item(key = "tokens_header") {
                     Row(
                         modifier = Modifier

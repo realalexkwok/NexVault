@@ -135,6 +135,18 @@ fun TokenDetailScreen(
                         item(key = "actions") {
                             TokenActionButtons()
                         }
+                        if (!uiState.isHistoryConfigured) {
+                            // Roadmap 2.0.4: say why the history is empty instead of showing nothing.
+                            item(key = "history_not_configured") {
+                                Text(
+                                    text = stringResource(R.string.token_detail_history_not_configured),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
                         if (uiState.recentTransactions.isNotEmpty()) {
                             item(key = "tx_header") {
                                 Row(

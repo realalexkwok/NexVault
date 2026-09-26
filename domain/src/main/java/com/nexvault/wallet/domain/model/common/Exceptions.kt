@@ -47,6 +47,16 @@ class NetworkException(
     cause: Throwable? = null,
 ) : NexVaultException(message, cause)
 
+/**
+ * A network-backed feature needs an API key this build does not have (roadmap 2.0.4).
+ *
+ * Distinct from [NetworkException] on purpose: the UI shows an explicit "not configured" state
+ * naming the missing key instead of a generic network error.
+ */
+class ApiKeyNotConfiguredException(
+    message: String = "API key not configured",
+) : NexVaultException(message)
+
 class EncryptionException(
     message: String = "Encryption error",
     cause: Throwable? = null,

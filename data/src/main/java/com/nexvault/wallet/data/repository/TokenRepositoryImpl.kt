@@ -6,6 +6,7 @@ import com.nexvault.wallet.core.network.api.CoinGeckoApi
 import com.nexvault.wallet.core.network.config.ChainConfigProvider
 import com.nexvault.wallet.core.network.web3.Web3jProvider
 import com.nexvault.wallet.data.mapper.toDomain
+import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
@@ -72,6 +73,12 @@ class TokenRepositoryImpl @Inject constructor(
                         IllegalArgumentException("No network config"),
                         "Unsupported chain: $chainId",
                     )
+                // Roadmap 2.0.4: fail explicitly instead of calling an RPC endpoint that has no key.
+                if (!chainConfigProvider.isRpcConfigured(chainId)) {
+                    return@withContext DataResult.Error(
+                        ApiKeyNotConfiguredException("Ethereum RPC is not configured"),
+                    )
+                }
 
                 val web3j = web3jProvider.getWeb3j(chainId)
                 val wei = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
@@ -182,6 +189,12 @@ class TokenRepositoryImpl @Inject constructor(
                     IllegalArgumentException("Unsupported chain"),
                     "Unsupported chain: $chainId",
                 )
+            // Roadmap 2.0.4: reading ERC-20 metadata needs the RPC key.
+            if (!chainConfigProvider.isRpcConfigured(chainId)) {
+                return@withContext DataResult.Error(
+                    ApiKeyNotConfiguredException("Ethereum RPC is not configured"),
+                )
+            }
 
             val normalized = contractAddress.lowercase()
             val web3j = web3jProvider.getWeb3j(chainId)
