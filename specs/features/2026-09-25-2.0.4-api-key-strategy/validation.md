@@ -94,3 +94,39 @@ with the history work (owner **2.8**), which can also decide the BSC/Polygon key
 | Alchemy key still unused | No failover/RPC-switching this round | 2.6/2.7 (signing/RPC choice) |
 | WalletConnect project id | Consumed by nothing until DApp pairing | 3.1 |
 | Key-absent states for screens built later (send/receive/swap/history) | Their callbacks and error surfaces arrive with their items | 2.6/2.7/3.3/2.8 |
+
+---
+
+## Reviewer verification — commit 3b57c48 (2026-09-26)
+
+> Code-reviewer session (read-only on production code; record files only). Re-verified from the
+> tree and by fresh runs; nothing taken on trust.
+
+### Diff review — verdicts
+
+| # | Criterion | Check | Verdict |
+| --- | --- | --- | --- |
+| R1 | AC-1 loader | `app/build.gradle.kts` loads `local.properties` explicitly (with `-P` override precedence); `apiKey()` helper; **values never printed**. Generated `BuildConfig.java` value lengths measured masked: Infura 32, Alchemy 26, CoinGecko 27, Etherscan 34, WalletConnect 32 — all **non-empty**, matching the developer's claim exactly; `git check-ignore local.properties` → ignored; the commit's file list contains no `local.properties`/`gradle.properties`. | ✅ |
+| R2 | AC-3 key-absent guard | `ChainConfigProvider.isRpcConfigured`/`isExplorerConfigured` keyed to chains {1, 11155111} only (BSC/Polygon public, never "not configured"); `TokenRepositoryImpl` (balances + ERC-20 metadata) and `TransactionRepositoryImpl` (history refresh) fail **before** touching `Web3jProvider`/`BlockExplorerApiFactory` with the new, distinct `ApiKeyNotConfiguredException` | ✅ |
+| R3 | AC-3 tests | `TokenRepositoryImplTest` + `TransactionRepositoryImplTest` assert the exception type **and** `coVerify(exactly = 0)` on the network providers for the unconfigured paths; configured paths still reach them | ✅ |
+| R4 | AC-4 CoinGecko | no `ApiKeyNotConfiguredException` wiring on any CoinGecko path; the key-optional interceptor behavior is unchanged | ✅ |
+| R5 | UI states | `HomeUiState.isRpcNotConfigured` / `TokenDetailUiState.isHistoryConfigured` drive **persistent inline notices** (V1 deviation — correct: a standing condition is not a snackbar); generic network/refresh errors keep their existing strings; the two new strings exist in each feature module's `values/strings.xml` | ✅ |
+| R6 | D1 fix | `ksp(libs.moshi.kotlin.codegen)` added to `core:core-network` — the root cause of every empty network screen since Phase 2; the fresh build generates the adapters (build passed with the processor wired) | ✅ |
+| R7 | D2 (open) | The Etherscan **V1** endpoint is deprecated and answers `NOTOK`; the fix is deliberately deferred pending the owner's choice (options A/B/C in the developer's findings; recommendation **B** — migrate with the history work, owner 2.8) | ⚠️ **needs owner decision** |
+
+### Fresh automatic evidence (reviewer's own runs)
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| R8 | Build + tests | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --continue` | **PASS — 255 tests, 0 failures, 0 errors, 1 skipped** (249 → 255, +6 — matches claim) |
+| R9 | Gates (reviewer basis) | `detekt ktlintCheck` | detekt 10 tasks / **78 weighted** — unchanged from the reviewer's baseline (their 65→65 / 1471→1471 bases); ktlint 39 tasks unchanged. **No new findings in touched files.** |
+| R10 | Device (reviewer) | launch on the Pixel 6a | app process runs; the screen was locked/off at review time, so the live-data walk (M1–M2) and the key-blanked notice (M5/M6) remain developer-recorded — the manual half is the owner's confirmation. |
+
+### Verdict
+
+**PASS (automatic + diff).** The key strategy is implemented exactly as decided: real keys now reach
+`BuildConfig`, keyed surfaces fail fast with an explicit, persistent "not configured" state and
+never touch the network, CoinGecko stays key-optional, and the D1 Moshi-codegen defect — the reason
+every network screen looked empty — is fixed and covered by the green suite. **Blocking for
+closure: the owner's decision on D2 (Etherscan V1 → V2 migration), then the owner merge of
+`feature/2.0.4-api-key-strategy` to `main`.**
