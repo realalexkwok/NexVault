@@ -1,10 +1,11 @@
 # 2.0.4b — Migrate the explorer to Etherscan API V2 — Validation record
 
-> **Status: IMPLEMENTED on `feature/2.0.4b-etherscan-v2-migration` — automatic half complete, MANUAL
-> HALF PENDING, its funded rows SUSPENDED by the owner (2026-09-26, §Suspended).** Everything in
-> §Automatic was run on this machine on 2026-09-26 against the working tree described below; §Manual
-> has not been exercised by the owner yet, so the roadmap row stays `[~]` until both halves pass and
-> the owner directs the close.
+> **Status: CLOSED 2026-09-26 as `[~]` — MERGED TO `main`, NOT VERIFIED (owner-directed; §Close).**
+> The automatic half is complete, and the reviewer session verified it **PASS** (`744251d` on
+> `e82eba2`, R1–R9 — its R10 device re-walk was blocked by a locked phone and left owner-pending). The
+> manual half is **not** verified: M1/M2 are suspended with the funding decision and M3–M5 have not
+> been run. The roadmap row therefore stays **implemented-unverified** (`[~]`) and may only move to
+> `[x]` when M1/M2 pass after funding.
 > Requirements: `requirements.md` (Q1–Q6, AC-1–AC-8). Plan: `plan.md`.
 
 **Host used for every command below:** Linux (`superguo-SQM2270`), `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`
@@ -165,3 +166,22 @@ UI notice. The roadmap row correctly stays `[~]` until the owner's manual half p
 walkable now; M1/M2 resume when the walk wallet has real history). Remaining for closure: the
 owner's manual-half evidence, then the owner merge of
 `feature/2.0.4b-etherscan-v2-migration` to `main`.
+
+## Close / sign-off (owner-directed, 2026-09-26)
+
+| # | Step | State |
+| --- | --- | --- |
+| C1 | Reviewer verification | ✅ **PASS** — reviewer commit `744251d` verifying `e82eba2` (R1–R9; R10 device re-walk blocked by a locked phone) |
+| C2 | Implementation committed on the item branch | ✅ `e82eba2` — 23 files: production code, 19 new tests, spec records |
+| C3 | Roadmap row | **`[~]` — implemented, NOT verified.** Owner decision: merge now and keep the row implemented-unverified; it moves to `[x]` only when M1/M2 pass |
+| C4 | Merge to `main` and push | ✅ `--no-ff` merge commit, pushed to `origin/main`; local `feature/2.0.4b-etherscan-v2-migration` deleted |
+| C5 | Verification debt carried forward | M1 (mainnet history) + M2 (Polygon history) **suspended with the funding decision**; M3–M5 **owner-pending** (no balance needed, the reviewer found the phone locked). Resume rule: fund the active account until the balance is not zero, re-probe chains 1/137 for `txlist`/`tokentx` **rows**, walk M1–M5, fill the tables — only then may the row become `[x]` |
+
+**Honesty notes.** (1) Closing as `[~]` is deliberate, not a claim: the code is merged and
+reviewer-verified on the automatic/diff/live-probe half, but **no device walk has happened** — that
+evidence is owed, not waived. (2) The reviewer's own runs reproduced the developer's numbers (274
+tests / 0 failures / 1 skipped; gates unchanged; the masked probe green on chainid 1 and plan-gated on
+56), so the automatic half does not rest on a single session's word. (3) Nothing in the funding
+suspension changes the code: it ships correct V2 behaviour; what is missing is evidence from a funded
+address. (4) A later paid Etherscan plan turns the BSC notice into a live list with no code change
+(AC-8/Q6).
