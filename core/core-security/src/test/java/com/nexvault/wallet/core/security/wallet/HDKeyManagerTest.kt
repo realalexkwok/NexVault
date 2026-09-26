@@ -10,7 +10,8 @@ class HDKeyManagerTest {
     private val hdKeyManager = HDKeyManager()
 
     // BIP39 test vector mnemonic
-    private val testMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+    private val testMnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 
     @Test
     fun testDeriveAddressFromKnownMnemonic() {

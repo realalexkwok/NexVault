@@ -149,7 +149,9 @@ class UnlockViewModel
          */
         fun onDigitPressed(digit: Int) {
             val currentState = _uiState.value
-            if (currentState.isLockedOut || currentState.isVerifying || currentState.pin.length >= PIN_LENGTH) return
+            val isInputBlocked =
+                currentState.isLockedOut || currentState.isVerifying || currentState.pin.length >= PIN_LENGTH
+            if (isInputBlocked) return
 
             val newPin = currentState.pin + digit.toString()
             _uiState.update { it.copy(pin = newPin, isShakeError = false).withError() }
@@ -164,7 +166,9 @@ class UnlockViewModel
          */
         fun onBackspacePressed() {
             val currentState = _uiState.value
-            if (currentState.isLockedOut || currentState.isVerifying || currentState.pin.isEmpty()) return
+            val isInputBlocked =
+                currentState.isLockedOut || currentState.isVerifying || currentState.pin.isEmpty()
+            if (isInputBlocked) return
 
             _uiState.update {
                 it

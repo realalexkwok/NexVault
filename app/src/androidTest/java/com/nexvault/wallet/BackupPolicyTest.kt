@@ -57,7 +57,8 @@ class BackupPolicyTest {
         val deviceTransfer = exclusionsIn(R.xml.data_extraction_rules, "device-transfer")
         assertEquals("cloud-backup must exclude every domain, found: ${cloud.keys}", ALL_DOMAINS, cloud.keys)
         assertEquals(
-            "device-transfer must exclude every domain (Android 12+ D2D is on by default), found: ${deviceTransfer.keys}",
+            "device-transfer must exclude every domain (Android 12+ D2D is on by default), " +
+                "found: ${deviceTransfer.keys}",
             ALL_DOMAINS,
             deviceTransfer.keys,
         )

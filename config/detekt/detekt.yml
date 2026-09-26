@@ -11,9 +11,21 @@ complexity:
   ComplexCondition:
     active: true
     threshold: 3
+  # 2.0.5 owner decision Q2 (2026-09-26): one uniform ceiling of 25 instead of detekt's
+  # default of 11. Repository/DAO/datastore surfaces and long test classes legitimately
+  # carry 12-22 small operations (largest offenders at the decision point:
+  # WalletRepositoryImplTest 22, TokenRepositoryImpl 19, WalletRepositoryImpl 19,
+  # ExceptionsTest 16, SecurityUtilsTest 16, PasswordValidatorTest 16, WalletRepository 14,
+  # UserPreferencesDataStore 14). A ceiling of 25 keeps the rule meaningful - a god class
+  # still fails. Inventory and counts:
+  # specs/features/2026-09-26-2.0.5-quality-gates/validation.md
   TooManyFunctions:
     active: true
-    thresholdInFiles: 11
+    thresholdInFiles: 25
+    thresholdInClasses: 25
+    thresholdInInterfaces: 25
+    thresholdInObjects: 25
+    thresholdInEnums: 25
 
 style:
   active: true
@@ -21,14 +33,21 @@ style:
     active: false
   NewLineAtEndOfFile:
     active: true
+  # 120 stays the single line-length ceiling even though ktlint's default is 140 - the
+  # stricter gate governs. 2.0.5 wrapped every line above it instead of raising it.
   MaxLineLength:
     active: true
     maxLineLength: 120
 
 comments:
   active: true
+  # 2.0.5 owner decision Q2 (2026-09-26): off. Comments already carry weight 0 in this
+  # config, and the private functions the rule fires on are private @Composable helpers and
+  # UiState extension helpers whose KDoc explains behaviour the name cannot carry
+  # (e.g. `UiState.withError`'s precedence rule, `validateMnemonicInput`'s checksum timing).
+  # Renaming them to satisfy the rule would drop that explanation.
   CommentOverPrivateFunction:
-    active: true
+    active: false
 
 empty-blocks:
   active: true

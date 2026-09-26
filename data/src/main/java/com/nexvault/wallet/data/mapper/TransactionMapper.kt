@@ -73,7 +73,8 @@ fun TokenTransferDto.toEntity(chainId: Int, walletAddress: String): TransactionE
 /**
  * Maps a stored [TransactionEntity] to the domain [Transaction].
  *
- * @param walletAddress Active account address; used to refine [TransactionType] when [TransactionEntity.type] is unknown.
+ * @param walletAddress Active account address; used to refine [TransactionType] when
+ *   [TransactionEntity.type] is unknown.
  */
 fun TransactionEntity.toDomain(walletAddress: String): Transaction {
     val typeEnum = when (type.lowercase()) {

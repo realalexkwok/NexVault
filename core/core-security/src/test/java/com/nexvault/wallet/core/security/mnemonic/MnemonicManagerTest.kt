@@ -36,7 +36,8 @@ class MnemonicManagerTest {
     @Test
     fun testValidMnemonicPassesValidation() {
         // Use a known valid mnemonic from BIP39 test vectors
-        val validMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+        val validMnemonic =
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
         assertTrue(mnemonicManager.validateMnemonic(validMnemonic))
     }
 

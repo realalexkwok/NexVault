@@ -6,6 +6,7 @@ import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
 import com.nexvault.wallet.core.datastore.state.AppStateManager
 import com.nexvault.wallet.core.datastore.state.AuthFailureResult
 import com.nexvault.wallet.core.security.biometric.BiometricHelper
+import com.nexvault.wallet.core.security.biometric.BiometricStatus
 import com.nexvault.wallet.core.security.util.SecurityUtils
 import com.nexvault.wallet.data.mapper.AuthMapper
 import com.nexvault.wallet.domain.model.auth.AuthMethod
@@ -105,7 +106,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isBiometricAvailable(): Boolean {
-        return biometricHelper.isBiometricAvailable() == com.nexvault.wallet.core.security.biometric.BiometricStatus.AVAILABLE
+        return biometricHelper.isBiometricAvailable() == BiometricStatus.AVAILABLE
     }
 
     override suspend fun setBiometricEnabled(enabled: Boolean): DataResult<Unit> {

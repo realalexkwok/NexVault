@@ -44,7 +44,9 @@ class ImportWalletViewModelTest {
 
     @Test
     fun modeSwitchClearsErrors() {
-        viewModel.onMnemonicInputChanged("word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12")
+        viewModel.onMnemonicInputChanged(
+            "word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12",
+        )
         assertTrue(viewModel.uiState.value.mnemonicErrorRes != null)
 
         viewModel.onImportModeChanged(ImportWalletViewModel.ImportMode.PRIVATE_KEY)
@@ -86,7 +88,9 @@ class ImportWalletViewModelTest {
 
     @Test
     fun mnemonicWithInvalidCharsShowsError() {
-        viewModel.onMnemonicInputChanged("word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12")
+        viewModel.onMnemonicInputChanged(
+            "word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12",
+        )
 
         val state = viewModel.uiState.value
         assertEquals(R.string.import_wallet_mnemonic_invalid_chars, state.mnemonicErrorRes)
