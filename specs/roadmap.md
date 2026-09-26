@@ -36,9 +36,9 @@ without evidence.
 > signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
 > gate closure and every finding handed to its owning item).
 >
-> **The next open entry point is 2.0.3 (navigation dead ends)** — the Phase 2.0 remainder
-> (2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7) is proceeded singly or as owner-approved grouped items
-> (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
+> **The next open entry point is 2.0.4b (Etherscan V2 migration — see Phase 2.0 below)** — the
+> Phase 2.0 remainder (2.0.4b → 2.0.5 → 2.0.6 → 2.0.7) is proceeded singly or as owner-approved
+> grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -53,12 +53,13 @@ without evidence.
 > `specs/features/2026-09-25-2.0.2b-onboarding-repair/validation.md`; merged to `main` on the
 > owner's direction.
 >
-> **2.0.4 (API-key strategy) implemented + device-walked 2026-09-25 — awaiting owner confirmation**,
-> with one open finding: the Etherscan **V1 endpoint is deprecated** (D2 in the item's
-> `validation.md`), so transaction history cannot return data until the V2 migration — owner
-> decision (migrate here / defer to 2.8). The **next open entry point is 2.0.5** (quality gates),
-> then 2.0.6 → 2.0.7 — singly or as owner-approved grouped items (the G1–G5 grouping precedent).
-> Phase 2.6+ still waits on Phase 2.0.
+> **2.0.4 (API-key strategy) implemented + device-walked 2026-09-25 — awaiting owner confirmation.**
+> Its one open finding, **D2 — the Etherscan V1 endpoint is deprecated**, was decided by the owner on
+> **2026-09-26**: the migration becomes its own item, **2.0.4b** (below), to be executed right after
+> 2.0.4 and before 2.0.5. The **next open entry point is therefore 2.0.4b**, and it may not start
+> until `feature/2.0.4-api-key-strategy` is merged to `main` and deleted (branches are never stacked);
+> then 2.0.5 → 2.0.6 → 2.0.7 — singly or as owner-approved grouped items (the G1–G5 grouping
+> precedent). Phase 2.6+ still waits on Phase 2.0.
 >
 > Note for later items: the build now loads `local.properties` into `BuildConfig`, and
 > `core:core-network` runs the Moshi codegen (`ksp`) — both were broken/absent before 2.0.4.
@@ -138,9 +139,12 @@ verified.
 on a device, the security suite compiles and passes, the dead ends are gone, and both
 quality gates are green.
 
-Order within the phase is strict: 2.0.1 → 2.0.2 → **2.0.2b** → 2.0.3 → 2.0.4 → 2.0.5 → 2.0.6 → 2.0.7.
+Order within the phase is strict: 2.0.1 → 2.0.2 → **2.0.2b** → 2.0.3 → 2.0.4 → **2.0.4b** → 2.0.5 →
+2.0.6 → 2.0.7.
 2.0.2b was inserted on 2026-09-21: 2.0.2's first real run exposed a critical defect that
-blocks every remaining step.
+blocks every remaining step. 2.0.4b was inserted on 2026-09-26: 2.0.4's device walk exposed
+that the explorer still speaks the **deprecated Etherscan V1** API, so transaction history
+cannot return data (finding D2).
 
 ### 2.0.1 — Repair the `core-security` test suite `[~]`
 **Automatic half DONE 2026-09-21** — 61 tests, 0 failures, 1 skipped; the suite compiles
@@ -313,7 +317,10 @@ What landed:
   Now 42 adapters generate, CoinGecko answers 200, and the app shows live prices.
 - **D2 (open, owner decision):** the explorer base URL is Etherscan **V1**, which Etherscan now
   rejects with `NOTOK — deprecated V1 endpoint`. Options (A migrate to V2 here / B defer to 2.8 /
-  C mainnet-only V2) and the recommendation are in `validation.md` §D2.
+  C mainnet-only V2) and the recommendation are in `validation.md` §D2. **Owner decision 2026-09-26:**
+  none of A/B/C verbatim — the migration becomes its own tracked item, **2.0.4b** (below), executed
+  after this item and before 2.0.5. The decision is recorded in that `validation.md`; the migration
+  itself is **not** implemented.
 
 Evidence: build green; **255 tests, 0 failures, 1 skipped**; detekt/ktlint identical to `main`
 (65 / 1471, no file worse); device walk — live price `$2,691.24`, 24h `+0.58%`, chart renders,
@@ -327,6 +334,56 @@ populated is forbidden.
 **Owner decision (answered 2026-09-25):** real keys supplied and are the supported path;
 key-absent degradation is the documented fallback, with an explicit "Not configured" state per
 keyed surface (recorded in the item's `validation.md`).
+
+### 2.0.4b — Migrate the explorer to Etherscan API V2 `[ ]`
+**ADDED 2026-09-26 by owner decision on 2.0.4 finding D2. Not started.** Own spec:
+`specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/` (requirements with the owner Q/A,
+plan with the task groups, validation opened as a not-started record). Branch
+`feature/2.0.4b-etherscan-v2-migration` — cut from `main` only **after**
+`feature/2.0.4-api-key-strategy` is merged and deleted.
+
+Why it is a defect and not a chore: the app's explorer hosts are all V1 —
+`api.etherscan.io`, `api-sepolia.etherscan.io`, `api.bscscan.com`, `api.polygonscan.com`
+(`ChainConfigProvider.kt:75-102`), with `@GET("api")` and no `chainid`
+(`BlockExplorerApi.kt`). V1 was fully deprecated on 15 August 2025
+([Etherscan KB](https://kb.etherscan.com/etherscan-api-v1-will-be-fully-deprecated-by-15th-august-2025)),
+so every `refreshTransactionHistory` call now returns
+`{"status":"0","message":"NOTOK","result":"…deprecated V1 endpoint…"}` — and because 2.0.4's DTOs
+declare `result: List<TransactionDto>` (non-null), the envelope does not even parse: the failure is
+swallowed by a generic `catch`. **Transaction history cannot return data at all**, and 2.8 would
+build its list on top of a dead source.
+
+Owner decisions (2026-09-26):
+
+- **All four chains through V2**: one endpoint `https://api.etherscan.io/v2/api` (base
+  `https://api.etherscan.io/v2/`) with the mandatory `chainid` query parameter for 1, 11155111, 56
+  and 137, and **one `ETHERSCAN_API_KEY`** for all of them — the V2 unified key
+  ([V2 announcement](https://info.etherscan.com/switch-to-etherscan-api-v2-by-may-31-2025/)).
+  No new `local.properties` key; no BscScan/PolygonScan-specific key. **Verified 2026-09-26 by a
+  masked probe** (`validation.md` §P3): the free key answers `status:"1"` for 1 / 11155111 / 137 and is
+  **plan-gated on 56** — *"Free API access is not supported for this chain."* — so BSC history is a
+  third state, not a key problem.
+- **Scope**: endpoint + `chainid` + **error-envelope surfacing** + **plan-gate surfacing**. The
+  silent-empty behaviour is part of the defect: an explorer error must become an explicit
+  `DataResult.Error`, the plan gate a distinct exception with a persistent notice (message-driven, no
+  chain id hard-coded, so a paid plan later needs no code change), while a legitimate
+  `"No transactions found"` stays a successful empty result. True pagination and the History UI stay
+  with 2.8.
+- **Consequence to read with 2.0.4's per-screen table**: BSC/Polygon stop being keyless on the
+  explorer side (`isExplorerConfigured` requires the key for every supported chain), so when
+  `ETHERSCAN_API_KEY` is blank those history surfaces now show the explicit "Not configured" state —
+  a user-visible change superseding that table's BSC/Polygon row. Their **RPCs** stay public and
+  keyless, so `isRpcConfigured` is unchanged.
+- **Verification**: unit tests on the built request (path `/v2/api` + `chainid`/`apikey` per chain,
+  via a capturing OkHttp interceptor — no new dependency), a masked live `curl` against V2, and a
+  device walk on a **known-active address** (owner-supplied: the 2.0.4 wallet holds 0 wei, where an
+  empty history proves nothing).
+
+Exit criteria: AC-1…AC-8 of the item's `requirements.md` hold with recorded evidence — V2 +
+`chainid` asserted per chain, one key configured for all four, error envelopes and the 56 plan gate
+surfaced as distinct states, masked `curl` returning `status:"1"` on 1/11155111/137, TokenDetail
+listing real history on the Pixel 6a (and the plan notice on BSC), and detekt/ktlint not worse than
+the merge base.
 
 ### 2.0.5 — Turn both quality gates green `[ ]`
 Current: **1656 ktlint violations across 178 of 221 Kotlin files**, and **75 detekt
@@ -394,6 +451,9 @@ but returns `UnsupportedOperationException` for **all three write paths** and fo
 `getTransactionHistory` ignores its `page` / `pageSize` arguments (returns the full
 observed list), and `updateTransactionStatus` returns the cached entity without
 consulting the chain.
+
+**2.8's data source:** the explorer must be on **Etherscan V2 (2.0.4b)** before history can return
+anything — until then `refreshTransactionHistory` cannot produce a row, whatever 2.8's UI does.
 
 ---
 

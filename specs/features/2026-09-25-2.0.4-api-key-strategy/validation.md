@@ -1,7 +1,9 @@
 # 2.0.4 — API-key strategy — Validation record
 
-> Status: **IMPLEMENTED + DEVICE-WALKED 2026-09-25 — AWAITING OWNER CONFIRMATION. One open
-> finding (D2, Etherscan V1) needs an owner decision.**
+> Status: **IMPLEMENTED + DEVICE-WALKED 2026-09-25 — AWAITING OWNER CONFIRMATION.** The single open
+> finding (D2, Etherscan V1) was **decided by the owner on 2026-09-26**: the migration becomes its
+> own roadmap item, **2.0.4b** — see §D2 below. What still blocks 2.0.4's own closure is the owner's
+> confirmation and the merge of `feature/2.0.4-api-key-strategy` to `main`.
 > Requirements: `requirements.md` (Q1–Q3, per-screen table). Plan: `plan.md`.
 > Branch: `feature/2.0.4-api-key-strategy`; the change set is committed there (owner-directed
 > commit for review, 2026-09-25).
@@ -59,7 +61,7 @@ fix: **42 generated adapters**, CoinGecko `200` responses, live price/chart on d
 This defect predates 2.0.4 — it is why every network-backed screen has looked empty since Phase 2 —
 and would have made the owner's keys useless.
 
-### D2 — Etherscan V1 endpoint is deprecated (OPEN, owner decision)
+### D2 — Etherscan V1 endpoint is deprecated (DECIDED 2026-09-26; migration owned by item 2.0.4b)
 
 The app's explorer base URL is `https://api.etherscan.io/` (V1). Etherscan now answers V1 calls
 with `{"status":"0","message":"NOTOK","result":"You are using a deprecated V1 endpoint, switch to
@@ -77,6 +79,19 @@ Options for the owner:
 Recommendation: **B** — 2.0.4's decision was the key strategy, and the explorer rewrite belongs
 with the history work (owner **2.8**), which can also decide the BSC/Polygon key story.
 
+**Owner decision (2026-09-26, planning round):** none of A/B/C verbatim — the migration becomes its
+own tracked roadmap item, **2.0.4b — Migrate the explorer to Etherscan API V2**, inserted in Phase 2.0
+immediately after 2.0.4 and before 2.0.5, with its spec at
+`specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/`. The owner chose the **all-four-chains**
+shape on the **single V2 key** (C's "mainnet only" and the separate BscScan/PolygonScan keys are
+declined), plus error-envelope surfacing; **true pagination stays with 2.8**. A masked probe the same
+day (`2.0.4b/validation.md` §P3) then showed the free key reaches 1 / 11155111 / 137 but is
+**plan-gated on 56**, so the owner amended the decision: BSC is migrated too, and its plan gate gets
+its own explicit state instead of a paid-plan purchase or a hidden chain. Consequences recorded
+in that item's `requirements.md`: BSC/Polygon history becomes keyed, superseding this item's
+per-screen "never Not configured" row for those chains (their RPCs stay keyless). Starting 2.0.4b
+requires this branch to be merged and deleted first.
+
 ## Deviations from the plan
 
 | # | Plan said | Done | Why |
@@ -89,8 +104,8 @@ with the history work (owner **2.8**), which can also decide the BSC/Polygon key
 
 | Deferred | Why | Owner |
 | --- | --- | --- |
-| Etherscan V1 → V2 migration (finding D2) | Needs the owner's choice (option A/B/C above) | **owner decision**, then 2.8 |
-| BSC/Polygon explorer keys | Explorer V2 requires a key per chain; the app has none for those chains | with the D2 decision |
+| Etherscan V1 → V2 migration (finding D2) | Owner decided 2026-09-26: its own item, **2.0.4b**, after 2.0.4 and before 2.0.5 | **2.0.4b** |
+| BSC/Polygon explorer keys | V2 needs a key per chain, and V2's unified key is the one `ETHERSCAN_API_KEY`; the app needs no new key | **2.0.4b** |
 | Alchemy key still unused | No failover/RPC-switching this round | 2.6/2.7 (signing/RPC choice) |
 | WalletConnect project id | Consumed by nothing until DApp pairing | 3.1 |
 | Key-absent states for screens built later (send/receive/swap/history) | Their callbacks and error surfaces arrive with their items | 2.6/2.7/3.3/2.8 |
