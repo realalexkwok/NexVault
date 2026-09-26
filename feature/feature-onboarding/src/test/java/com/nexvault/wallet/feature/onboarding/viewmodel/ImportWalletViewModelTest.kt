@@ -17,7 +17,9 @@ class ImportWalletViewModelTest {
     private lateinit var viewModel: ImportWalletViewModel
 
     private val validMnemonic12 = "apple brave crane delta eagle frost grape house ivory jump king lamp"
-    private val validMnemonic24 = "apple brave crane delta eagle frost grape house ivory jump king lamp moon peace quiet brave delta eagle float glad gift knee river peace"
+    private val validMnemonic24 =
+        "apple brave crane delta eagle frost grape house ivory jump king lamp moon " +
+            "peace quiet brave delta eagle float glad gift knee river peace"
 
     @Before
     fun setup() {
@@ -93,7 +95,9 @@ class ImportWalletViewModelTest {
 
     @Test
     fun mnemonicWithTooManyWordsShowsError() {
-        val tooMany = "apple brave crane delta eagle frost grape house ivory jump king lamp moon peace quiet brave delta eagle float glad gift knee river peace quiet extra"
+        val tooMany =
+            "apple brave crane delta eagle frost grape house ivory jump king lamp moon " +
+                "peace quiet brave delta eagle float glad gift knee river peace quiet extra"
         viewModel.onMnemonicInputChanged(tooMany)
 
         val state = viewModel.uiState.value

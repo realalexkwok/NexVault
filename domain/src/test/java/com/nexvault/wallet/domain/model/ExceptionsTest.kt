@@ -11,7 +11,8 @@ import com.nexvault.wallet.domain.model.common.NexVaultException
 import com.nexvault.wallet.domain.model.common.TransactionFailedException
 import com.nexvault.wallet.domain.model.common.WalletAlreadyExistsException
 import com.nexvault.wallet.domain.model.common.WalletNotFoundException
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ExceptionsTest {
