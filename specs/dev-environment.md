@@ -169,16 +169,19 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 # --- test ---
 ./gradlew testDebugUnitTest           # Android library/application modules
 ./gradlew :domain:test                # domain is a pure-Kotlin JVM module
-./gradlew :core:core-security:testDebugUnitTest   # currently fails to compile (2.0.1)
+./gradlew :core:core-security:testDebugUnitTest   # 61 tests, 1 skipped (repaired by 2.0.1)
 
 # --- quality gates ---
 ./gradlew detekt                      # config: config/detekt/detekt.yml, maxIssues 0
-./gradlew ktlintCheck                 # no .editorconfig; ktlint 1.x defaults
+./gradlew ktlintCheck                 # .editorconfig codifies the style since 2.0.5
+./gradlew ktlintFormat                # applies the auto-correctable fixes; review the diff
+./gradlew detekt ktlintCheck --continue   # both gates, no fail-fast (green since 2.0.5)
 
 # --- reports ---
 # test results: <module>/build/test-results/testDebugUnitTest/TEST-*.xml
 # ktlint:       <module>/build/reports/ktlint/ktlint*Check/ktlint*Check.txt
 # detekt:       <module>/build/reports/detekt/detekt.{txt,html,md,sarif}
+# the root project's own scripts report to build/reports/ktlint/ktlintKotlinScriptCheck/
 ```
 
 The quality reports above are the evidence source for `validation.md` — cite the
@@ -194,7 +197,8 @@ Before claiming any roadmap item is verified, confirm:
 - [ ] An emulator or physical device is attached (`adb devices` is non-empty)
 - [ ] `./gradlew :app:assembleDebug` succeeds and the APK path is recorded
 - [ ] The relevant `testDebugUnitTest` / `:domain:test` task passes
-- [ ] `detekt` and `ktlintCheck` are green (only possible from Phase 2.0.5 onward)
+- [ ] `detekt` and `ktlintCheck` are green — **both pass since 2.0.5 (2026-09-26)**; record the
+      exit codes, not just "no output"
 - [ ] Absolute artifact paths and raw command output are in `validation.md`
 - [ ] The owner has walked the flow on the device and reported the result
 

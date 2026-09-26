@@ -13,8 +13,9 @@ Before every write to disk, an **ask-user-question round** covering requirements
 must be answered by the user.
 
 **Standing gate:** the Phase 1.9 legacy code review gate is **closed** (2026-09-25,
-15/15 signed off). The only open entry point is now the **Phase 2.0 remainder —
-2.0.2b first** (`specs/roadmap.md`); Phase 2.6+ still waits on Phase 2.0.
+15/15 signed off). The open entry point is now the **Phase 2.0 remainder** — 2.0.5 is
+implemented with its device walk owed, then **2.0.6** (`specs/roadmap.md`); Phase 2.6+
+still waits on Phase 2.0.
 
 ## Part B — Project Constitution (authoritative)
 
@@ -78,8 +79,15 @@ See `specs/dev-environment.md` §7.)
 - Unit tests (all modules): `testDebugUnitTest` — plus `:domain:test` (pure JVM module).
 - Build the app: `:app:assembleDebug` → artifact `app/build/outputs/apk/debug/app-debug.apk`.
 - Install on a device: `:app:installDebug`.
-- Gates: `detekt` (config `config/detekt/detekt.yml`, `maxIssues: 0`) and `ktlintCheck`
-  (ktlint 1.x defaults; there is **no** `.editorconfig`).
+- Gates: `detekt` (config `config/detekt/detekt.yml`, `maxIssues: 0`, uniform
+  `TooManyFunctions` ceiling 25, `CommentOverPrivateFunction` off) and `ktlintCheck`
+  (`.editorconfig` codifies the project style — the 11 `ktlint_official` layout rules are
+  disabled by the 2.0.5 owner decision, the Compose naming exception uses ktlint's own
+  property, everything else is on; `max_line_length` is deliberately unset so detekt's 120
+  stays the single ceiling). **Both gates are green as of 2.0.5 (2026-09-26) — keep them
+  that way: run them before claiming an item is done, and never loosen them silently.**
+  Scope: ktlint covers `src/main`, `src/test`, `src/androidTest` and every `*.kts` build
+  script (root scripts included); detekt covers `src/main` and `src/test` only.
 - `spotless` is applied but **has no configuration block** — it is a no-op and must not
   be cited as evidence of quality.
 - Verification reports MUST include absolute paths of built artifacts.
@@ -89,24 +97,29 @@ See `specs/dev-environment.md` §7.)
 - An item may only be marked `[x]` when a `validation.md` exists for it AND both halves
   of verification have passed.
 - Never write "done", "complete", or "works" in a validation record without a command
-  and its observed result. Baseline 2026-09-21: 223 unit tests green (1 skipped), but the
-  app has never run on a device, 4 of 5 main tabs are placeholders, and both quality gates
-  are red.
+  and its observed result. Baseline 2026-09-21 (kept for contrast): 223 unit tests green
+  (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
+  gates red. Current 2026-09-26: 274 tests green, the app walked on a Pixel 6a, both gates
+  green (2.0.5), 4 of 5 tabs still placeholders until Phase 2.6–2.8.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes
    results.
 2. **Manual** — the owner exercises the app on a device and reports back.
-   The app has never been run on a device. The owner's device of choice is a **physical
-   Android device over USB** (decision 2026-09-21), not the emulator — installing one is
-   not required. See `specs/dev-environment.md`.
+   The owner's device of choice is a **physical Android device over USB**
+   (decision 2026-09-21), not the emulator — installing one is not required. The app has
+   been installed and walked on a Pixel 6a since 2026-09-25 (2.0.2b → 2.0.4), so the manual
+   half is a real, repeatable step; 2.0.4b's funded history rows and 2.0.5's walk are owed.
+   See `specs/dev-environment.md`.
 
 ### Secrets
 - `local.properties` (git-ignored) holds `INFURA_API_KEY`, `ALCHEMY_API_KEY`,
   `COINGECKO_API_KEY`, `ETHERSCAN_API_KEY`, `WALLETCONNECT_PROJECT_ID`; they are exposed
   via BuildConfig. Never commit a real key; never log key material or mnemonics.
-- All five keys are currently placeholders (`your_key_here`). Network-backed screens
-  degrading at runtime is **expected**, not a bug to "fix" by faking data.
+- Real keys were supplied 2026-09-25 and are the supported path (2.0.4); blanking one
+  (back to `your_key_here`) remains the way to exercise the "Not configured" states.
+  Network-backed screens degrading without a key is **expected**, not a bug to "fix" by
+  faking data.
 
 ### Spec compliance
 - Never add a dependency outside `specs/tech-stack.md`.

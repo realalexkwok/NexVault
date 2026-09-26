@@ -36,10 +36,13 @@ without evidence.
 > signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
 > gate closure and every finding handed to its owning item).
 >
-> **The next open entry point is 2.0.5.** 2.0.4b (Etherscan V2) closed 2026-09-26 as `[~]` — merged
-> to `main` and reviewer-verified on the automatic half, with its device-walk evidence still owed
-> (M1/M2 suspended pending funding, M3–M5 owner-pending). The Phase 2.0 remainder (2.0.5 → 2.0.6 →
-> 2.0.7) is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent).
+> **2.0.5 (quality gates) implemented 2026-09-26 — `[~]`, automatic half GREEN.** Both gates pass
+> for the first time in the project's history: `./gradlew detekt ktlintCheck --continue` → BUILD
+> SUCCESSFUL (exit 0), **detekt 65 → 0** and **ktlint 1556 → 0**, with the build and the 274-test
+> suite unchanged. The row stays `[~]` until the owner's device walk (M1–M3) passes.
+> **The next open entry point is 2.0.6** (TC traceability). The Phase 2.0 remainder (2.0.6 → 2.0.7)
+> is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent). 2.0.4b's
+> device-walk evidence (M1/M2 suspended pending funding, M3–M5 owner-pending) is still owed.
 > Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
@@ -396,30 +399,49 @@ surfaced as distinct states, masked `curl` returning `status:"1"` on 1/11155111/
 listing real history on the Pixel 6a (and the plan notice on BSC), and detekt/ktlint not worse than
 the merge base.
 
-### 2.0.5 — Turn both quality gates green `[ ]`
-Current: **1656 ktlint violations across 178 of 221 Kotlin files**, and **75 detekt
-issues** against `maxIssues: 0`.
+### 2.0.5 — Turn both quality gates green `[~]`
+**IMPLEMENTED 2026-09-26 on `feature/2.0.5-quality-gates` — AUTOMATIC HALF GREEN, device walk
+owed.** Own spec: `specs/features/2026-09-26-2.0.5-quality-gates/` (requirements with the owner
+Q1–Q4 and the disabled-rule inventory, plan, validation with the automatic evidence). The row
+moves to `[x]` only when M1–M3 pass.
 
-The ktlint number is a style-vocabulary conflict, not 1656 independent mistakes: the
-code follows IntelliJ defaults while ktlint 1.x defaults disagree
-(`multiline-expression-wrapping` 468, `function-signature` 306,
-`argument-list-wrapping` 150, `trailing-comma-on-call-site` 113,
-`function-expression-body` 106, `annotation` 92, `function-naming` 76).
+Baseline at `main` (`aa539d6`), re-measured on the Linux host: **1556 ktlint findings across 184
+files** and **65 detekt issues / 78 weighted**, both gates exit 1. (The 1656/178 and 75 figures
+this section previously carried were the 2026-09-20 measurement — 2.0.2b, 2.0.4 and 2.0.4b moved
+them; the evidence appendix E4/E5 keeps both.)
 
-**Two owner decisions required:**
+**The two owner decisions the item asked for were answered 2026-09-26:**
 
-1. *ktlint* — (a) run `ktlintFormat` once and accept a reformat of ~178 files as an
-   isolated, no-logic-change commit, or (b) add an `.editorconfig` plus rule
-   configuration that codifies the style the code already has. (a) is the conventional
-   answer; (b) preserves history and is faster but leaves the codebase on a
-   non-standard dialect.
-2. *detekt* — (a) refactor the offenders (`TokenRepositoryImpl` 19/11 functions,
-   `WalletRepositoryImpl` 14/11, `AuthRepositoryImpl` 13/11, plus `MaxLineLength`), or
-   (b) raise the thresholds, or (c) introduce a baseline file. A baseline hides the debt
-   rather than clearing it and is the weakest option.
+1. *ktlint* — **(b) codify the existing style.** `.editorconfig` disables the 11
+   `ktlint_official` layout rules (`multiline-expression-wrapping` 481, `function-signature` 321,
+   `function-expression-body` 104, `annotation` 92, `argument-list-wrapping` 58,
+   `chain-method-continuation` 43, `class-signature` 19, `if-else-wrapping` 4,
+   `multiline-if-else` 3, `parameter-list-wrapping` 2, `condition-wrapping` 1 = 1128 findings) and
+   sets `ktlint_function_naming_ignore_when_annotated_with = Composable` (93 composables). Every
+   hygiene rule stays on. Option (a) was measured rather than dismissed: reformatting would have
+   rewritten 181 files (+6616/−5954 lines) and Android Studio's *Reformat Code* would undo it.
+2. *detekt* — **(b) deliberate config + real fixes, no baseline file.** One uniform
+   `TooManyFunctions` ceiling of 25 instead of 11, `CommentOverPrivateFunction` off (comments
+   already carry weight 0), `MaxLineLength` stays **120** with every long line wrapped, and the 2
+   `ComplexCondition`s extracted into a named local.
+3. Root scripts — **inside the gate now**: the plugin is applied to the root project too, so
+   `build.gradle.kts` / `settings.gradle.kts` are linted (Q3).
 
-Whichever options are chosen, formatting lands as its **own change**, separate from any
-logic edit, and must land **before** Phase 2 feature work resumes.
+What landed, in four commits: `.editorconfig` + root plugin + `ktlintFormat` output (126 files,
++261/−318 — whitespace, import order and trailing commas only, proven with
+`git diff --ignore-all-space --ignore-blank-lines`); the 15 non-auto-correctable ktlint findings
+fixed in code (11 wildcard imports, 2 over-long literals, `Dimens.kt` → `NexVaultDimens.kt`,
+`_selectedChartDays` → `selectedChartDaysFlow`); the detekt config plus 23 wrapped lines and the
+`UnlockViewModel` guards; then the records.
+
+Evidence: `./gradlew detekt ktlintCheck --continue` → **BUILD SUCCESSFUL, exit 0** (detekt 65 → 0,
+ktlint 1556 → 0); `:app:assembleDebug testDebugUnitTest :domain:test --continue` → **274 tests /
+0 failures / 0 errors / 1 skipped**, APK
+`/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` (47,986,669 bytes);
+0 tracked Kotlin lines above 120 characters; per-rule attribution in `validation.md` §A3.
+
+Exit criteria (AC-1…AC-8 of the item's `requirements.md`): AC-1…AC-7 ✅ met with that evidence;
+AC-8 (both verification halves) ☐ — the owner's device walk is the open half.
 
 ### 2.0.6 — Build the TC traceability `[ ]`
 `doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
@@ -520,11 +542,13 @@ Commands run from the repository root; `JAVA_HOME` set to the Android Studio JBR
 | E2 | `./gradlew testDebugUnitTest --continue` (2026-09-21, after 2.0.1) | **223 tests, 222 pass, 1 skipped, 0 fail** — `domain` 63, `core-security` 61 (1 skipped), `feature-onboarding` 30, `core-datastore` 27, `data` 27, `feature-auth` 14, `app` 1 |
 | E2b | Same, pre-2.0.1 baseline | **162 pass** across 6 modules; `core-security`'s 64 tests did not compile at all |
 | E3 | `./gradlew :core:core-security:compileDebugUnitTestKotlin` | **FAIL → FIXED 2026-09-21** — was 16 compile errors (Mockito, `passphrase`, `suggestWords`, `secureWipe`, `toHex`, `Int`/`Byte`) |
-| E4 | `./gradlew detekt` | **FAIL** — 75 issues (`TooManyFunctions`, `MaxLineLength`), config `maxIssues: 0` |
-| E5 | `./gradlew ktlintCheck` | **FAIL** — 1656 violations in 178 of 221 Kotlin files |
+| E4 | `./gradlew detekt` | **FAIL** — 75 issues (`TooManyFunctions`, `MaxLineLength`), config `maxIssues: 0` — **PASS from 2026-09-26 (2.0.5): 0 issues, exit 0** (see E9) |
+| E5 | `./gradlew ktlintCheck` | **FAIL** — 1656 violations in 178 of 221 Kotlin files — **PASS from 2026-09-26 (2.0.5): 0 findings, exit 0** (see E9) |
 | E6 | `adb devices` / `ls $ANDROID_HOME/emulator` / `ls ~/.android/avd` | **empty / missing / empty** — no device, no emulator, no AVD |
 | E7 | `grep -r TODO\|FIXME --include=*.kt app core domain data feature` | **0** — the `doc/08` "no TODO/FIXME" criterion passes |
 | E8 | `find . -path "*src/androidTest*" -name "*.kt"` | **1 file** — the template stub only; no real instrumented coverage |
+| E9 | `./gradlew detekt ktlintCheck --continue; echo $?` (2026-09-26, 2.0.5) | **BUILD SUCCESSFUL, exit 0** — detekt **65 → 0**, ktlint **1556 → 0**; run on Linux with `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`. Attribution per rule: `specs/features/2026-09-26-2.0.5-quality-gates/validation.md` §A3. Both gates are green only when someone runs them — there is still no CI (4.3) |
+| E10 | Same run, after 2.0.5 | `:app:assembleDebug testDebugUnitTest :domain:test --continue` → **274 tests, 0 failures, 0 errors, 1 skipped**; detekt covers `main` + `test` only, ktlint also covers `androidTest` and the root scripts |
 
 These numbers are the reference point for every claim in this roadmap. Re-run them before
 asserting that anything has changed.

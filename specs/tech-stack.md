@@ -263,8 +263,8 @@ today; building that traceability is Phase 2.0.6.
 
 | Tool | Version | Config | Current result |
 | --- | --- | --- | --- |
-| Detekt | 1.23.8 — **already the latest published; no upgrade exists** | `config/detekt/detekt.yml` (`build.maxIssues: 0`, `maxLineLength: 120`, `TooManyFunctions thresholdInFiles: 11`, `weights.complexity: 2`) | **75 issues → fail** |
-| ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | no `.editorconfig` | **1553 violations → fail** |
+| Detekt | 1.23.8 — **already the latest published; no upgrade exists** | `config/detekt/detekt.yml` (`build.maxIssues: 0`, `maxLineLength: 120`, `TooManyFunctions` uniform ceiling **25**, `CommentOverPrivateFunction` off, `weights.complexity: 2`) | **0 issues → PASS** (2026-09-26, 2.0.5) |
+| ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | `.editorconfig` (2.0.5: the 11 `ktlint_official` layout rules disabled, `ktlint_function_naming_ignore_when_annotated_with = Composable`, everything else on) | **0 findings → PASS** (2026-09-26, 2.0.5) |
 | Spotless | **8.10.2** (G2, was 8.3.0) | **applied with no configuration block** | no-op — never cite it as evidence |
 
 **Both gates are already on their newest available releases**, which has a consequence for
@@ -274,21 +274,32 @@ waits on an upstream release. (Maven Central tops out at detekt 1.23.8; the Grad
 Portal tops out at ktlint-gradle 14.2.0.)
 
 All three are applied to every subproject from the root `build.gradle.kts`
-(`subprojects { apply(...) }`); no module opts out. There is **no CI** — gates only run
-when someone runs them locally.
+(`subprojects { apply(...) }`); no module opts out, and since 2.0.5 ktlint is applied to the
+**root project as well**, so `build.gradle.kts` and `settings.gradle.kts` are gated too.
+There is **no CI** — gates only run when someone runs them locally (4.3).
 
-Detekt's largest contributors: `TooManyFunctions` (`TokenRepositoryImpl` 19/11,
-`WalletRepositoryImpl` 14/11, `AuthRepositoryImpl` 13/11) and `MaxLineLength`.
-ktlint's: `multiline-expression-wrapping` 468, `function-signature` 306,
-`argument-list-wrapping` 150, `trailing-comma-on-call-site` 113,
-`function-expression-body` 106, `annotation` 92, `function-naming` 76,
-`no-unused-imports` 56.
+**Scope, so "green" is not over-claimed:** ktlint covers `src/main`, `src/test`,
+`src/androidTest` and every `*.kts` build script; detekt covers `src/main` and `src/test`
+only (`src/androidTest` is outside its Android source sets); spotless covers nothing.
 
-The ktlint situation is a **style-vocabulary conflict**, not sloppiness per rule: the
-code follows IntelliJ/Android Studio defaults (annotations on the same line, 4-space
-continuation) while ktlint 1.x defaults disagree. Phase 2.0.5 owns the decision between
-reformatting the tree once and codifying the existing style in `.editorconfig` + ruleset
-adjustments. Whichever is chosen, it lands as its own isolated change.
+### The 2.0.5 decision (2026-09-26) — codify the style, clear the debt
+
+The ktlint red was a **style-vocabulary conflict**, not sloppiness per rule: the code
+follows IntelliJ/Android Studio defaults while ktlint 1.x's `ktlint_official` layout rules
+disagree. Owner decision: **codify the existing style** in `.editorconfig` rather than
+reformat 181 files to a dialect the IDE would undo. All 11 disabled rules are named with
+their finding counts in
+`specs/features/2026-09-26-2.0.5-quality-gates/requirements.md`; nothing else is disabled,
+the Compose PascalCase exception uses ktlint's own property, and `max_line_length` is
+deliberately unset so detekt's stricter 120 stays the single ceiling.
+
+Nothing was hidden: of the 1556 ktlint findings, 320 were auto-corrected (including 37
+unused imports and 22 import-order defects), 15 were fixed by hand (11 wildcard imports, 2
+over-long literals, 1 `filename`, 1 `backing-property-naming`) and 93 are the Compose
+naming convention. Of detekt's 65, 29 came from the two config decisions, 9 from the
+formatter and **27 were fixed in code** (23 wrapped lines, 2 fully-qualified references
+replaced by imports, 2 complex conditions extracted). No baseline file was introduced.
+Per-rule attribution: `specs/features/2026-09-26-2.0.5-quality-gates/validation.md` §A3.
 
 ## 7. Secrets & configuration
 
@@ -332,8 +343,12 @@ to disk unencrypted.
 - **`core-common` is empty** but wired into `app`, `data` and all features. Either give
   it the utilities it was meant to hold or remove it from the graph — decide in Phase 4.
 - **Spotless is a no-op** (applied, unconfigured).
-- **No `.editorconfig`**, so ktlint's defaults fight the code's actual style.
-- **No CI**: nothing runs the gates automatically.
+- **`.editorconfig` exists since 2.0.5** and codifies the project style: the 11
+  `ktlint_official` layout rules are off by owner decision, the Compose naming exception uses
+  ktlint's own property, and every hygiene rule stays on. The codebase is therefore on a
+  deliberately documented dialect rather than ktlint's default one — revisit only through a
+  future item (see §6).
+- **No CI**: nothing runs the gates automatically (4.3).
 - **No emulator/AVD installed**, so no verification half can currently be performed.
 - `composeOptions.kotlinCompilerExtensionVersion` is still set from the pre-Kotlin-2.x
   era; harmless with the Compose compiler plugin, but dead configuration.
