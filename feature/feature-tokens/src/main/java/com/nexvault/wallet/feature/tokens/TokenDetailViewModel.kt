@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
+import com.nexvault.wallet.domain.model.common.ExplorerPlanUnsupportedException
 import com.nexvault.wallet.domain.usecase.token.GetRecentTokenTransactionsUseCase
 import com.nexvault.wallet.domain.usecase.token.GetTokenPriceChartUseCase
 import com.nexvault.wallet.domain.usecase.token.ObserveTokenDetailUseCase
@@ -87,10 +88,14 @@ class TokenDetailViewModel @Inject constructor(
 
     private suspend fun loadRecentTransactionsSync() {
         var historyConfigured = true
+        var historyPlanGated = false
         try {
             val result = refreshTransactionHistoryUseCase(chainId)
-            if (result is DataResult.Error && result.exception is ApiKeyNotConfiguredException) {
-                historyConfigured = false
+            if (result is DataResult.Error) {
+                historyConfigured = result.exception !is ApiKeyNotConfiguredException
+                // Roadmap 2.0.4b: the explorer told us the current plan does not cover this
+                // chain — a standing condition, so it becomes a persistent notice.
+                historyPlanGated = result.exception is ExplorerPlanUnsupportedException
             }
         } catch (_: Exception) {
         }
@@ -100,7 +105,11 @@ class TokenDetailViewModel @Inject constructor(
             limit = 5,
         )
         _uiState.update {
-            it.copy(recentTransactions = transactions, isHistoryConfigured = historyConfigured)
+            it.copy(
+                recentTransactions = transactions,
+                isHistoryConfigured = historyConfigured,
+                isHistoryPlanGated = historyPlanGated,
+            )
         }
     }
 

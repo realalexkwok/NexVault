@@ -147,6 +147,19 @@ fun TokenDetailScreen(
                                 )
                             }
                         }
+                        if (uiState.isHistoryPlanGated) {
+                            // Roadmap 2.0.4b: the key works, the plan does not cover this chain
+                            // (BSC on the free Etherscan plan) — a standing notice, not a snackbar.
+                            item(key = "history_plan_gated") {
+                                Text(
+                                    text = stringResource(R.string.token_detail_history_plan_gated),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
                         if (uiState.recentTransactions.isNotEmpty()) {
                             item(key = "tx_header") {
                                 Row(

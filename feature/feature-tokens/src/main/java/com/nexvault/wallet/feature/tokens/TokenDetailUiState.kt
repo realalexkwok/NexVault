@@ -16,6 +16,9 @@ import com.nexvault.wallet.domain.model.transaction.Transaction
  * @param recentTransactions Recent transactions for this token.
  * @param isHistoryConfigured False when the block-explorer API key is missing, so the screen can
  *        say so explicitly instead of showing an empty history (roadmap 2.0.4).
+ * @param isHistoryPlanGated True when the explorer answered that the current API plan does not
+ *        cover this chain (roadmap 2.0.4b, for example BSC on the free Etherscan plan), so the
+ *        screen shows a persistent notice instead of a misleading empty history.
  * @param isLoading Initial token observation not yet completed.
  * @param isRefreshing Pull-to-refresh in progress.
  * @param errorRes Static error text when the token cannot be shown.
@@ -31,6 +34,7 @@ data class TokenDetailUiState(
     val isChartLoading: Boolean = false,
     val recentTransactions: List<Transaction> = emptyList(),
     val isHistoryConfigured: Boolean = true,
+    val isHistoryPlanGated: Boolean = false,
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     @StringRes val errorRes: Int? = null,

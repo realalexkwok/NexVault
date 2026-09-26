@@ -1,22 +1,29 @@
 package com.nexvault.wallet.core.network.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import com.nexvault.wallet.domain.model.common.NexVaultException
 
 /**
- * Response from Etherscan-compatible account tokentx API.
+ * Response envelope of the Etherscan API V2 `account/tokentx` action (ERC-20 transfer events).
  *
- * This endpoint returns ERC-20 token transfer events for an address.
+ * Same three wire shapes as [EtherscanTransactionListResponse], and for the same reason it is
+ * bound by `EtherscanEnvelopeAdapterFactory` rather than Moshi codegen.
  *
  * @property status "1" for success, "0" for error
  * @property message Status message from the API
- * @property result List of token transfer DTOs
+ * @property result Token transfer rows, or null when the wire `result` was not an array
+ * @property resultText The explorer's explanation, present only on rejection envelopes
  */
-@JsonClass(generateAdapter = true)
 data class EtherscanTokenTransferListResponse(
-    @Json(name = "status") val status: String,
-    @Json(name = "message") val message: String,
-    @Json(name = "result") val result: List<TokenTransferDto>,
+    val status: String = "0",
+    val message: String = "",
+    val result: List<TokenTransferDto>? = null,
+    val resultText: String? = null,
 ) {
     val isSuccess: Boolean get() = status == "1"
+
+    /**
+     * The explorer's rejection as a domain exception, or null when the envelope carries data or
+     * a legitimate empty result (roadmap 2.0.4b, AC-4/AC-8).
+     */
+    fun errorOrNull(): NexVaultException? = envelopeErrorOrNull(isSuccess, message, result, resultText)
 }

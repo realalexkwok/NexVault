@@ -36,9 +36,10 @@ without evidence.
 > signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
 > gate closure and every finding handed to its owning item).
 >
-> **The next open entry point is 2.0.4b (Etherscan V2 migration — see Phase 2.0 below)** — the
-> Phase 2.0 remainder (2.0.4b → 2.0.5 → 2.0.6 → 2.0.7) is proceeded singly or as owner-approved
-> grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
+> **The next open entry point is 2.0.4b (Etherscan V2 migration — see Phase 2.0 below) — implemented
+> 2026-09-26 with the automatic half green, its owner device walk still pending**, so the item is
+> `[~]`, not `[x]`. The Phase 2.0 remainder (2.0.4b → 2.0.5 → 2.0.6 → 2.0.7) is proceeded singly or as
+> owner-approved grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -55,10 +56,11 @@ without evidence.
 >
 > **2.0.4 (API-key strategy) CLOSED 2026-09-26 — reviewer verification PASS, owner-directed close;
 > merged to `main` and the feature branch deleted.** Its one open finding, **D2 — the Etherscan V1
-> endpoint is deprecated**, was decided by the owner the same day: the migration becomes its own item,
-> **2.0.4b** (below). The **next open entry point is therefore 2.0.4b**, whose branch is cut from the
-> updated `main`; then 2.0.5 → 2.0.6 → 2.0.7 — singly or as owner-approved grouped items (the G1–G5
-> grouping precedent). Phase 2.6+ still waits on Phase 2.0.
+> endpoint is deprecated**, was decided by the owner the same day: the migration became its own item,
+> **2.0.4b** (below), which is now **implemented on its feature branch with the automatic half green**
+> — the owner's device walk and the close are what remain before 2.0.5 → 2.0.6 → 2.0.7, proceeded
+> singly or as owner-approved grouped items (the G1–G5 grouping precedent). Phase 2.6+ still waits on
+> Phase 2.0.
 >
 > Note for later items: the build now loads `local.properties` into `BuildConfig`, and
 > `core:core-network` runs the Moshi codegen (`ksp`) — both were broken/absent before 2.0.4.
@@ -336,12 +338,17 @@ populated is forbidden.
 key-absent degradation is the documented fallback, with an explicit "Not configured" state per
 keyed surface (recorded in the item's `validation.md`).
 
-### 2.0.4b — Migrate the explorer to Etherscan API V2 `[ ]`
-**ADDED 2026-09-26 by owner decision on 2.0.4 finding D2. Not started.** Own spec:
-`specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/` (requirements with the owner Q/A,
-plan with the task groups, validation opened as a not-started record). Branch
-`feature/2.0.4b-etherscan-v2-migration` — cut from `main` only **after**
-`feature/2.0.4-api-key-strategy` is merged and deleted.
+### 2.0.4b — Migrate the explorer to Etherscan API V2 `[~]`
+**IMPLEMENTED 2026-09-26 on `feature/2.0.4b-etherscan-v2-migration` — automatic half green, MANUAL
+HALF PENDING (`validation.md`); the change sits uncommitted in the tree for owner review. ADDED
+2026-09-26 by owner decision on 2.0.4 finding D2.** Own spec:
+`specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/` (requirements with the owner Q/A and the
+per-screen table, plan with the task groups and the implementation decisions, validation with the
+automatic evidence). Branch cut from the post-2.0.4 `main` (`e4d1f02`).
+**Owner decision 2026-09-26: funding the walk wallet is suspended**, so the balance-dependent device
+walk rows (mainnet/Polygon history) are suspended too **until the active account's balance is not
+zero**; the BSC plan notice, the blank-key state and the crash watch stay walkable. Evidence and
+resume condition: the item's `validation.md` §Suspended.
 
 Why it is a defect and not a chore: the app's explorer hosts are all V1 —
 `api.etherscan.io`, `api-sepolia.etherscan.io`, `api.bscscan.com`, `api.polygonscan.com`

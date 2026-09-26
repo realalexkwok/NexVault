@@ -3,6 +3,7 @@ package com.nexvault.wallet.core.network.di
 import android.content.Context
 import com.nexvault.wallet.core.network.adapter.BigDecimalAdapter
 import com.nexvault.wallet.core.network.adapter.BigIntegerAdapter
+import com.nexvault.wallet.core.network.adapter.EtherscanEnvelopeAdapterFactory
 import com.nexvault.wallet.core.network.api.BlockExplorerApiFactory
 import com.nexvault.wallet.core.network.api.CoinGeckoApi
 import com.nexvault.wallet.core.network.config.ChainConfigProvider
@@ -48,13 +49,16 @@ object NetworkModule {
     // ================================================================
 
     /**
-     * Provides Moshi instance with BigDecimal and BigInteger adapters.
+     * Provides Moshi instance with BigDecimal, BigInteger and explorer-envelope adapters.
      *
      * BigDecimalAdapter handles both JSON numbers and strings to prevent
      * precision loss for large decimal values like token amounts.
      *
      * BigIntegerAdapter handles both decimal and hex strings (0x prefix)
      * commonly used in Ethereum APIs.
+     *
+     * EtherscanEnvelopeAdapterFactory reads the V2 list envelopes leniently, so a rejection body
+     * (a String in `result`) parses instead of blowing up the whole response (roadmap 2.0.4b).
      */
     @Provides
     @Singleton
@@ -62,6 +66,7 @@ object NetworkModule {
         return Moshi.Builder()
             .add(BigDecimalAdapter())
             .add(BigIntegerAdapter())
+            .add(EtherscanEnvelopeAdapterFactory())
             .build()
     }
 
