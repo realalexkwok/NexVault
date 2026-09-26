@@ -128,3 +128,40 @@ the device as written.
 | The three unimplemented `TransactionRepositoryImpl` write paths | send flow | 2.6 |
 | A dedicated in-app history error banner for generic `ExplorerApiException` | scope decision above; 2.8 owns the History UI | 2.8 |
 | Buying a paid Etherscan plan (removes the BSC plan gate) | billing decision, not code; the item behaves correctly either way | owner |
+
+---
+
+## Reviewer verification — commit e82eba2 (2026-09-26)
+
+> Code-reviewer session (read-only on production code; record files only). Re-verified from the
+> tree, by fresh runs, and by the reviewer's own masked live probe; nothing taken on trust.
+
+### Diff review — verdicts
+
+| # | Criterion | Check | Verdict |
+| --- | --- | --- | --- |
+| R1 | AC-1 request shape | `BlockExplorerApi` carries `@Query("chainid")` on all three methods; the factory resolves the single V2 base URL `https://api.etherscan.io/v2/`; the built-request test asserts scheme/host/path/`chainid` — not constants | ✅ |
+| R2 | AC-2/AC-3 key model | `ChainConfigProvider` serves all four chains from `ETHERSCAN_V2_BASE_URL` with the same `etherscanApiKey`; `isExplorerConfigured` is a pure key check for **every** supported chain (no chain-id set); `isRpcConfigured` keeps {1, 11155111} keyed and 56/137 public | ✅ |
+| R3 | AC-4 envelope surfacing | `EtherscanEnvelopeAdapterFactory` + `LenientListEnvelopeAdapter` parse the array-vs-String `result` union by hand (Moshi codegen cannot express it — the documented reason); `envelopeErrorOrNull`: success → null, array (even `[]` = "No transactions found") → null, rejection String → exception carrying the explorer's text, no payload → `ExplorerApiException(status message)`. Repository: `native.errorOrNull()`/`tokenTx.errorOrNull()` → `DataResult.Error`; rows merged from both calls with `chainId` | ✅ |
+| R4 | AC-8 plan gate | message-driven (`message == "NOTOK" && resultText.contains(PLAN_GATE_MARKER)`) → `ExplorerPlanUnsupportedException`; **no chain id hard-coded**; the marker is the verbatim observed wire text; the unit test covers the exact body. UI: `isHistoryPlanGated` → persistent notice string | ✅ |
+| R5 | Exceptions | `ExplorerApiException` and `ExplorerPlanUnsupportedException` are distinct from `ApiKeyNotConfiguredException` — the three states (no key / rejected / plan-gated) cannot be conflated | ✅ |
+| R6 | Suspension honesty | the owner-suspended funded rows (M1/M2/P4) and the not-run walkable rows (M3–M5) are recorded with the exact resume condition (non-zero balance **with txlist/tokentx rows**, not balance alone) | ✅ |
+
+### Fresh automatic evidence (reviewer's own runs)
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| R7 | Build + suite | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --continue` | **PASS — 274 tests, 0 failures, 0 errors, 1 skipped** (255 → 274, +19 — matches claim) |
+| R8 | Gates (reviewer basis) | `detekt ktlintCheck` | detekt 10 tasks / **78 weighted** — unchanged from the reviewer's baseline (their 65→65 / 1589→1556 bases); ktlint 39 tasks unchanged |
+| R9 | AC-5 masked live probe (reviewer's own) | `curl` against `/v2/api`, key read into a shell variable (length 34, never printed) | chainid 1 `txlist` → `status:"1"`, `message:"OK"`, **3 rows**; chainid 56 → `status:"0"`, `message:"NOTOK"`, `result` text starts `"Free API access is not supported for this chain…"` — the plan gate, verbatim | ✅ |
+| R10 | Device (reviewer) | install + launch attempts on the Pixel 6a | the phone screen was locked/off at review time, so the walkable manual rows (M3–M5) could not be re-driven here; they remain owner-pending as recorded, and M1/M2 stay suspended per the owner's funding decision | ⏸ owner-pending |
+
+### Verdict
+
+**PASS (automatic + diff + live probe).** The V2 migration is implemented exactly as decided: one
+host, mandatory `chainid`, one key across all four chains, rejection envelopes surfaced instead of
+silently discarded, and the plan gate detected from the explorer's own message with a persistent
+UI notice. The roadmap row correctly stays `[~]` until the owner's manual half passes (M3–M5
+walkable now; M1/M2 resume when the walk wallet has real history). Remaining for closure: the
+owner's manual-half evidence, then the owner merge of
+`feature/2.0.4b-etherscan-v2-migration` to `main`.
