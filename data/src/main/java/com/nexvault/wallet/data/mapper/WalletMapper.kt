@@ -2,16 +2,15 @@ package com.nexvault.wallet.data.mapper
 
 import com.nexvault.wallet.core.datastore.model.AccountMetadata
 import com.nexvault.wallet.core.datastore.model.WalletMetadata
-import com.nexvault.wallet.core.datastore.model.WalletType as DataStoreWalletType
 import com.nexvault.wallet.domain.model.wallet.Account
 import com.nexvault.wallet.domain.model.wallet.Wallet
+import com.nexvault.wallet.core.datastore.model.WalletType as DataStoreWalletType
 import com.nexvault.wallet.domain.model.wallet.WalletType as DomainWalletType
 
 /**
  * Maps datastore WalletMetadata + AccountMetadata to domain Wallet model.
  */
 object WalletMapper {
-
     fun mapToDomain(
         walletMetadata: WalletMetadata,
         accounts: List<AccountMetadata>,

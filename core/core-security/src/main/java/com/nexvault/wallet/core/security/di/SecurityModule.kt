@@ -7,7 +7,6 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 object SecurityModule {
-
     // All security managers are @Singleton and use constructor injection,
     // so Hilt will automatically provide them.
     //

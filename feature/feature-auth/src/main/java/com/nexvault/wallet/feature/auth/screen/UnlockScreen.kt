@@ -31,8 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +54,6 @@ import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import com.nexvault.wallet.feature.auth.R
 import com.nexvault.wallet.feature.auth.viewmodel.UnlockViewModel
-import kotlin.math.roundToInt
 
 private const val PIN_LENGTH = 6
 
@@ -293,7 +292,7 @@ private fun UnlockScreenContent(
                                         color = MaterialTheme.colorScheme.outline,
                                         shape = CircleShape,
                                     )
-                                    .background(Color.Transparent)
+                                    .background(Color.Transparent),
                             )
                         }
                     }

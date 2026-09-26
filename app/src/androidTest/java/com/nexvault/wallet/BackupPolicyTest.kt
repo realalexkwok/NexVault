@@ -1,7 +1,7 @@
 package com.nexvault.wallet
 
-import android.content.res.XmlResourceParser
 import android.content.pm.ApplicationInfo
+import android.content.res.XmlResourceParser
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
@@ -22,7 +22,6 @@ import org.xmlpull.v1.XmlPullParser
  */
 @RunWith(AndroidJUnit4::class)
 class BackupPolicyTest {
-
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     /** The app must not carry the platform's backup-eligible flag at all. */
@@ -32,7 +31,7 @@ class BackupPolicyTest {
         assertEquals(
             "FLAG_ALLOW_BACKUP must be off — key material must never leave the device",
             0,
-            info.flags and ApplicationInfo.FLAG_ALLOW_BACKUP
+            info.flags and ApplicationInfo.FLAG_ALLOW_BACKUP,
         )
     }
 
@@ -43,11 +42,11 @@ class BackupPolicyTest {
         assertEquals(
             "backup_rules.xml must exclude every domain, found: ${excluded.keys}",
             ALL_DOMAINS,
-            excluded.keys
+            excluded.keys,
         )
         assertTrue(
             "every exclusion must cover the whole domain (path '.'), found: $excluded",
-            excluded.values.all { it == "." }
+            excluded.values.all { it == "." },
         )
     }
 
@@ -60,11 +59,11 @@ class BackupPolicyTest {
         assertEquals(
             "device-transfer must exclude every domain (Android 12+ D2D is on by default), found: ${deviceTransfer.keys}",
             ALL_DOMAINS,
-            deviceTransfer.keys
+            deviceTransfer.keys,
         )
         assertTrue(
             "every exclusion must cover the whole domain (path '.')",
-            (cloud.values + deviceTransfer.values).all { it == "." }
+            (cloud.values + deviceTransfer.values).all { it == "." },
         )
     }
 
@@ -117,7 +116,7 @@ class BackupPolicyTest {
             "device_root",
             "device_file",
             "device_database",
-            "device_sharedpref"
+            "device_sharedpref",
         )
     }
 }

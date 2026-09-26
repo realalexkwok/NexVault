@@ -20,7 +20,7 @@ private val Context.walletMetadataDataStore by preferencesDataStore(name = "wall
 
 @Singleton
 class WalletMetadataDataStore @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
     private val dataStore: DataStore<Preferences> = context.walletMetadataDataStore
 

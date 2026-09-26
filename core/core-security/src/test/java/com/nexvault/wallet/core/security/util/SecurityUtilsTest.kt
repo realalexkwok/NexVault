@@ -6,13 +6,11 @@ import com.nexvault.wallet.core.security.util.SecurityUtils.toHex
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.web3j.crypto.Keys
 
 class SecurityUtilsTest {
-
     @Test
     fun testSecureWipe() {
         val data = byteArrayOf(1, 2, 3, 4, 5)

@@ -17,7 +17,6 @@ import retrofit2.http.Query
  * Ref: doc/05-IMPLEMENTATION-PLAN-PHASE2.md Task 2.1.3
  */
 interface BlockExplorerApi {
-
     /**
      * Fetches normal (native coin) transactions for an address.
      *

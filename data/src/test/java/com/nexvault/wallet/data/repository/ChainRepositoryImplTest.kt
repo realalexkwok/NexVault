@@ -21,7 +21,6 @@ import org.junit.Before
 import org.junit.Test
 
 class ChainRepositoryImplTest {
-
     private lateinit var userPreferences: UserPreferencesDataStore
     private lateinit var repository: ChainRepositoryImpl
 

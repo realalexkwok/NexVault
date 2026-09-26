@@ -8,7 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DataStoreSerializerTest {
-
     @Test
     fun serializeDeserialize_walletsRoundTrip() {
         val wallets = listOf(
@@ -18,7 +17,7 @@ class DataStoreSerializerTest {
                 createdAt = 1700000000000L,
                 type = WalletType.HD,
                 accountCount = 3,
-                isActive = true
+                isActive = true,
             ),
             WalletMetadata(
                 id = "wallet-2",
@@ -26,8 +25,8 @@ class DataStoreSerializerTest {
                 createdAt = 1700000001000L,
                 type = WalletType.IMPORTED,
                 accountCount = 1,
-                isActive = false
-            )
+                isActive = false,
+            ),
         )
 
         val serialized = DataStoreSerializer.serializeWallets(wallets)
@@ -59,7 +58,7 @@ class DataStoreSerializerTest {
             createdAt = 1700000000000L,
             type = WalletType.HD,
             accountCount = 2,
-            isActive = true
+            isActive = true,
         )
 
         val serialized = DataStoreSerializer.serializeWallets(listOf(wallet))
@@ -83,7 +82,7 @@ class DataStoreSerializerTest {
                 createdAt = 1700000000000L + index,
                 type = if (index % 2 == 0) WalletType.HD else WalletType.IMPORTED,
                 accountCount = index + 1,
-                isActive = index == 0
+                isActive = index == 0,
             )
         }
 
@@ -108,7 +107,7 @@ class DataStoreSerializerTest {
                 name = "Account 1",
                 derivationPath = "m/44'/60'/0'/0/0",
                 isActive = true,
-                addedAt = 1700000000000L
+                addedAt = 1700000000000L,
             ),
             AccountMetadata(
                 walletId = "wallet-1",
@@ -117,8 +116,8 @@ class DataStoreSerializerTest {
                 name = "Account 2",
                 derivationPath = "m/44'/60'/0'/0/1",
                 isActive = false,
-                addedAt = 1700000001000L
-            )
+                addedAt = 1700000001000L,
+            ),
         )
 
         val serialized = DataStoreSerializer.serializeAccounts(accounts)

@@ -9,13 +9,13 @@ data class WalletMetadata(
     val createdAt: Long,
     val type: WalletType,
     val accountCount: Int,
-    val isActive: Boolean
+    val isActive: Boolean,
 )
 
 @Serializable
 enum class WalletType {
     HD,
-    IMPORTED
+    IMPORTED,
 }
 
 @Serializable
@@ -26,5 +26,5 @@ data class AccountMetadata(
     val name: String,
     val derivationPath: String,
     val isActive: Boolean,
-    val addedAt: Long
+    val addedAt: Long,
 )

@@ -29,7 +29,6 @@ import org.junit.Test
  * stay within the detekt function-count threshold.
  */
 class SetPinViewModelCompletionTest {
-
     private lateinit var setPinUseCase: SetPinUseCase
     private lateinit var completeOnboardingUseCase: CompleteOnboardingUseCase
     private lateinit var authRepository: AuthRepository

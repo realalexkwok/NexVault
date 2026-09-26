@@ -18,7 +18,6 @@ import org.junit.Before
 import org.junit.Test
 
 class SetPinViewModelTest {
-
     private lateinit var setPinUseCase: SetPinUseCase
     private lateinit var completeOnboardingUseCase: CompleteOnboardingUseCase
     private lateinit var authRepository: AuthRepository

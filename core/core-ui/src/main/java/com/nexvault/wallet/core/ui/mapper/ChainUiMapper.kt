@@ -1,8 +1,8 @@
 package com.nexvault.wallet.core.ui.mapper
 
-import com.nexvault.wallet.domain.model.chain.Chain
 import com.nexvault.wallet.core.ui.components.ChainUi
 import com.nexvault.wallet.core.ui.util.ChainIconMapper
+import com.nexvault.wallet.domain.model.chain.Chain
 
 /**
  * Maps a domain [Chain] to a [ChainUi] presentation model.

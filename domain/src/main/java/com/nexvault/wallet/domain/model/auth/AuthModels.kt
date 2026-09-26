@@ -20,8 +20,11 @@ enum class AuthMethod {
 
 sealed class AuthResult {
     data object Success : AuthResult()
+
     data class Failed(val remainingAttempts: Int?, val message: String) : AuthResult()
+
     data class LockedOut(val durationSeconds: Long) : AuthResult()
+
     data object WalletWiped : AuthResult()
 }
 

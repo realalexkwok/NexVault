@@ -7,7 +7,6 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-
     // All DataStore classes use @Singleton + @Inject constructor,
     // so they should be auto-provided.
     //

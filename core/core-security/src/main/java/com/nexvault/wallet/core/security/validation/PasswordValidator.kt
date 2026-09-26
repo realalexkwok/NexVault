@@ -1,7 +1,6 @@
 package com.nexvault.wallet.core.security.validation
 
 object PasswordValidator {
-
     private const val MIN_PASSWORD_LENGTH = 8
     private const val PIN_LENGTH = 6
 
@@ -20,7 +19,7 @@ object PasswordValidator {
             hasUppercase = hasUppercase,
             hasLowercase = hasLowercase,
             hasDigit = hasDigit,
-            hasSpecialChar = hasSpecialChar
+            hasSpecialChar = hasSpecialChar,
         )
     }
 
@@ -77,5 +76,5 @@ data class PasswordValidationResult(
     val hasUppercase: Boolean,
     val hasLowercase: Boolean,
     val hasDigit: Boolean,
-    val hasSpecialChar: Boolean
+    val hasSpecialChar: Boolean,
 )

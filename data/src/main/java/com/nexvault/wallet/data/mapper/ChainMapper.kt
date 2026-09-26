@@ -8,7 +8,6 @@ import com.nexvault.wallet.domain.model.chain.SupportedChains
  * Maps between datastore NetworkType and domain chain ID.
  */
 object ChainMapper {
-
     fun networkTypeToChainId(type: NetworkType): Int {
         return when (type) {
             NetworkType.MAINNET -> SupportedChains.ETHEREUM_MAINNET.chainId

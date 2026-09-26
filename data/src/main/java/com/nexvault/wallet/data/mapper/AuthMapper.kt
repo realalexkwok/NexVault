@@ -1,14 +1,13 @@
 package com.nexvault.wallet.data.mapper
 
+import com.nexvault.wallet.domain.model.auth.AuthState
 import com.nexvault.wallet.core.datastore.security.AuthMethod as DataStoreAuthMethod
 import com.nexvault.wallet.domain.model.auth.AuthMethod as DomainAuthMethod
-import com.nexvault.wallet.domain.model.auth.AuthState
 
 /**
  * Maps datastore auth models to domain auth models.
  */
 object AuthMapper {
-
     fun mapAuthMethod(
         datastoreMethod: DataStoreAuthMethod,
     ): DomainAuthMethod {

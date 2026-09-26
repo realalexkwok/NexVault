@@ -31,7 +31,6 @@ class TokenDetailViewModel @Inject constructor(
     private val getRecentTokenTransactionsUseCase: GetRecentTokenTransactionsUseCase,
     private val refreshTransactionHistoryUseCase: RefreshTransactionHistoryUseCase,
 ) : ViewModel() {
-
     private val contractAddress: String = checkNotNull(savedStateHandle.get<String>("contractAddress"))
 
     private val chainId: Int = checkNotNull(

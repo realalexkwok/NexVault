@@ -27,7 +27,6 @@ class VerifyMnemonicViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     internal val getMnemonicForBackupUseCase: GetMnemonicForBackupUseCase,
 ) : ViewModel() {
-
     private val walletId: String = savedStateHandle.get<String>("walletId") ?: ""
 
     data class UiState(

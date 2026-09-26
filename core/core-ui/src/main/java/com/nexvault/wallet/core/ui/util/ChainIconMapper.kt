@@ -9,7 +9,6 @@ import com.nexvault.wallet.core.ui.R
  * a dependency from the data layer on Android resources.
  */
 object ChainIconMapper {
-
     /**
      * Returns the drawable resource ID for a chain's icon.
      *

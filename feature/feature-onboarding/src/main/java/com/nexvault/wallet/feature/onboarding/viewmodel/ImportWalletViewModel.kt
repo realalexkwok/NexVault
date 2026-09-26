@@ -33,7 +33,6 @@ class ImportWalletViewModel @Inject constructor(
     private val importFromMnemonicUseCase: ImportFromMnemonicUseCase,
     private val importFromPrivateKeyUseCase: ImportFromPrivateKeyUseCase,
 ) : ViewModel() {
-
     enum class ImportMode {
         MNEMONIC,
         PRIVATE_KEY,

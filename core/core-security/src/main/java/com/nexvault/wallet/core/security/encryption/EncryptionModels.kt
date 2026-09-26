@@ -4,7 +4,7 @@ import javax.crypto.SecretKey
 
 data class DerivedKeyResult(
     val key: SecretKey,
-    val salt: ByteArray
+    val salt: ByteArray,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -28,7 +28,7 @@ data class DerivedKeyResult(
 data class PasswordEncryptedData(
     val ciphertext: ByteArray,
     val iv: ByteArray,
-    val salt: ByteArray
+    val salt: ByteArray,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

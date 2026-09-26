@@ -5,7 +5,6 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
@@ -13,7 +12,6 @@ import org.junit.Test
 import javax.crypto.SecretKey
 
 class EncryptionManagerTest {
-
     private lateinit var encryptionManager: EncryptionManager
     private lateinit var keyStoreManager: KeyStoreManager
 
@@ -111,7 +109,7 @@ class EncryptionManagerTest {
         "Requires a real AndroidKeyStore: encryptWithKeystore needs a hardware-backed AES " +
             "key, which a JVM mock cannot provide. Port to app/src/androidTest once a " +
             "device is available — see specs/features/2026-09-20-2.0.0-stabilization/ " +
-            "requirements.md (Handoff)."
+            "requirements.md (Handoff).",
     )
     @Test
     fun testEncryptWithKeystore() {
@@ -128,12 +126,12 @@ class EncryptionManagerTest {
         val data1 = PasswordEncryptedData(
             ciphertext = "cipher".toByteArray(),
             iv = "iv".toByteArray(),
-            salt = "salt".toByteArray()
+            salt = "salt".toByteArray(),
         )
         val data2 = PasswordEncryptedData(
             ciphertext = "cipher".toByteArray(),
             iv = "iv".toByteArray(),
-            salt = "salt".toByteArray()
+            salt = "salt".toByteArray(),
         )
 
         assertTrue(data1 == data2)

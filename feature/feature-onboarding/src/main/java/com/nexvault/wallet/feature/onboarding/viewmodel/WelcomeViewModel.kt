@@ -13,9 +13,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class WelcomeViewModel @Inject constructor() : ViewModel() {
-
     sealed interface NavigationEvent {
         data object NavigateToCreateWallet : NavigationEvent
+
         data object NavigateToImportWallet : NavigationEvent
     }
 

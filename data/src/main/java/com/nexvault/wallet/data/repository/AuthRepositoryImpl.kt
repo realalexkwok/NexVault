@@ -28,7 +28,6 @@ class AuthRepositoryImpl @Inject constructor(
     private val biometricHelper: BiometricHelper,
     private val userPreferences: UserPreferencesDataStore,
 ) : AuthRepository {
-
     override suspend fun setPin(pin: String): DataResult<Unit> {
         return try {
             val hash = SecurityUtils.hashPassword(pin)
@@ -84,11 +83,11 @@ class AuthRepositoryImpl @Inject constructor(
             is AuthFailureResult.TemporaryLockout -> AuthResult.LockedOut(result.seconds)
             is AuthFailureResult.Warning -> AuthResult.Failed(
                 remainingAttempts = result.attemptCount,
-                message = result.message
+                message = result.message,
             )
             is AuthFailureResult.NoLockout -> AuthResult.Failed(
                 remainingAttempts = result.attemptCount,
-                message = "Incorrect PIN"
+                message = "Incorrect PIN",
             )
         }
     }

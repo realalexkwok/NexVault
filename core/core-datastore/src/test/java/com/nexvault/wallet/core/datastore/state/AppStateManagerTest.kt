@@ -18,7 +18,6 @@ import org.junit.Before
 import org.junit.Test
 
 class AppStateManagerTest {
-
     private lateinit var userPreferences: UserPreferencesDataStore
     private lateinit var securityPreferences: SecurityPreferencesDataStore
     private lateinit var walletMetadata: WalletMetadataDataStore
@@ -45,7 +44,7 @@ class AppStateManagerTest {
             securityPreferences = securityPreferences,
             walletMetadata = walletMetadata,
             walletStore = walletStore,
-            keyStoreManager = keyStoreManager
+            keyStoreManager = keyStoreManager,
         )
     }
 

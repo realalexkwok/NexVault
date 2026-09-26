@@ -18,7 +18,7 @@ val LocalNexVaultDimens = staticCompositionLocalOf { NexVaultDimens }
 @Composable
 fun NexVaultTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = if (darkTheme) NexVaultDarkColorScheme else NexVaultLightColorScheme
     val nexVaultColors = remember(darkTheme) {
@@ -40,13 +40,13 @@ fun NexVaultTheme(
 
     CompositionLocalProvider(
         LocalNexVaultColors provides nexVaultColors,
-        LocalNexVaultDimens provides NexVaultDimens
+        LocalNexVaultDimens provides NexVaultDimens,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = NexVaultTypography,
             shapes = NexVaultShapes,
-            content = content
+            content = content,
         )
     }
 }

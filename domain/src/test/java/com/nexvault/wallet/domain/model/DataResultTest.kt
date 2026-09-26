@@ -6,8 +6,8 @@ import com.nexvault.wallet.domain.model.common.getOrNull
 import com.nexvault.wallet.domain.model.common.getOrThrow
 import com.nexvault.wallet.domain.model.common.map
 import com.nexvault.wallet.domain.model.common.toDataResult
-import org.junit.Test
 import org.junit.Assert.*
+import org.junit.Test
 
 class DataResultTest {
     @Test

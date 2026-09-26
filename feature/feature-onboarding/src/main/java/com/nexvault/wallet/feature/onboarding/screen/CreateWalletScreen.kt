@@ -314,7 +314,7 @@ private fun CreateWalletScreenPreview() {
             uiState = CreateWalletViewModel.UiState(
                 mnemonicWords = listOf(
                     "apple", "brave", "crane", "delta", "eagle", "frost",
-                    "grape", "house", "ivory", "jump", "king", "lamp"
+                    "grape", "house", "ivory", "jump", "king", "lamp",
                 ),
                 walletId = "sample-id",
                 address = "0x1234...abcd",

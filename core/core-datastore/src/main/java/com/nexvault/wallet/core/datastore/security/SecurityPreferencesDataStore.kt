@@ -21,13 +21,13 @@ private val Context.securityPreferencesDataStore by preferencesDataStore(name = 
 
 enum class AuthMethod {
     PIN,
-    PASSWORD
+    PASSWORD,
 }
 
 @Singleton
 class SecurityPreferencesDataStore @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val encryptionManager: EncryptionManager
+    private val encryptionManager: EncryptionManager,
 ) {
     private val dataStore: DataStore<Preferences> = context.securityPreferencesDataStore
 

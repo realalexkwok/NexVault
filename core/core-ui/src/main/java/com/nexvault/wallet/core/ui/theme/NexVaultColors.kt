@@ -56,4 +56,5 @@ private val LightNexVaultColors = NexVaultColors(
 )
 
 fun getDarkNexVaultColors(): NexVaultColors = DarkNexVaultColors
+
 fun getLightNexVaultColors(): NexVaultColors = LightNexVaultColors

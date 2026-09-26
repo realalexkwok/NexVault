@@ -14,19 +14,17 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 class VerifyMnemonicViewModelTest {
-
     private lateinit var savedStateHandle: SavedStateHandle
     private lateinit var getMnemonicForBackupUseCase: GetMnemonicForBackupUseCase
 
     private val testMnemonic = listOf(
         "apple", "brave", "crane", "delta", "eagle", "frost",
-        "grape", "house", "ivory", "jump", "king", "lamp"
+        "grape", "house", "ivory", "jump", "king", "lamp",
     )
 
     @Before

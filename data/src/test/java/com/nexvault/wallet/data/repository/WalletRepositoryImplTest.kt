@@ -33,7 +33,6 @@ import org.junit.Before
 import org.junit.Test
 
 class WalletRepositoryImplTest {
-
     private lateinit var mnemonicManager: MnemonicManager
     private lateinit var hdKeyManager: HDKeyManager
     private lateinit var walletStore: WalletStore
@@ -187,7 +186,7 @@ class WalletRepositoryImplTest {
 
         val result = repository.importFromMnemonic(
             "abandon about after again agent air",
-            "Imported"
+            "Imported",
         )
 
         assertTrue(result is DataResult.Success)
@@ -217,7 +216,7 @@ class WalletRepositoryImplTest {
 
         val result = repository.importFromPrivateKey(
             "0000000000000000000000000000000000000000000000000000000000000001",
-            "PK Wallet"
+            "PK Wallet",
         )
 
         assertTrue(result is DataResult.Success)
@@ -375,7 +374,7 @@ class WalletRepositoryImplTest {
             createdAt = System.currentTimeMillis(),
             type = WalletType.HD,
             accountCount = 1,
-            isActive = true
+            isActive = true,
         )
         val accounts = listOf(
             AccountMetadata(
@@ -385,8 +384,8 @@ class WalletRepositoryImplTest {
                 name = "Account 1",
                 derivationPath = "m/44'/60'/0'/0/0",
                 isActive = false,
-                addedAt = System.currentTimeMillis()
-            )
+                addedAt = System.currentTimeMillis(),
+            ),
         )
 
         every { walletMetadataStore.wallets } returns flowOf(listOf(walletMeta))

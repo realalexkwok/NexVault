@@ -7,14 +7,14 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-//configurations.configureEach {
+// configurations.configureEach {
 //    resolutionStrategy.eachDependency {
 //        if (requested.group == "io.netty") {
 //            useVersion("4.1.115.Final")
 //            because("Force all Netty modules to a single patched version")
 //        }
 //    }
-//}
+// }
 
 // API keys live in local.properties (git-ignored). Gradle project properties do NOT include that
 // file, so it is loaded explicitly here; a -P property (CI) still overrides it. Values are never
@@ -67,7 +67,7 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
         debug {

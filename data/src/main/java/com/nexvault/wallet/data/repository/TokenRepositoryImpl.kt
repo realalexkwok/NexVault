@@ -44,7 +44,6 @@ class TokenRepositoryImpl @Inject constructor(
     private val chainRepository: ChainRepository,
     private val chainConfigProvider: ChainConfigProvider,
 ) : TokenRepository {
-
     private val refreshMutex = Mutex()
 
     override fun getTokensWithBalances(chainId: Int, address: String): Flow<List<Token>> {

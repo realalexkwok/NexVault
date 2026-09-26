@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class PreferenceModelsTest {
-
     @Test
     fun themeMode_hasAllExpectedValues() {
         val values = ThemeMode.entries

@@ -1,8 +1,8 @@
 package com.nexvault.wallet.domain.model
 
 import com.nexvault.wallet.domain.model.token.Token
-import org.junit.Test
 import org.junit.Assert.*
+import org.junit.Test
 import java.math.BigDecimal
 
 class TokenTest {

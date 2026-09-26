@@ -6,7 +6,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Named
-import javax.inject.Singleton
 
 /**
  * Provides API key strings from BuildConfig to the NetworkModule.
@@ -22,7 +21,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppNetworkModule {
-
     /**
      * Provides Infura API key for Ethereum RPC.
      */

@@ -24,7 +24,6 @@ import org.junit.Test
  * as before.
  */
 class TokenRepositoryImplTest {
-
     private lateinit var tokenDao: TokenDao
     private lateinit var coinGeckoApi: CoinGeckoApi
     private lateinit var web3jProvider: Web3jProvider

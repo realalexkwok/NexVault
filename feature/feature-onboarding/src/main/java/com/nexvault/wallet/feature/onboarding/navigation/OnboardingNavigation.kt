@@ -55,7 +55,7 @@ fun NavGraphBuilder.onboardingGraph(
         composable(
             route = OnboardingRoutes.VERIFY_MNEMONIC,
             arguments = listOf(
-                navArgument("walletId") { type = NavType.StringType }
+                navArgument("walletId") { type = NavType.StringType },
             ),
         ) {
             VerifyMnemonicScreen(

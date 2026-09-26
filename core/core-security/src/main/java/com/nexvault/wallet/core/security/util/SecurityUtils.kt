@@ -4,7 +4,6 @@ import org.web3j.crypto.Hash
 import java.security.SecureRandom
 
 object SecureUtils {
-
     fun ByteArray.secureWipe() {
         for (i in indices) {
             this[i] = 0
@@ -30,7 +29,6 @@ object SecureUtils {
 }
 
 object SecurityUtils {
-
     private val HEX_CHARS = "0123456789abcdef".toCharArray()
     private const val HASH_ITERATIONS = 65536
     private const val HASH_LENGTH = 32
@@ -118,7 +116,7 @@ object SecurityUtils {
             password.toCharArray(),
             salt,
             HASH_ITERATIONS,
-            HASH_LENGTH * 8
+            HASH_LENGTH * 8,
         )
 
         try {
@@ -146,7 +144,7 @@ object SecurityUtils {
                 password.toCharArray(),
                 salt,
                 HASH_ITERATIONS,
-                HASH_LENGTH * 8
+                HASH_LENGTH * 8,
             )
 
             try {

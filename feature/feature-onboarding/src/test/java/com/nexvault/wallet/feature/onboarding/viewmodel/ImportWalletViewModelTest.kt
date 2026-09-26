@@ -1,11 +1,8 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
-import com.nexvault.wallet.domain.model.auth.WalletCreationResult
-import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.wallet.ImportFromMnemonicUseCase
 import com.nexvault.wallet.domain.usecase.wallet.ImportFromPrivateKeyUseCase
 import com.nexvault.wallet.feature.onboarding.R
-import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,7 +12,6 @@ import org.junit.Before
 import org.junit.Test
 
 class ImportWalletViewModelTest {
-
     private lateinit var importFromMnemonicUseCase: ImportFromMnemonicUseCase
     private lateinit var importFromPrivateKeyUseCase: ImportFromPrivateKeyUseCase
     private lateinit var viewModel: ImportWalletViewModel

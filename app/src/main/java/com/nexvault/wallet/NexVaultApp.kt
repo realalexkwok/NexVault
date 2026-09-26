@@ -52,7 +52,7 @@ fun NexVaultApp(
 
     // Observe wallet creation state from SecurityPreferencesDataStore
     val isWalletSetUp by securityPreferences.isWalletSetUp.collectAsStateWithLifecycle(
-        initialValue = false
+        initialValue = false,
     )
 
     // Determine routing key based on state.

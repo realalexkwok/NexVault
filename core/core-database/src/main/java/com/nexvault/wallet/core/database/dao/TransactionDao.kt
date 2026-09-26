@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface TransactionDao {
-
     /**
      * Gets paginated transactions for a wallet address on a specific chain.
      *
