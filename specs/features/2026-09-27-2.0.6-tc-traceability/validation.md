@@ -164,3 +164,41 @@ below is claimed as verified by the reviewer:
 Automatic half: done and green (A1–A7). Manual half: owner confirmation pending. On the owner's
 word this item closes as `[x]`: roadmap row flip, AGENTS.md standing gate → 2.0.7, mission.md
 reality counters, `--no-ff` merge, push, branch delete — the 2.0.5 procedure.
+
+---
+
+## Reviewer verification — commits c7631f9 + 67eb1a8 + f4af934 (2026-09-27)
+
+> Code-reviewer session (read-only on production code; record files only). Re-verified from the
+> tree and by a fully fresh `--rerun-tasks` execution; nothing taken on trust. The developer's
+> V1–V8 checklist is answered point by point.
+
+### Verdicts
+
+| # | Claim | Reviewer's check | Verdict |
+| --- | --- | --- | --- |
+| V1 | 52 ids / 25 markers / 0 orphans | re-extracted: `doc/07` ids **52**; `// TC-XXX-NNN` markers in `src/test`+`src/androidTest` **25**; `comm` against doc/07 → **0 orphan markers** | ✅ |
+| V2 | Marker adjacency | `grep -rn -B1 '@Test'` … `grep 'TC-'` → **25/25** markers sit directly above their `@Test` | ✅ |
+| V3 | The one production fix | `RefreshTransactionHistoryUseCase.invoke` returns `DataResult<Unit>` (was `Unit`); no-wallet → `DataResult.Error(WalletNotFoundException())`; the `TokenDetailViewModel` branches (`is DataResult.Error` → `isHistoryConfigured`/`isHistoryPlanGated`) were dead before the fix and are now exercised by `TokenDetailViewModelTest`'s two notice cases + `RefreshTransactionHistoryUseCaseTest` (3) | ✅ (the pre-fix tree compiled, so the constant-false branch was silently dead — exactly as claimed) |
+| V4 | Suite 299 / 0 / 0 / 1 | fresh `--rerun-tasks` (660 tasks executed): **299 tests, 0 failures, 0 errors, 1 skipped** — matches the claim and the +25 attribution sums exactly (6+3+2+6+4+1+3) | ✅ |
+| V5 | Both gates exit 0 | same fresh run included `detekt ktlintCheck` (13 detekt + 276 ktlint task lines): **exit 0, no failed tasks** | ✅ |
+| V6 | Instrumented 5/5 | could not be re-driven: no adb device was attached during the review (the Pixel 6a was offline). The developer's §A5 record (5/5: BackupPolicyTest 3, CreationFlowE2ETest 1, ExampleInstrumentedTest 1) + the XML path and the three environment findings stand as recorded; the manual half is the owner's confirmation. | ⏸ device offline at review time |
+| V7 | Diff scope | `git diff --name-only main...HEAD` filtered to `src/main` (excluding `res`): **exactly one production file** — `RefreshTransactionHistoryUseCase.kt`; everything else is tests, three build scripts and specs | ✅ |
+| V8 | Records match the tree | roadmap 2.0.6 `[~]` + new **4.18** row + next-entry 2.0.7; tech-stack §5 counts (core-network 20, core-database 3, feature-home 2, feature-tokens 6); legacy CR rows 2.1-1/2.2-1/2.4-1/2.5-1 closed-by-2.0.6 with replans, 1.2-5 split verdict recorded | ✅ |
+
+### Reviewer note (not a finding)
+
+The pre-fix `TokenDetailViewModel` compiled with a `Unit`-typed `result` checked against
+`DataResult.Error` — a constant-false branch the compiler accepted, which is why the 2.0.4b
+notices never appeared and no build failure surfaced it. The fix and its regression tests are the
+right remedy; this class of silently-dead branch is exactly what 2.0.6's mapping discipline
+guards against going forward.
+
+### Verdict
+
+**PASS (automatic + diff).** The matrix is complete and disjoint (52 = 25 ∪ 27), every marker is
+adjacent to its `@Test`, the single production change is justified and locked by tests, the suite
+is green at 299/0/0/1 from a fresh run, both gates exit 0, and the records match the tree. The
+instrumented E2E remains developer-recorded (device offline during this review). Remaining for
+closure: the owner's manual-half confirmation, then the owner-directed close (row flip,
+AGENTS.md → 2.0.7, mission counters, `--no-ff` merge, push, branch delete).
