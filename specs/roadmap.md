@@ -36,14 +36,18 @@ without evidence.
 > signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
 > gate closure and every finding handed to its owning item).
 >
-> **2.0.5 (quality gates) implemented 2026-09-26 — `[~]`, automatic half GREEN.** Both gates pass
-> for the first time in the project's history: `./gradlew detekt ktlintCheck --continue` → BUILD
-> SUCCESSFUL (exit 0), **detekt 65 → 0** and **ktlint 1556 → 0**, with the build and the 274-test
-> suite unchanged. The row stays `[~]` until the owner's device walk (M1–M3) passes.
+> **2.0.5 (quality gates) CLOSED 2026-09-27 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed, NOT
+> VERIFIED; the local feature branch is deleted.** Reviewer verification **PASS** on
+> `b0dfb92…5b1bfb4` (`729d663`), and both gates are green for the first time: `./gradlew detekt
+> ktlintCheck --continue` → BUILD SUCCESSFUL (exit 0), **detekt 65 → 0** and **ktlint 1556 → 0**,
+> with the build and the 274-test suite unchanged. `[~]` and not `[x]` because the manual half is
+> only partially run — the install, cold start, Unlock screen, keypad and a clean `logcat` were
+> observed on the Pixel 6a on 2026-09-27, but the walk past the PIN (M1) and the owner's gate re-run
+> (M3) are still owed; they are ~2 minutes and need no funds.
 > **The next open entry point is 2.0.6** (TC traceability). The Phase 2.0 remainder (2.0.6 → 2.0.7)
 > is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent). 2.0.4b's
-> device-walk evidence (M1/M2 suspended pending funding, M3–M5 owner-pending) is still owed.
-> Phase 2.6+ still waits on Phase 2.0.
+> device-walk evidence (M1/M2 suspended pending funding, M3–M5 owner-pending) and 2.0.5's M1/M3 are
+> the outstanding verification debt. Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -400,10 +404,16 @@ listing real history on the Pixel 6a (and the plan notice on BSC), and detekt/kt
 the merge base.
 
 ### 2.0.5 — Turn both quality gates green `[~]`
-**IMPLEMENTED 2026-09-26 on `feature/2.0.5-quality-gates` — AUTOMATIC HALF GREEN, device walk
-owed.** Own spec: `specs/features/2026-09-26-2.0.5-quality-gates/` (requirements with the owner
-Q1–Q4 and the disabled-rule inventory, plan, validation with the automatic evidence). The row
-moves to `[x]` only when M1–M3 pass.
+**CLOSED 2026-09-27 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed, NOT VERIFIED; the local
+feature branch is deleted.** Basis: reviewer verification **PASS** on `b0dfb92…5b1bfb4`
+(`729d663`, V1–V10 + A4 — both gates re-run from a fully fresh `--rerun-tasks` execution, 633
+tasks, exit 0, zero findings). `[~]` and not `[x]` because the **manual half is only partially
+run**: the branch APK was installed and cold-started on the Pixel 6a (Unlock screen renders,
+keypad/backspace behave, 0 crashes in `logcat`), but the walk past the PIN and the owner's own
+gate re-run (M3) have not happened. Own spec:
+`specs/features/2026-09-26-2.0.5-quality-gates/` (requirements with the owner Q1–Q4 and the
+disabled-rule inventory, plan, validation with the automatic evidence and the close record). The
+row moves to `[x]` when M1/M3 pass — ~2 minutes, no funds needed.
 
 Baseline at `main` (`aa539d6`), re-measured on the Linux host: **1556 ktlint findings across 184
 files** and **65 detekt issues / 78 weighted**, both gates exit 1. (The 1656/178 and 75 figures
@@ -440,14 +450,12 @@ ktlint 1556 → 0); `:app:assembleDebug testDebugUnitTest :domain:test --continu
 `/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` (47,986,669 bytes);
 0 tracked Kotlin lines above 120 characters; per-rule attribution in `validation.md` §A3.
 
-Exit criteria (AC-1…AC-8 of the item's `requirements.md`): AC-1…AC-7 ✅ met with that evidence;
-AC-8 (both verification halves) ☐ — the owner's device walk is the open half.
+Exit criteria (AC-1…AC-8 of the item's `requirements.md`): AC-1…AC-7 ✅ met with that evidence and
+confirmed by the reviewer; AC-8 (both verification halves) ☐ — the device walk is the open half, so
+the row is `[~]` and this item is **not** done.
 
-Manual half, **partially run 2026-09-27**: the branch APK is installed on the Pixel 6a (now
-Android 17 / API 37), the cold start renders the Unlock screen, the keypad/backspace behave, and
-`logcat` shows **0 crashes**; the walk past the PIN (Home → chain selector → token detail → back)
-and the owner's own gate re-run remain, so the row stays `[~]`. Evidence and the exact steps:
-`specs/features/2026-09-26-2.0.5-quality-gates/validation.md` §"Manual half".
+Close record: `validation.md` §"Close / sign-off" (reviewer PASS `729d663`, six commits
+`b0dfb92…5b1bfb4`, `--no-ff` merge, branch deleted, the owed M1/M3 rows and the honesty notes).
 
 ### 2.0.6 — Build the TC traceability `[ ]`
 `doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
@@ -553,7 +561,7 @@ Commands run from the repository root; `JAVA_HOME` set to the Android Studio JBR
 | E6 | `adb devices` / `ls $ANDROID_HOME/emulator` / `ls ~/.android/avd` | **empty / missing / empty** — no device, no emulator, no AVD |
 | E7 | `grep -r TODO\|FIXME --include=*.kt app core domain data feature` | **0** — the `doc/08` "no TODO/FIXME" criterion passes |
 | E8 | `find . -path "*src/androidTest*" -name "*.kt"` | **1 file** — the template stub only; no real instrumented coverage |
-| E9 | `./gradlew detekt ktlintCheck --continue; echo $?` (2026-09-26, 2.0.5) | **BUILD SUCCESSFUL, exit 0** — detekt **65 → 0**, ktlint **1556 → 0**; run on Linux with `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`. Attribution per rule: `specs/features/2026-09-26-2.0.5-quality-gates/validation.md` §A3. Both gates are green only when someone runs them — there is still no CI (4.3) |
+| E9 | `./gradlew detekt ktlintCheck --continue; echo $?` (2026-09-26, 2.0.5) | **BUILD SUCCESSFUL, exit 0** — detekt **65 → 0**, ktlint **1556 → 0**; run on Linux with `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`. Attribution per rule: `specs/features/2026-09-26-2.0.5-quality-gates/validation.md` §A3. Independently reproduced fresh by the reviewer (2026-09-27, `--rerun-tasks`, 633 tasks, exit 0). Both gates are green only when someone runs them — there is still no CI (4.3) |
 | E10 | Same run, after 2.0.5 | `:app:assembleDebug testDebugUnitTest :domain:test --continue` → **274 tests, 0 failures, 0 errors, 1 skipped**; detekt covers `main` + `test` only, ktlint also covers `androidTest` and the root scripts |
 
 These numbers are the reference point for every claim in this roadmap. Re-run them before

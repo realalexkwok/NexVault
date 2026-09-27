@@ -1,10 +1,15 @@
 # 2.0.5 — Turn both quality gates green — Validation record
 
-> **Status: IMPLEMENTED on `feature/2.0.5-quality-gates`, AUTOMATIC HALF GREEN — manual half
-> partially run (install + cold start + Unlock screen + keypad + 0 crashes, 2026-09-27), the walk
-> itself owed, so the roadmap row stays `[~]` until M1–M3 pass.**
-> `./gradlew detekt ktlintCheck --continue` is BUILD SUCCESSFUL (exit 0) for the first time
-> in the project's history. Requirements: `requirements.md` (Q1–Q4, AC-1…AC-8). Plan: `plan.md`.
+> **Status: CLOSED 2026-09-27 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed; the local feature
+> branch is deleted.** Basis: reviewer verification **PASS** on `b0dfb92…5b1bfb4` (`729d663`, V1–V10
+> + A4 — both gates confirmed green from a fully fresh `--rerun-tasks` run, 633 tasks). `[~]`, not
+> `[x]`, because the **manual half is only partially run**: install, cold start, Unlock screen,
+> keypad/backspace and 0 crashes were observed on the Pixel 6a on 2026-09-27, but M1's walk past the
+> PIN and M3 (owner re-runs the gates) have not happened. The row moves to `[x]` when they do —
+> the reviewer's own record says the same.
+> `./gradlew detekt ktlintCheck --continue` is BUILD SUCCESSFUL (exit 0) for the first time in the
+> project's history. Requirements: `requirements.md` (Q1–Q4, AC-1…AC-8). Plan: `plan.md`.
+> Close record: §"Close / sign-off".
 
 **Host used for every command below:** Linux (`superguo-SQM2270`),
 `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` (the Linux recipe of `specs/dev-environment.md`;
@@ -168,14 +173,27 @@ The owner opened a code-reviewer session over the branch. What it is asked to ve
 Known gaps the reviewer should not have to discover: `spotless` remains a no-op; detekt does not
 analyze `src/androidTest`; nothing runs the gates automatically; the device walk is unfinished.
 
-## Close / sign-off — pending
+## Close / sign-off (owner-directed, 2026-09-27)
 
 | # | Step | State |
 | --- | --- | --- |
-| C1 | Automatic half | ✅ **GREEN** — A1–A7 above; both gates exit 0 |
-| C2 | Manual half (M1–M3) | ☐ owed — **partially run 2026-09-27**: branch APK installed on the Pixel 6a, cold start renders the Unlock screen, keypad/backspace verified, 0 crashes in `logcat`. The walk past the PIN (Home → chain switch → token detail → back) and the owner's gate re-run (M3) remain; the owner chose to finish them personally |
-| C3 | Roadmap row | **`[~]` implemented, not verified** — becomes `[x]` only after C2 |
-| C4 | Merge to `main`, push, delete the branch | ☐ owner action (2.0.4b precedent) |
+| C1 | Reviewer verification | ✅ **PASS** — reviewer commit `729d663` verifying `b0dfb92…5b1bfb4` (V1–V10 + A4; both gates re-run fully fresh, 633 tasks, exit 0) |
+| C2 | Implementation committed on the item branch | ✅ 6 commits: `b0dfb92` (config + mechanical formatting) → `f10701c` (15 hand fixes) → `dc6a0ad` (detekt) → `481f08f` (records/constitution) → `7bfd943` (partial device walk + API-37 device) → `5b1bfb4` (endpoint rule + reviewer checklist) |
+| C3 | Roadmap row | **`[~]` — implemented, NOT verified.** The automatic half is green and reviewer-passed; the manual half is only partially run, so `[x]` is not claimed. Owner decision: close the branch now, keep the row implemented-unverified (the 2.0.4b precedent) |
+| C4 | Merge to `main` and push | ✅ `--no-ff` merge commit, pushed to `origin/main`; local `feature/2.0.5-quality-gates` deleted |
+| C5 | Verification debt carried forward | M1 (walk past the PIN: Home → chain selector → token detail → back) and M3 (owner re-runs the gates) — 2 minutes, no funds needed. Resume: the branch is merged, so run them against `main`; then the row becomes `[x]` and this table gets the observed results. Steps and evidence slots: §"Manual half" |
+
+**Honesty notes.** (1) `[~]` is deliberate, not a hedge: both gates really are green — confirmed by
+the reviewer's own fresh `--rerun-tasks` run — but green gates are not a device walk, and the
+repo's rule is that both halves are required for `[x]`. (2) The APK size is informational only:
+the developer's build produced 47,986,669 bytes and the reviewer's fresh build 45,923,819 bytes
+(their V8 note); the invariants are the suite (274 / 0 / 1) and the gates, not the artifact size.
+(3) The device walk that did happen (install, cold start, Unlock screen, keypad, 0 crashes) is
+recorded as partial evidence and is **not** presented as M1/M2 passing. (4) Nothing in this item
+touches app behaviour beyond two behaviour-preserving guard extractions and a file rename; the
+risk the walk would catch is a rendering regression, which is exactly why the row stays `[~]`.
+(5) The style decision is reversible but not free: re-adopting ktlint's layout dialect means a
+future reformat item (see the Handoff list).
 
 ---
 
