@@ -176,3 +176,45 @@ analyze `src/androidTest`; nothing runs the gates automatically; the device walk
 | C2 | Manual half (M1–M3) | ☐ owed — **partially run 2026-09-27**: branch APK installed on the Pixel 6a, cold start renders the Unlock screen, keypad/backspace verified, 0 crashes in `logcat`. The walk past the PIN (Home → chain switch → token detail → back) and the owner's gate re-run (M3) remain; the owner chose to finish them personally |
 | C3 | Roadmap row | **`[~]` implemented, not verified** — becomes `[x]` only after C2 |
 | C4 | Merge to `main`, push, delete the branch | ☐ owner action (2.0.4b precedent) |
+
+---
+
+## Reviewer verification — commits b0dfb92 … 5b1bfb4 (2026-09-27)
+
+> Code-reviewer session (read-only on production code; record files only). Re-verified from the
+> tree, by a fully fresh `--rerun-tasks` execution, and by per-commit diff review; nothing taken
+> on trust. The developer's V1–V10 checklist is answered point by point.
+
+### Verdicts
+
+| # | Claim | Reviewer's check | Verdict |
+| --- | --- | --- | --- |
+| V1 | `.editorconfig` loosens only the named rules | read `.editorconfig`: exactly the 11 `ktlint_standard_*` layout rules disabled + the Compose `function_naming` property; **no `max_line_length`**; nothing else | ✅ |
+| V2 | 1556 → 0 attribution | the arithmetic is exact (1128 + 93 + 320 + 15 = 1556); the current state is the real proof — see V7; the per-rule baseline counts are the developer's measured record | ✅ (math + fresh 0) |
+| V3 | Commit 1 changes no logic | `git diff --ignore-all-space --ignore-blank-lines b0dfb92^ b0dfb92`: the residual delta is the `.editorconfig` block, import removals/ordering, trailing commas and the two named cosmetic rewrites — no identifier/operator/control-flow change | ✅ |
+| V4 | The 15 hand fixes are real fixes | `git show f10701c`: 11 wildcard imports → explicit symbols (incl. the two app test templates), 2 over-long literals split (byte-identical strings), `Dimens.kt` → `NexVaultDimens.kt`, `_selectedChartDays` → `selectedChartDaysFlow` (all 3 sites) — none disabled | ✅ |
+| V5 | detekt loosening limited to the two decisions | `config/detekt/detekt.yml`: `TooManyFunctions` 11 → 25 (all five thresholds, justified comment) and `CommentOverPrivateFunction` off (justified); `maxIssues: 0`, `MaxLineLength: 120`, `ComplexCondition: 3` unchanged; no baseline file | ✅ |
+| V6 | ComplexCondition extractions behaviour-preserving | `UnlockViewModel`: both guards extracted to `isInputBlocked` with identical conditions; covered by TC-UNLOCK-010/014; suite green | ✅ |
+| V7 | Both gates exit 0 | `./gradlew detekt ktlintCheck :app:assembleDebug testDebugUnitTest :domain:test --continue --rerun-tasks` — **BUILD SUCCESSFUL, exit 0, 633 tasks executed** (22 detekt + 276 ktlint tasks all re-ran fresh; zero findings) | ✅ — the first green gates, confirmed fresh |
+| V8 | Suite unchanged | same run: **274 tests / 0 failures / 0 errors / 1 skipped**. APK: the reviewer's fresh build produced **45,923,819 bytes** — the developer's 47,986,669 figure (recorded at 2.0.4b close) is not reproduced byte-for-byte; noted as a build-size observation, not a defect (suite + gates are the invariants) | ✅ (tests) / ⚠️ size note |
+| V9 | Records honest about the open half | §Manual half: partial run (install, cold start, Unlock, keypad, 0 crashes), M1–M3 owed, AC-8 open, roadmap row `[~]` — accurate | ✅ |
+| V10 | Constitution updates true | `481f08f`/`7bfd943`/`5b1bfb4`: roadmap 2.0.5 `[~]` + next entry 2.0.6, AGENTS/tech-stack/mission/dev-environment updated (green gates, 274 tests, API-37 device, endpoint redacted) — consistent with the tree | ✅ |
+| A4 | 0 tracked lines > 120 | `git ls-files '*.kt' '*.kts' \| xargs awk 'length>120'` → **0** | ✅ |
+
+### Reviewer notes (not findings)
+
+1. **APK-size variance** across fresh builds (45.9 MB vs the recorded 47.9 MB) suggests the
+   artifact size is not a stable fingerprint; the recorded sizes in recent validations are
+   informational only.
+2. The gates are green **when run** — nothing runs them automatically (CI is 4.3), so green is a
+   maintained state, not an enforced one. Correctly recorded as a handoff.
+3. `spotless` remains a no-op and is not cited as evidence anywhere in this item — confirmed.
+
+### Verdict
+
+**PASS (automatic + diff).** Both gates are genuinely green from a fully fresh execution, the
+style decision is codified in one place with every loosening owner-approved and counted, the 15
+hand fixes are real fixes, and the constitution updates are true. The roadmap row correctly stays
+`[~]` until the owner completes the manual half (M1–M3) — the walk past the PIN and the owner's
+own gate re-run. Remaining for closure: the owner's manual-half evidence, then the owner merge of
+`feature/2.0.5-quality-gates` to `main`.
