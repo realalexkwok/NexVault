@@ -7,9 +7,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Instrumented test, which will execute on an Android device.
+ * Instrumented smoke test: the target context's package must match the built application id.
  *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * Roadmap 2.0.6: the template asserted the literal `"com.nexvault.wallet"`, which fails for the
+ * debug variant (`com.nexvault.wallet.debug`) and had been turning every connected run red as
+ * legacy CR finding 1.1-3. Asserting against [BuildConfig.APPLICATION_ID] keeps the check honest
+ * for every variant.
  */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
@@ -17,6 +20,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.nexvault.wallet", appContext.packageName)
+        assertEquals(BuildConfig.APPLICATION_ID, appContext.packageName)
     }
 }

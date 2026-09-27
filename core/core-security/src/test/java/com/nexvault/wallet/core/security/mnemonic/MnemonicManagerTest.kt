@@ -8,11 +8,13 @@ import org.junit.Test
 class MnemonicManagerTest {
     private val mnemonicManager = MnemonicManager()
 
+    // TC-SEC-001: a generated mnemonic has 12 valid BIP-39 words and a valid checksum.
     @Test
     fun testGenerate12WordMnemonic() {
         val mnemonic = mnemonicManager.generateMnemonic(12)
         val words = mnemonic.trim().split("\\s+".toRegex())
         assertEquals(12, words.size)
+        assertTrue(mnemonicManager.validateMnemonic(mnemonic))
     }
 
     @Test
@@ -33,6 +35,7 @@ class MnemonicManagerTest {
         }
     }
 
+    // TC-SEC-002: a known valid 12-word mnemonic validates.
     @Test
     fun testValidMnemonicPassesValidation() {
         // Use a known valid mnemonic from BIP39 test vectors
@@ -41,9 +44,19 @@ class MnemonicManagerTest {
         assertTrue(mnemonicManager.validateMnemonic(validMnemonic))
     }
 
+    // TC-SEC-003: 12 valid BIP-39 words whose checksum is wrong are rejected.
     @Test
     fun testInvalidMnemonicWrongChecksum() {
-        // Invalid mnemonic - wrong word count
+        // The canonical vector ends in "about"; "zoo" is a valid BIP-39 word, so the word
+        // count and wordlist checks pass and only the embedded checksum can fail.
+        val invalidMnemonic =
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon zoo"
+        assertFalse(mnemonicManager.validateMnemonic(invalidMnemonic))
+    }
+
+    // TC-SEC-004: a wrong word count is rejected.
+    @Test
+    fun testInvalidMnemonicWrongWordCount() {
         val invalidMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon"
         assertFalse(mnemonicManager.validateMnemonic(invalidMnemonic))
     }

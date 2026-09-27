@@ -293,4 +293,34 @@ class UnlockViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("123456", state.pin)
     }
+
+    // TC-VM-009: after 4 failed attempts, the 5th wrong PIN locks the screen for 30 seconds.
+    @Test
+    fun `TC-UNLOCK-015 fifth failure locks out for thirty seconds`() = testScope.runTest {
+        coEvery { verifyPinUseCase.invoke(any()) } returns
+            AuthResult.Failed(remainingAttempts = 0, message = "Incorrect PIN")
+
+        val viewModel = createViewModel()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Four wrong attempts, then the fifth one that must trip the lockout.
+        repeat(5) {
+            repeat(6) { viewModel.onDigitPressed(0) }
+            testDispatcher.scheduler.runCurrent()
+        }
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isLockedOut)
+        assertEquals(30, state.lockoutRemainingSeconds)
+        assertEquals(5, state.failedAttempts)
+        assertTrue(state.isShakeError)
+
+        // The countdown completes and unlocks again with the attempt counter reset.
+        testDispatcher.scheduler.advanceTimeBy(31_000)
+        testDispatcher.scheduler.runCurrent()
+        val after = viewModel.uiState.value
+        assertFalse(after.isLockedOut)
+        assertEquals(0, after.lockoutRemainingSeconds)
+        assertEquals(0, after.failedAttempts)
+    }
 }

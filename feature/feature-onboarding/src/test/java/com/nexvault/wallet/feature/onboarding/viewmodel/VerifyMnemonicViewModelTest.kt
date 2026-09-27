@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -40,6 +41,7 @@ class VerifyMnemonicViewModelTest {
         Dispatchers.resetMain()
     }
 
+    // TC-VM-007: words tapped in the correct order verify the phrase.
     @Test
     fun correctOrder() = runTest {
         coEvery { getMnemonicForBackupUseCase.invoke(any()) } returns DataResult.Success(testMnemonic)
@@ -58,6 +60,7 @@ class VerifyMnemonicViewModelTest {
         assertTrue(viewModel.uiState.value.availableWords.isEmpty())
     }
 
+    // TC-VM-008: a wrong first word trips the error state, then the selection resets.
     @Test
     fun incorrectOrder() = runTest {
         coEvery { getMnemonicForBackupUseCase.invoke(any()) } returns DataResult.Success(testMnemonic)
@@ -70,6 +73,13 @@ class VerifyMnemonicViewModelTest {
         viewModel.onWordSelected("brave")
 
         assertTrue(viewModel.uiState.value.isError)
+
+        // After the error window the selection is reset to the shuffled words.
+        advanceUntilIdle()
+        val reset = viewModel.uiState.value
+        assertFalse(reset.isError)
+        assertTrue(reset.selectedWords.isEmpty())
+        assertEquals(reset.shuffledWords, reset.availableWords)
     }
 
     @Test

@@ -13,6 +13,7 @@ class HDKeyManagerTest {
     private val testMnemonic =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 
+    // TC-SEC-005: the canonical BIP-39 vector derives the known BIP-44 address.
     @Test
     fun testDeriveAddressFromKnownMnemonic() {
         // Known test vector: "abandon … about" at m/44'/60'/0'/0/0

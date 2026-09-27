@@ -31,6 +31,7 @@ class ImportFromMnemonicUseCaseTest {
         ),
     )
 
+    // TC-UC-002: a valid 12-word mnemonic reaches the repository and yields success.
     @Test
     fun testWithValid12WordsCallsRepository() = runTest {
         val mnemonic = "abandon " + "about " + "absent " + "abstract " + "absent " +
@@ -44,6 +45,7 @@ class ImportFromMnemonicUseCaseTest {
         coVerify { walletRepository.importFromMnemonic(mnemonic.lowercase(), "Test Wallet") }
     }
 
+    // TC-UC-003: an invalid mnemonic fails with InvalidMnemonicException without touching the repository.
     @Test
     fun testWith10WordsReturnsError() = runTest {
         val mnemonic = "abandon " + "about " + "absent " + "abstract " + "absent " +
