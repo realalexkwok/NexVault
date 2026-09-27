@@ -443,6 +443,12 @@ ktlint 1556 → 0); `:app:assembleDebug testDebugUnitTest :domain:test --continu
 Exit criteria (AC-1…AC-8 of the item's `requirements.md`): AC-1…AC-7 ✅ met with that evidence;
 AC-8 (both verification halves) ☐ — the owner's device walk is the open half.
 
+Manual half, **partially run 2026-09-27**: the branch APK is installed on the Pixel 6a (now
+Android 17 / API 37), the cold start renders the Unlock screen, the keypad/backspace behave, and
+`logcat` shows **0 crashes**; the walk past the PIN (Home → chain selector → token detail → back)
+and the owner's own gate re-run remain, so the row stays `[~]`. Evidence and the exact steps:
+`specs/features/2026-09-26-2.0.5-quality-gates/validation.md` §"Manual half".
+
 ### 2.0.6 — Build the TC traceability `[ ]`
 `doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
 TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). No test method references a TC id, so
@@ -526,7 +532,7 @@ already in the version catalog for 3.5 and 3.1.
 | 4.12 | Split `SecureUtils` / `SecurityUtils` — two unrelated objects in one file, one hosting extension functions. It caused three of the six 2.0.1 test defects by making the API surface guessable-but-wrong. |
 | 4.13 | Port the `@Ignore`d AndroidKeyStore tests from 2.0.1 to `app/src/androidTest` once 2.0.2 has established a device. |
 | 4.14 | ~~Normalise the Android theme~~ **REFUTED 2026-09-21** — the Welcome screen renders with no ActionBar: `MainActivity` extends plain `FragmentActivity`, not `AppCompatActivity`, so the `MaterialComponents` theme never builds one. The prediction was wrong; nothing to fix. |
-| 4.15 | Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36. |
+| 4.15 | ~~Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36.~~ **PREMISE GONE 2026-09-27** — the Pixel 6a was upgraded to **Android 17 / API 37**, so the 2.0.x device walks run on the target API. Keep the item only if a dedicated `targetSdk`-behaviour pass is still wanted before 3.7; otherwise close it. |
 | 4.16 | Migrate `hiltViewModel` to `androidx.hilt.lifecycle.viewmodel.compose` — the old `androidx.hilt.navigation.compose` entry point is deprecated. Surfaced by the first build on the remote host; handle alongside the next `hilt-navigation-compose` bump. |
 | 4.17 | Adopt design tokens, string resources and component previews across feature modules and `core-ui` (legacy CR findings 1.2-1 … 1.2-4; owner-approved 2026-09-21). |
 

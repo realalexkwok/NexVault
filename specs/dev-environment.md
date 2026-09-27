@@ -53,14 +53,19 @@ build still works.
 | `emulator` package | ❌ not installed — **not required** (owner uses a physical device) |
 | System images | `android-25;google_apis`, `android-29;default`, `android-30;{google_apis,aosp_atd,default,google_apis_playstore}`, `android-33;{google_apis,default,google_apis_playstore,android-desktop}`, `android-36.1;google_apis_playstore;arm64-v8a` |
 | Configured AVDs | none (`~/.android/avd` is empty) — not required |
-| Connected device | ✅ **Pixel 6a** (`bluejay`), Android 16 / API 36, over adb Wi-Fi |
+| Connected device | ✅ **Pixel 6a** (`bluejay`, serial `26111jEGR13989`), **Android 17 / API 37** since 2026-09-27 (was API 36 when this doc was written), over adb Wi-Fi |
 
 Toolchain raised to SDK 37 on 2026-09-21 (owner-approved). The 36.x packages are still
 installed, so a rollback needs no download.
 
-**`targetSdk` 37 vs an API-36 device:** the project targets 37 but the only test device
-runs 36. That is legal and installs fine — it simply means Android 17's runtime behaviour
-changes are not exercised by anything here. Tracked as Phase 4 item 4.15.
+**`targetSdk` 37 vs the device:** the device itself was upgraded to **Android 17 / API 37** on
+2026-09-27, so Android 17's runtime behaviour *is* exercised by the 2.0.x device walks. Phase 4
+item 4.15 asked for that verification before 3.7 — it is satisfied by the device being on 37, as
+long as future walks record it.
+
+**adb note:** the phone can appear twice (`10.42.0.139:33001` over TCP and an
+`adb-<serial>._adb-tls-connect._tcp` mDNS entry) with the same serial. Any command that must not
+hit the wrong device should pin `-s`.
 
 ## 3. Device setup for the manual verification half
 
@@ -317,7 +322,7 @@ non-interactive shells, so `ssh host 'adb devices'` needs
 | APK | 43 MB — identical to the Mac's clean build |
 | `./gradlew testDebugUnitTest :domain:test` | **223 tests, 222 passing, 1 skipped, 0 failing** |
 | Per-module test counts | identical to the Mac, module for module |
-| `adb devices` | Pixel 6a (bluejay), Android 16 / API 36, over adb TLS |
+| `adb devices` | Pixel 6a (bluejay), Android 16 / API 36, over adb TLS — **the device was upgraded to Android 17 / API 37 on 2026-09-27**, see §5 |
 | `sudo` prompts during setup | **zero** |
 
 ### Caveats specific to this host

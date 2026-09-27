@@ -1,7 +1,8 @@
 # 2.0.5 — Turn both quality gates green — Validation record
 
 > **Status: IMPLEMENTED on `feature/2.0.5-quality-gates`, AUTOMATIC HALF GREEN — manual half
-> (device walk) still owed, so the roadmap row stays `[~]` until M1–M3 pass.**
+> partially run (install + cold start + Unlock screen + keypad + 0 crashes, 2026-09-27), the walk
+> itself owed, so the roadmap row stays `[~]` until M1–M3 pass.**
 > `./gradlew detekt ktlintCheck --continue` is BUILD SUCCESSFUL (exit 0) for the first time
 > in the project's history. Requirements: `requirements.md` (Q1–Q4, AC-1…AC-8). Plan: `plan.md`.
 
@@ -79,17 +80,49 @@ the code fixes.
 | 2 referenced classes replaced by imports | `AuthRepositoryImpl`, `SecurityPreferencesDataStore` | `com.nexvault.wallet.core.security.biometric.BiometricStatus` and `android.util.Base64` are imported instead of written out in full (all four `Base64` call sites, for coherence); this is what made the lines long |
 | 2 × `ComplexCondition` | `feature-auth/.../UnlockViewModel.kt` | `onDigitPressed` / `onBackspacePressed` guards extracted to a named `isInputBlocked` local. Behaviour unchanged; covered by existing `TC-UNLOCK-010` (6-digit cap) and `TC-UNLOCK-014` (input ignored while verifying), and the suite is green (A2) |
 
-## Manual half — device (Pixel 6a) — NOT RUN
+## Manual half — device (Pixel 6a) — PARTIALLY RUN 2026-09-27, walk owed
+
+Device: Pixel 6a `bluejay`, serial `26111jEGR13989`, **now Android 17 / API 37** (upgraded since
+`dev-environment.md` recorded API 36), connected over adb Wi-Fi. `adb` listed the phone twice
+(TCP `10.42.0.139:33001` and an mDNS entry) with the same serial, so every command was pinned
+with `-s`.
+
+**Run 2026-09-27 (agent, up to the unlock gate):**
+
+| # | Step | Observed |
+| --- | --- | --- |
+| — | `./gradlew :app:assembleDebug :app:installDebug` | `Installing APK 'app-debug.apk' on 'Pixel 6a - 17' for :app:debug` → `Installed on 1 device.` BUILD SUCCESSFUL, exit 0. On device: `versionCode=1 versionName=1.0 targetSdk=37`, `lastUpdateTime=2026-09-27 08:22:47` |
+| — | Cold start (`am force-stop` → `am start -n …/MainActivity`) | Unlock screen renders: logo, "NexVault", "Enter your PIN to unlock", 6 empty dots, full 0–9 + backspace keypad. Screenshot `/tmp/walk-01-launch.png` |
+| — | Keypad + feedback + backspace | Tapped `1 2 3` → exactly 3 dots filled (`/tmp/walk-02-pin3.png`); backspace ×3 → all 6 dots empty again (`/tmp/walk-04-cleared.png`). No shake/error state, no lockout (no PIN was ever submitted) |
+| — | Crash watch so far | `logcat -d \| grep -cE "FATAL EXCEPTION"` → **0**; no `AndroidRuntime` error, no ANR; app process alive (`pidof` → 20576) several minutes after launch |
+
+**Not run — blocked at the unlock gate.** Home, chain switch and token detail are all behind the
+PIN, and the PIN is the owner's credential (never requested, never typed here). The owner chose
+"skip the app walk — I'll do it myself later" on 2026-09-27, so these rows stay open:
 
 | # | Step | Observed | Verdict |
 | --- | --- | --- | --- |
-| M1 | `:app:installDebug` on the branch build; cold start → Unlock (PIN) → Home renders (live price + chart) → chain switch → token detail → back. No visual regression | ☐ not run | ☐ |
-| M2 | Crash watch across the walk: `adb -s 10.42.0.139:40171 logcat -d \| grep -E "FATAL EXCEPTION\|AndroidRuntime"` → empty | ☐ not run | ☐ |
-| M3 | Owner re-runs `./gradlew detekt ktlintCheck` on the same tree and reports the exit codes (independent confirmation of A1) | ☐ not run | ☐ |
+| M1 | Unlock with the PIN; Home renders (live price `$…`, 24h change, chart); switch chain in the selector; open a token detail; press back. No visual regression | ☐ not run (only the Unlock screen was verified, above) | ☐ |
+| M2 | Crash watch across that walk | ☐ partial — 0 crashes so far, but the walk itself was not driven | ☐ |
+| M3 | Owner re-runs `./gradlew detekt ktlintCheck` on this tree and reports the exit codes (independent confirmation of A1) | ☐ not run | ☐ |
 
-Screenshots: *(none yet)*. Note the manual half is deliberately kept: this item rewrites 130
-files including production sources, so "it compiles and the unit suite passes" is not the same
-as "the app still renders".
+Screenshots captured: `/tmp/walk-01-launch.png` (cold start), `/tmp/walk-02-pin3.png` (3 digits),
+`/tmp/walk-04-cleared.png` (backspace). The app is installed and left sitting on the Unlock
+screen, so the walk can resume without reinstalling.
+
+**To finish the manual half** (owner, ~2 minutes):
+
+```bash
+S=10.42.0.139:33001
+adb -s $S logcat -c                                   # clear before the walk
+# unlock with the PIN, then: Home → chain selector → a token → back
+adb -s $S logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime"   # expect: empty
+adb -s $S exec-out screencap -p > home.png            # optional evidence
+./gradlew detekt ktlintCheck --continue; echo "gates exit=$?"   # expect 0
+```
+
+Note the manual half is deliberately kept: this item rewrites 130 files including production
+sources, so "it compiles and the unit suite passes" is not the same as "the app still renders".
 
 ## Decisions taken at implementation (2026-09-26)
 
@@ -118,6 +151,6 @@ as "the app still renders".
 | # | Step | State |
 | --- | --- | --- |
 | C1 | Automatic half | ✅ **GREEN** — A1–A7 above; both gates exit 0 |
-| C2 | Manual half (M1–M3) | ☐ owed — the owner walks the app on the Pixel 6a and reports |
+| C2 | Manual half (M1–M3) | ☐ owed — **partially run 2026-09-27**: branch APK installed on the Pixel 6a, cold start renders the Unlock screen, keypad/backspace verified, 0 crashes in `logcat`. The walk past the PIN (Home → chain switch → token detail → back) and the owner's gate re-run (M3) remain; the owner chose to finish them personally |
 | C3 | Roadmap row | **`[~]` implemented, not verified** — becomes `[x]` only after C2 |
 | C4 | Merge to `main`, push, delete the branch | ☐ owner action (2.0.4b precedent) |
