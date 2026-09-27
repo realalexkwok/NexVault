@@ -1,12 +1,11 @@
 # 2.0.5 — Turn both quality gates green — Validation record
 
-> **Status: CLOSED 2026-09-27 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed; the local feature
-> branch is deleted.** Basis: reviewer verification **PASS** on `b0dfb92…5b1bfb4` (`729d663`, V1–V10
-> + A4 — both gates confirmed green from a fully fresh `--rerun-tasks` run, 633 tasks). `[~]`, not
-> `[x]`, because the **manual half is only partially run**: install, cold start, Unlock screen,
-> keypad/backspace and 0 crashes were observed on the Pixel 6a on 2026-09-27, but M1's walk past the
-> PIN and M3 (owner re-runs the gates) have not happened. The row moves to `[x]` when they do —
-> the reviewer's own record says the same.
+> **Status: VERIFIED `[x]` — CLOSED 2026-09-27, MERGED TO `main` (`--no-ff`) and pushed; the local
+> feature branch is deleted.** Both halves passed: the automatic half is green and independently
+> reproduced by the reviewer (**PASS** on `b0dfb92…5b1bfb4`, `729d663`, V1–V10 + A4, from a fully
+> fresh `--rerun-tasks` run — 633 tasks, exit 0, zero findings), and the manual half passed on the
+> Pixel 6a on 2026-09-27 (owner-reported satisfied; corroborated by the device showing Home fully
+> rendered with live prices and a drawn chart, and by 0 crashes over the whole session).
 > `./gradlew detekt ktlintCheck --continue` is BUILD SUCCESSFUL (exit 0) for the first time in the
 > project's history. Requirements: `requirements.md` (Q1–Q4, AC-1…AC-8). Plan: `plan.md`.
 > Close record: §"Close / sign-off".
@@ -85,50 +84,41 @@ the code fixes.
 | 2 referenced classes replaced by imports | `AuthRepositoryImpl`, `SecurityPreferencesDataStore` | `com.nexvault.wallet.core.security.biometric.BiometricStatus` and `android.util.Base64` are imported instead of written out in full (all four `Base64` call sites, for coherence); this is what made the lines long |
 | 2 × `ComplexCondition` | `feature-auth/.../UnlockViewModel.kt` | `onDigitPressed` / `onBackspacePressed` guards extracted to a named `isInputBlocked` local. Behaviour unchanged; covered by existing `TC-UNLOCK-010` (6-digit cap) and `TC-UNLOCK-014` (input ignored while verifying), and the suite is green (A2) |
 
-## Manual half — device (Pixel 6a) — PARTIALLY RUN 2026-09-27, walk owed
+## Manual half — device (Pixel 6a) — PASSED 2026-09-27
 
-Device: **Pixel 6a (`bluejay`), now Android 17 / API 37** (upgraded since `dev-environment.md`
-recorded API 36), connected over adb **Wi-Fi**. Per the owner's rule (2026-09-27) the endpoint is
-**not** recorded: Wi-Fi adb drops when the device idles and reconnects elsewhere, so the address,
-port and serial are not stable identifiers — commands select the **first connected device**
-instead (`S="$(adb devices | awk 'NR==2 {print $1}')"`).
+Device: **Pixel 6a (`bluejay`), Android 17 / API 37** (upgraded since `dev-environment.md` recorded
+API 36), connected over adb **Wi-Fi**. Per the owner's rule (2026-09-27) the endpoint is **not**
+recorded: Wi-Fi adb drops when the device idles and reconnects elsewhere, so the address, port and
+serial are not stable identifiers — commands select the **first connected device** instead
+(`S="$(adb devices | awk 'NR==2 {print $1}')"`).
 
-**Run 2026-09-27 (agent, up to the unlock gate):**
+**Agent runs, 2026-09-27:**
 
 | # | Step | Observed |
 | --- | --- | --- |
 | — | `./gradlew :app:assembleDebug :app:installDebug` | `Installing APK 'app-debug.apk' on 'Pixel 6a - 17' for :app:debug` → `Installed on 1 device.` BUILD SUCCESSFUL, exit 0. On device: `versionCode=1 versionName=1.0 targetSdk=37`, `lastUpdateTime=2026-09-27 08:22:47` |
 | — | Cold start (`am force-stop` → `am start -n …/MainActivity`) | Unlock screen renders: logo, "NexVault", "Enter your PIN to unlock", 6 empty dots, full 0–9 + backspace keypad. Screenshot `/tmp/walk-01-launch.png` |
 | — | Keypad + feedback + backspace | Tapped `1 2 3` → exactly 3 dots filled (`/tmp/walk-02-pin3.png`); backspace ×3 → all 6 dots empty again (`/tmp/walk-04-cleared.png`). No shake/error state, no lockout (no PIN was ever submitted) |
-| — | Crash watch so far | `logcat -d \| grep -cE "FATAL EXCEPTION"` → **0**; no `AndroidRuntime` error, no ANR; `pidof com.nexvault.wallet.debug` non-empty several minutes after launch |
+| — | Post-walk corroboration (08:53) | The app was brought to the front at 08:52:18 and **Home is fully rendered** on the branch build — verified by screenshot `/tmp/walk-05-now.png`: Total Balance `$0.00` / `0.00% (24h)`, a drawn 7D price chart with the range chips (7D active), Send/Receive/Swap greyed with the "arrive in Phase 2 / Phase 3" caption, token rows `Ethereum 0 ETH $0.00 +0.2%` and `USD Coin 0 USDC $0.00 +0.0%` (live CoinGecko data), all five tabs present. `logcat` shows biometric/unlock activity for the package at 08:52:18 and the process alive throughout |
+| — | Crash watch (whole session 08:22 → 08:53) | `logcat -d \| grep -cE "FATAL EXCEPTION"` → **0**; no `AndroidRuntime` error, no ANR; `pidof com.nexvault.wallet.debug` non-empty from launch through the walk |
 
-**Not run — blocked at the unlock gate.** Home, chain switch and token detail are all behind the
-PIN, and the PIN is the owner's credential (never requested, never typed here). The owner chose
-"skip the app walk — I'll do it myself later" on 2026-09-27, so these rows stay open:
+**Owner's manual half — owner-reported PASS (2026-09-27):** "All expectations satisfied" for the
+walk and the gate re-run. Recorded with its granularity: the owner's report is the manual-half
+channel and the agent's independent corroboration above (Home rendered with live data, 0 crashes)
+supports it; no per-row console output or screenshots were attached to the owner's report.
 
 | # | Step | Observed | Verdict |
 | --- | --- | --- | --- |
-| M1 | Unlock with the PIN; Home renders (live price `$…`, 24h change, chart); switch chain in the selector; open a token detail; press back. No visual regression | ☐ not run (only the Unlock screen was verified, above) | ☐ |
-| M2 | Crash watch across that walk | ☐ partial — 0 crashes so far, but the walk itself was not driven | ☐ |
-| M3 | Owner re-runs `./gradlew detekt ktlintCheck` on this tree and reports the exit codes (independent confirmation of A1) | ☐ not run | ☐ |
+| M1 | Unlock with the PIN; Home renders (live price, 24h change, chart); chain selector; token detail; back. No visual regression | owner-reported satisfied; Home verified by screenshot (`/tmp/walk-05-now.png`) with live prices and a rendered chart — the state after the walk, on this build | ✅ |
+| M2 | Crash watch across that walk | **0** `FATAL EXCEPTION` / AndroidRuntime errors / ANRs over the entire session; process alive throughout | ✅ |
+| M3 | Owner re-runs `./gradlew detekt ktlintCheck` and reports the result | owner-reported satisfied (no console output attached). The agent's own post-merge run on `main` also exits **0** — that is automatic evidence A1, recorded separately, not M3 | ✅ (owner-reported) |
 
-Screenshots captured: `/tmp/walk-01-launch.png` (cold start), `/tmp/walk-02-pin3.png` (3 digits),
-`/tmp/walk-04-cleared.png` (backspace). The app is installed and left sitting on the Unlock
-screen, so the walk can resume without reinstalling.
+Screenshots: `/tmp/walk-01-launch.png` (cold start), `/tmp/walk-02-pin3.png` (3 digits),
+`/tmp/walk-04-cleared.png` (backspace), `/tmp/walk-05-now.png` (Home after the walk).
 
-**To finish the manual half** (owner, ~2 minutes):
-
-```bash
-S="$(adb devices | awk 'NR==2 {print $1}')"           # first connected device; endpoint varies
-adb -s "$S" logcat -c                                 # clear before the walk
-# unlock with the PIN, then: Home → chain selector → a token → back
-adb -s "$S" logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime"   # expect: empty
-adb -s "$S" exec-out screencap -p > home.png          # optional evidence
-./gradlew detekt ktlintCheck --continue; echo "gates exit=$?"   # expect 0
-```
-
-Note the manual half is deliberately kept: this item rewrites 130 files including production
-sources, so "it compiles and the unit suite passes" is not the same as "the app still renders".
+The manual half was kept deliberately: this item rewrites 130 files including production sources,
+so "it compiles and the unit suite passes" is not the same as "the app still renders" — and the
+screenshot is what turned the second claim from an assumption into an observation.
 
 ## Decisions taken at implementation (2026-09-26)
 
@@ -179,21 +169,22 @@ analyze `src/androidTest`; nothing runs the gates automatically; the device walk
 | --- | --- | --- |
 | C1 | Reviewer verification | ✅ **PASS** — reviewer commit `729d663` verifying `b0dfb92…5b1bfb4` (V1–V10 + A4; both gates re-run fully fresh, 633 tasks, exit 0) |
 | C2 | Implementation committed on the item branch | ✅ 6 commits: `b0dfb92` (config + mechanical formatting) → `f10701c` (15 hand fixes) → `dc6a0ad` (detekt) → `481f08f` (records/constitution) → `7bfd943` (partial device walk + API-37 device) → `5b1bfb4` (endpoint rule + reviewer checklist) |
-| C3 | Roadmap row | **`[~]` — implemented, NOT verified.** The automatic half is green and reviewer-passed; the manual half is only partially run, so `[x]` is not claimed. Owner decision: close the branch now, keep the row implemented-unverified (the 2.0.4b precedent) |
-| C4 | Merge to `main` and push | ✅ `--no-ff` merge commit, pushed to `origin/main`; local `feature/2.0.5-quality-gates` deleted |
-| C5 | Verification debt carried forward | M1 (walk past the PIN: Home → chain selector → token detail → back) and M3 (owner re-runs the gates) — 2 minutes, no funds needed. Resume: the branch is merged, so run them against `main`; then the row becomes `[x]` and this table gets the observed results. Steps and evidence slots: §"Manual half" |
+| C3 | Roadmap row | **`[x]` — VERIFIED 2026-09-27.** Automatic half green and reviewer-passed; manual half owner-reported satisfied the same day and corroborated on the device (§"Manual half") |
+| C4 | Merge to `main` and push | ✅ `--no-ff` merge commit `0985563`, pushed to `origin/main`; local `feature/2.0.5-quality-gates` deleted |
+| C5 | Verification debt carried forward | **none from this item** — M1/M2/M3 are closed above. The remaining Phase 2.0 verification debt is 2.0.4b's (M1/M2 suspended with the funding decision, M3–M5 owner-pending) |
 
-**Honesty notes.** (1) `[~]` is deliberate, not a hedge: both gates really are green — confirmed by
-the reviewer's own fresh `--rerun-tasks` run — but green gates are not a device walk, and the
-repo's rule is that both halves are required for `[x]`. (2) The APK size is informational only:
-the developer's build produced 47,986,669 bytes and the reviewer's fresh build 45,923,819 bytes
-(their V8 note); the invariants are the suite (274 / 0 / 1) and the gates, not the artifact size.
-(3) The device walk that did happen (install, cold start, Unlock screen, keypad, 0 crashes) is
-recorded as partial evidence and is **not** presented as M1/M2 passing. (4) Nothing in this item
-touches app behaviour beyond two behaviour-preserving guard extractions and a file rename; the
-risk the walk would catch is a rendering regression, which is exactly why the row stays `[~]`.
-(5) The style decision is reversible but not free: re-adopting ktlint's layout dialect means a
-future reformat item (see the Handoff list).
+**Honesty notes.** (1) The row became `[x]` only after both halves had evidence: the reviewer's
+independent fresh run (automatic) and the owner's walk plus the device screenshot showing Home
+rendered with live data (manual). Until then it deliberately sat at `[~]` — the same discipline
+2.0.4b is still under. (2) The manual half rests on the owner's report plus the agent's
+corroboration; the owner's "all expectations satisfied" is recorded as reported, and no per-row
+console output was attached to it — the screenshot is what makes the rendering claim an
+observation rather than an assumption. (3) The APK size is informational only: the developer's
+build produced 47,986,669 bytes and the reviewer's fresh build 45,923,819 bytes (their V8 note);
+the invariants are the suite (274 / 0 / 1) and the gates, not the artifact size. (4) Nothing in
+this item touches app behaviour beyond two behaviour-preserving guard extractions and a file
+rename, and the walk found no regression. (5) The style decision is reversible but not free:
+re-adopting ktlint's layout dialect means a future reformat item (see the Handoff list).
 
 ---
 
@@ -236,3 +227,12 @@ hand fixes are real fixes, and the constitution updates are true. The roadmap ro
 `[~]` until the owner completes the manual half (M1–M3) — the walk past the PIN and the owner's
 own gate re-run. Remaining for closure: the owner's manual-half evidence, then the owner merge of
 `feature/2.0.5-quality-gates` to `main`.
+
+### After this verdict (2026-09-27, same day)
+
+The reviewer's condition was met and the item is now **`[x]`**: the branch was merged (`0985563`,
+`--no-ff`), pushed, and deleted — the owner directed the close and reported the manual half
+satisfied, and the device independently showed Home rendered with live prices and a drawn chart on
+this build with 0 crashes across the whole session. See §"Manual half" and §"Close / sign-off".
+The verdict above is left exactly as the reviewer wrote it, including its `[~]` condition, which
+was correct at the time.

@@ -13,9 +13,9 @@ Before every write to disk, an **ask-user-question round** covering requirements
 must be answered by the user.
 
 **Standing gate:** the Phase 1.9 legacy code review gate is **closed** (2026-09-25,
-15/15 signed off). The open entry point is now the **Phase 2.0 remainder** — 2.0.5 is
-implemented with its device walk owed, then **2.0.6** (`specs/roadmap.md`); Phase 2.6+
-still waits on Phase 2.0.
+15/15 signed off). The open entry point is now the **Phase 2.0 remainder — 2.0.6** first
+(`specs/roadmap.md`); 2.0.5 (quality gates) is **verified `[x]`** as of 2026-09-27 — both
+gates green and the owner's device walk reported. Phase 2.6+ still waits on Phase 2.0.
 
 ## Part B — Project Constitution (authoritative)
 
@@ -99,8 +99,8 @@ See `specs/dev-environment.md` §7.)
 - Never write "done", "complete", or "works" in a validation record without a command
   and its observed result. Baseline 2026-09-21 (kept for contrast): 223 unit tests green
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
-  gates red. Current 2026-09-26: 274 tests green, the app walked on a Pixel 6a, both gates
-  green (2.0.5), 4 of 5 tabs still placeholders until Phase 2.6–2.8.
+  gates red. Current 2026-09-27: 274 tests green, the app walked on a Pixel 6a, both gates
+  green **and 2.0.5 verified `[x]`**, 4 of 5 tabs still placeholders until Phase 2.6–2.8.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes
@@ -109,7 +109,8 @@ See `specs/dev-environment.md` §7.)
    The owner's device of choice is a **physical Android device over USB**
    (decision 2026-09-21), not the emulator — installing one is not required. The app has
    been installed and walked on a Pixel 6a since 2026-09-25 (2.0.2b → 2.0.4), so the manual
-   half is a real, repeatable step; 2.0.4b's funded history rows and 2.0.5's walk are owed.
+   half is a real, repeatable step; 2.0.4b's funded history rows are still owed (2.0.5's walk
+   was completed 2026-09-27).
    See `specs/dev-environment.md`.
 
 ### Secrets

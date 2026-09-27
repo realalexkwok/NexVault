@@ -36,18 +36,18 @@ without evidence.
 > signed off.** Spec: `specs/features/2026-09-21-legacy-code-review/` (validation.md records the
 > gate closure and every finding handed to its owning item).
 >
-> **2.0.5 (quality gates) CLOSED 2026-09-27 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed, NOT
-> VERIFIED; the local feature branch is deleted.** Reviewer verification **PASS** on
-> `b0dfb92…5b1bfb4` (`729d663`), and both gates are green for the first time: `./gradlew detekt
-> ktlintCheck --continue` → BUILD SUCCESSFUL (exit 0), **detekt 65 → 0** and **ktlint 1556 → 0**,
-> with the build and the 274-test suite unchanged. `[~]` and not `[x]` because the manual half is
-> only partially run — the install, cold start, Unlock screen, keypad and a clean `logcat` were
-> observed on the Pixel 6a on 2026-09-27, but the walk past the PIN (M1) and the owner's gate re-run
-> (M3) are still owed; they are ~2 minutes and need no funds.
+> **2.0.5 (quality gates) CLOSED 2026-09-27 as `[x]` — VERIFIED, merged to `main` (`--no-ff`) and
+> pushed; the local feature branch is deleted.** Both halves passed. **Automatic:** both gates green
+> for the first time — `./gradlew detekt ktlintCheck --continue` → BUILD SUCCESSFUL (exit 0),
+> **detekt 65 → 0** and **ktlint 1556 → 0** — with the build and the 274-test suite unchanged, and
+> the reviewer reproducing it from a fully fresh `--rerun-tasks` run (`729d663`, 633 tasks, exit 0,
+> zero findings). **Manual:** the owner walked the app on the Pixel 6a on 2026-09-27 and reported it
+> satisfied, which the device corroborates — Home rendered with live prices and a drawn chart on
+> this build, 0 crashes across the whole session.
 > **The next open entry point is 2.0.6** (TC traceability). The Phase 2.0 remainder (2.0.6 → 2.0.7)
-> is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent). 2.0.4b's
-> device-walk evidence (M1/M2 suspended pending funding, M3–M5 owner-pending) and 2.0.5's M1/M3 are
-> the outstanding verification debt. Phase 2.6+ still waits on Phase 2.0.
+> is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent). The
+> outstanding verification debt is now solely 2.0.4b's (M1/M2 suspended pending funding, M3–M5
+> owner-pending). Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -403,17 +403,16 @@ surfaced as distinct states, masked `curl` returning `status:"1"` on 1/11155111/
 listing real history on the Pixel 6a (and the plan notice on BSC), and detekt/ktlint not worse than
 the merge base.
 
-### 2.0.5 — Turn both quality gates green `[~]`
-**CLOSED 2026-09-27 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed, NOT VERIFIED; the local
-feature branch is deleted.** Basis: reviewer verification **PASS** on `b0dfb92…5b1bfb4`
-(`729d663`, V1–V10 + A4 — both gates re-run from a fully fresh `--rerun-tasks` execution, 633
-tasks, exit 0, zero findings). `[~]` and not `[x]` because the **manual half is only partially
-run**: the branch APK was installed and cold-started on the Pixel 6a (Unlock screen renders,
-keypad/backspace behave, 0 crashes in `logcat`), but the walk past the PIN and the owner's own
-gate re-run (M3) have not happened. Own spec:
+### 2.0.5 — Turn both quality gates green `[x]`
+**CLOSED 2026-09-27 as `[x]` — VERIFIED, merged to `main` (`--no-ff`) and pushed; the local feature
+branch is deleted.** Basis: reviewer verification **PASS** on `b0dfb92…5b1bfb4` (`729d663`, V1–V10 +
+A4 — both gates re-run from a fully fresh `--rerun-tasks` execution, 633 tasks, exit 0, zero
+findings) for the automatic half, and the owner's device walk on the Pixel 6a the same day for the
+manual half — reported satisfied and corroborated by the device showing Home fully rendered with
+live prices and a drawn chart on this build, 0 crashes across the session. Own spec:
 `specs/features/2026-09-26-2.0.5-quality-gates/` (requirements with the owner Q1–Q4 and the
-disabled-rule inventory, plan, validation with the automatic evidence and the close record). The
-row moves to `[x]` when M1/M3 pass — ~2 minutes, no funds needed.
+disabled-rule inventory, plan, validation with the automatic evidence, the manual half and the
+close record).
 
 Baseline at `main` (`aa539d6`), re-measured on the Linux host: **1556 ktlint findings across 184
 files** and **65 detekt issues / 78 weighted**, both gates exit 1. (The 1656/178 and 75 figures
@@ -450,12 +449,13 @@ ktlint 1556 → 0); `:app:assembleDebug testDebugUnitTest :domain:test --continu
 `/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk` (47,986,669 bytes);
 0 tracked Kotlin lines above 120 characters; per-rule attribution in `validation.md` §A3.
 
-Exit criteria (AC-1…AC-8 of the item's `requirements.md`): AC-1…AC-7 ✅ met with that evidence and
-confirmed by the reviewer; AC-8 (both verification halves) ☐ — the device walk is the open half, so
-the row is `[~]` and this item is **not** done.
+Exit criteria (AC-1…AC-8 of the item's `requirements.md`): **all eight ✅ met** — AC-1…AC-7 with the
+evidence above (reviewer-confirmed), AC-8 by the owner's device walk the same day. The item is
+**done**: `[x]`.
 
-Close record: `validation.md` §"Close / sign-off" (reviewer PASS `729d663`, six commits
-`b0dfb92…5b1bfb4`, `--no-ff` merge, branch deleted, the owed M1/M3 rows and the honesty notes).
+Close record: `validation.md` §"Close / sign-off" (reviewer PASS `729d663`, seven commits
+`b0dfb92…0eb34f4` plus this verification update, `--no-ff` merge `0985563`, branch deleted, the
+manual half and the honesty notes).
 
 ### 2.0.6 — Build the TC traceability `[ ]`
 `doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
