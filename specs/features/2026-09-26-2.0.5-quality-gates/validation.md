@@ -82,10 +82,11 @@ the code fixes.
 
 ## Manual half — device (Pixel 6a) — PARTIALLY RUN 2026-09-27, walk owed
 
-Device: Pixel 6a `bluejay`, serial `26111jEGR13989`, **now Android 17 / API 37** (upgraded since
-`dev-environment.md` recorded API 36), connected over adb Wi-Fi. `adb` listed the phone twice
-(TCP `10.42.0.139:33001` and an mDNS entry) with the same serial, so every command was pinned
-with `-s`.
+Device: **Pixel 6a (`bluejay`), now Android 17 / API 37** (upgraded since `dev-environment.md`
+recorded API 36), connected over adb **Wi-Fi**. Per the owner's rule (2026-09-27) the endpoint is
+**not** recorded: Wi-Fi adb drops when the device idles and reconnects elsewhere, so the address,
+port and serial are not stable identifiers — commands select the **first connected device**
+instead (`S="$(adb devices | awk 'NR==2 {print $1}')"`).
 
 **Run 2026-09-27 (agent, up to the unlock gate):**
 
@@ -94,7 +95,7 @@ with `-s`.
 | — | `./gradlew :app:assembleDebug :app:installDebug` | `Installing APK 'app-debug.apk' on 'Pixel 6a - 17' for :app:debug` → `Installed on 1 device.` BUILD SUCCESSFUL, exit 0. On device: `versionCode=1 versionName=1.0 targetSdk=37`, `lastUpdateTime=2026-09-27 08:22:47` |
 | — | Cold start (`am force-stop` → `am start -n …/MainActivity`) | Unlock screen renders: logo, "NexVault", "Enter your PIN to unlock", 6 empty dots, full 0–9 + backspace keypad. Screenshot `/tmp/walk-01-launch.png` |
 | — | Keypad + feedback + backspace | Tapped `1 2 3` → exactly 3 dots filled (`/tmp/walk-02-pin3.png`); backspace ×3 → all 6 dots empty again (`/tmp/walk-04-cleared.png`). No shake/error state, no lockout (no PIN was ever submitted) |
-| — | Crash watch so far | `logcat -d \| grep -cE "FATAL EXCEPTION"` → **0**; no `AndroidRuntime` error, no ANR; app process alive (`pidof` → 20576) several minutes after launch |
+| — | Crash watch so far | `logcat -d \| grep -cE "FATAL EXCEPTION"` → **0**; no `AndroidRuntime` error, no ANR; `pidof com.nexvault.wallet.debug` non-empty several minutes after launch |
 
 **Not run — blocked at the unlock gate.** Home, chain switch and token detail are all behind the
 PIN, and the PIN is the owner's credential (never requested, never typed here). The owner chose
@@ -113,11 +114,11 @@ screen, so the walk can resume without reinstalling.
 **To finish the manual half** (owner, ~2 minutes):
 
 ```bash
-S=10.42.0.139:33001
-adb -s $S logcat -c                                   # clear before the walk
+S="$(adb devices | awk 'NR==2 {print $1}')"           # first connected device; endpoint varies
+adb -s "$S" logcat -c                                 # clear before the walk
 # unlock with the PIN, then: Home → chain selector → a token → back
-adb -s $S logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime"   # expect: empty
-adb -s $S exec-out screencap -p > home.png            # optional evidence
+adb -s "$S" logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime"   # expect: empty
+adb -s "$S" exec-out screencap -p > home.png          # optional evidence
 ./gradlew detekt ktlintCheck --continue; echo "gates exit=$?"   # expect 0
 ```
 
@@ -145,6 +146,27 @@ sources, so "it compiles and the unit suite passes" is not the same as "the app 
 | Nothing runs the gates automatically | Green today only means green when someone runs them | 4.3 |
 | `spotless` is still a no-op | Applied with no configuration block; must never be cited as evidence | 4.6 |
 | 2.0.4b M1/M2 (funding) and M3–M5 (owner-pending) | Untouched by this item; its automatic half is re-run here, its manual half is still owed | 2.0.4b |
+
+## Reviewer handoff — requested 2026-09-27 (developer note, not a verdict)
+
+The owner opened a code-reviewer session over the branch. What it is asked to verify, in the
+2.0.4b R1–R10 style — nothing below is claimed as verified by the reviewer:
+
+| # | Claim to check | Where the evidence is |
+| --- | --- | --- |
+| V1 | `.editorconfig` disables exactly the 11 named layout rules, sets only the Compose naming property, and nothing else is loosened anywhere | `.editorconfig` vs `requirements.md` §"What the ktlint decision means" |
+| V2 | The 1556 → 0 attribution adds up and no finding is quietly dropped (1128 disabled / 93 naming / 320 auto-fixed / 15 in code) | §A3 table + a fresh `ktlintCheck` run |
+| V3 | Commit 1 changes no logic: whitespace, import order/removal and trailing commas only, plus the two named cosmetic rewrites | `git diff --ignore-all-space --ignore-blank-lines b0dfb92^ b0dfb92` |
+| V4 | The 15 hand fixes are real fixes, not disables (11 wildcard imports → explicit symbols, 2 literals split with identical values, file rename, backing-property rename) | `git show f10701c` |
+| V5 | detekt's two config decisions are the only loosening, both justified and counted; `maxIssues: 0`, `MaxLineLength: 120` and `ComplexCondition: 3` are unchanged | `git show dc6a0ad -- config/detekt/detekt.yml` |
+| V6 | The 2 `ComplexCondition` extractions are behaviour-preserving and covered by existing tests | `UnlockViewModel.kt` + `TC-UNLOCK-010/014` in `UnlockViewModelTest` |
+| V7 | Both gates really exit 0, from a clean state, with the same numbers | `./gradlew detekt ktlintCheck --continue; echo $?` |
+| V8 | The suite and APK are unchanged (274 / 0 / 1, 47,986,669 bytes) | `./gradlew :app:assembleDebug testDebugUnitTest :domain:test --continue` |
+| V9 | The record is honest about what was **not** done: M1/M2 partial, M3 not run, AC-8 open, row `[~]` | §"Manual half" and §"Close" |
+| V10 | The constitution updates are true (roadmap row, tech-stack §6/§9, mission, AGENTS, dev-environment) and the API-37 device change is recorded without a hard-coded endpoint | `git show 481f08f 7bfd943` |
+
+Known gaps the reviewer should not have to discover: `spotless` remains a no-op; detekt does not
+analyze `src/androidTest`; nothing runs the gates automatically; the device walk is unfinished.
 
 ## Close / sign-off — pending
 

@@ -53,7 +53,7 @@ build still works.
 | `emulator` package | ❌ not installed — **not required** (owner uses a physical device) |
 | System images | `android-25;google_apis`, `android-29;default`, `android-30;{google_apis,aosp_atd,default,google_apis_playstore}`, `android-33;{google_apis,default,google_apis_playstore,android-desktop}`, `android-36.1;google_apis_playstore;arm64-v8a` |
 | Configured AVDs | none (`~/.android/avd` is empty) — not required |
-| Connected device | ✅ **Pixel 6a** (`bluejay`, serial `26111jEGR13989`), **Android 17 / API 37** since 2026-09-27 (was API 36 when this doc was written), over adb Wi-Fi |
+| Connected device | ✅ **Pixel 6a** (`bluejay`), **Android 17 / API 37** since 2026-09-27 (was API 36 when this doc was written), over adb **Wi-Fi** — the endpoint changes when the device idles, so it is deliberately **not** recorded; select the first device from `adb devices` |
 
 Toolchain raised to SDK 37 on 2026-09-21 (owner-approved). The 36.x packages are still
 installed, so a rollback needs no download.
@@ -63,9 +63,19 @@ installed, so a rollback needs no download.
 item 4.15 asked for that verification before 3.7 — it is satisfied by the device being on 37, as
 long as future walks record it.
 
-**adb note:** the phone can appear twice (`10.42.0.139:33001` over TCP and an
-`adb-<serial>._adb-tls-connect._tcp` mDNS entry) with the same serial. Any command that must not
-hit the wrong device should pin `-s`.
+**adb note (owner rule, 2026-09-27):** the phone is connected **over Wi-Fi, and the endpoint
+changes** — adb drops the transport when the device idles and reconnects on a different
+`ip:port`. Do **not** record or hard-code the address, port or serial anywhere, and do not treat
+them as identifiers. Take the **first connected device** instead:
+
+```bash
+S="$(adb devices | awk 'NR==2 {print $1}')"     # first connected device, whatever its endpoint
+adb -s "$S" shell getprop ro.product.model
+```
+
+The same phone can also appear twice at once (the TCP endpoint plus an
+`adb-<serial>._adb-tls-connect._tcp` mDNS entry); both resolve to the same physical device, and
+`awk 'NR==2'` picks whichever is listed first, so a stale duplicate is harmless.
 
 ## 3. Device setup for the manual verification half
 
