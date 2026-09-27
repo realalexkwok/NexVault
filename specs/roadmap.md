@@ -44,10 +44,17 @@ without evidence.
 > zero findings). **Manual:** the owner walked the app on the Pixel 6a on 2026-09-27 and reported it
 > satisfied, which the device corroborates — Home rendered with live prices and a drawn chart on
 > this build, 0 crashes across the whole session.
-> **The next open entry point is 2.0.6** (TC traceability). The Phase 2.0 remainder (2.0.6 → 2.0.7)
-> is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent). The
-> outstanding verification debt is now solely 2.0.4b's (M1/M2 suspended pending funding, M3–M5
-> owner-pending). Phase 2.6+ still waits on Phase 2.0.
+> **2.0.6 (TC traceability) implemented 2026-09-27 on `feature/2.0.6-tc-traceability` — automatic
+> half green, TC-INT-001 E2E passed on the Pixel 6a, closing pending the owner's confirmation**
+> (roadmap row `[~]`). All 52 `doc/07` ids now traced — 25 mapped to test methods carrying
+> `// TC-XXX-NNN` markers (audit-proven, zero orphans), 27 registered to named owners; suite
+> **274 → 299 tests / 0 failures**; both gates green; one production defect found and fixed
+> (the 2.0.4/2.0.4b token-detail notices were dead states). Evidence:
+> `specs/features/2026-09-27-2.0.6-tc-traceability/validation.md`.
+> **After 2.0.6 closes, the next open entry point is 2.0.7** (record and close). The Phase 2.0
+> remainder is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent).
+> The outstanding verification debt is now solely 2.0.4b's (M1/M2 suspended pending funding,
+> M3–M5 owner-pending). Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -457,7 +464,7 @@ Close record: `validation.md` §"Close / sign-off" (reviewer PASS `729d663`, sev
 `b0dfb92…0eb34f4` plus this verification update, `--no-ff` merge `0985563`, branch deleted, the
 manual half and the honesty notes).
 
-### 2.0.6 — Build the TC traceability `[ ]`
+### 2.0.6 — Build the TC traceability `[~]`
 `doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
 TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). No test method references a TC id, so
 nobody can tell which specified behaviours are actually covered.
@@ -465,6 +472,18 @@ nobody can tell which specified behaviours are actually covered.
 Exit criteria: each TC id is mapped to a test method, or registered as an unimplemented
 roadmap item. The 10 TC-UI cases have no home at all today — the only instrumented test
 is the `ExampleInstrumentedTest` template stub.
+
+**Implemented 2026-09-27 on `feature/2.0.6-tc-traceability` (verification pending — see the
+item's `requirements.md` Q1–Q5 and `traceability.md`):** 25 of 52 ids are mapped to test methods
+with `// TC-XXX-NNN` markers (8 new test files/classes incl. the Robolectric `NexVaultDaoTest` and
+the TC-INT-001 instrumented creation-flow E2E; 3 existing tests strengthened, 1 misleadingly named
+test renamed), and 27 are registered as unimplemented with named owners (2.6 ×8, 2.8 ×2, 3.1/3.2/3.3
+×1 each, 3.4 ×3, 4.7 ×3, 4.8 ×2, 4.13 ×1, 4.18 ×5). The legacy CR findings 1.2-5/2.1-1/2.2-1/2.4-1/
+2.5-1 are closed or replanned by it, and it fixes one production defect found by its own new tests:
+`RefreshTransactionHistoryUseCase` swallowed the repository's `DataResult`, so the 2.0.4/2.0.4b
+token-detail notices (missing key, plan gate) were dead states. The roadmap row's earlier
+"only instrumented test is the template stub" claim was already stale — `BackupPolicyTest`
+(3 device tests) has existed since 2.0.2.
 
 ### 2.0.7 — Record and close `[ ]`
 Write `specs/features/2026-09-20-2.0.0-stabilization/validation.md` covering 2.0.1–2.0.6
@@ -543,6 +562,7 @@ already in the version catalog for 3.5 and 3.1.
 | 4.15 | ~~Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36.~~ **PREMISE GONE 2026-09-27** — the Pixel 6a was upgraded to **Android 17 / API 37**, so the 2.0.x device walks run on the target API. Keep the item only if a dedicated `targetSdk`-behaviour pass is still wanted before 3.7; otherwise close it. |
 | 4.16 | Migrate `hiltViewModel` to `androidx.hilt.lifecycle.viewmodel.compose` — the old `androidx.hilt.navigation.compose` entry point is deprecated. Surfaced by the first build on the remote host; handle alongside the next `hilt-navigation-compose` bump. |
 | 4.17 | Adopt design tokens, string resources and component previews across feature modules and `core-ui` (legacy CR findings 1.2-1 … 1.2-4; owner-approved 2026-09-21). |
+| 4.18 | Instrumented Compose UI tests for the screens that already exist — Welcome, CreateWallet, `PinInputField`, Home token list and pull-to-refresh (TC-UI-001…005 registered by 2.0.6, incl. the 2.0.2b onboarding-grid handoff and the finding 1.2-5 composable residue). Screen-level TC-UI cases for later screens land with their feature items (2.6/2.8/3.2/3.4). |
 
 ---
 

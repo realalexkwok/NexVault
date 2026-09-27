@@ -231,7 +231,7 @@ so nothing failed.
 | kotlinx-coroutines-test (G2) | **1.11.0** (was 1.10.2) | `runTest`, `advanceUntilIdle` |
 | Turbine | 1.2.1 | Flow assertions — already latest |
 | Truth | 1.4.5 | Fluent assertions — already latest |
-| Robolectric (G2) | **4.17** (was 4.16.1) | JVM Android tests (declared, not yet used) |
+| Robolectric (G2) | **4.17** (was 4.16.1) | **Used since 2.0.6** for the Room DAO tests in `core/core-database` (in-memory `NexVaultDatabase`); before that it was declared but unused. The module's `testOptions` add `--add-opens=java.base/jdk.internal.access=ALL-UNNAMED` for JDK 17 |
 | `androidx.compose.ui:ui-test-*` (G3) | **1.12.1** (was 1.10.5) | Compose UI tests — moves with the BOM |
 | `hilt-android-testing` (G2) | **2.60.1** (was 2.59.2) | DI-aware tests — tracks the Hilt version |
 | JUnit 5 (`junit-jupiter` 6.0.3 → 6.1.3 available) | — | **Catalog-only, unused.** Either adopt or delete — open decision in Phase 4 |
@@ -239,25 +239,31 @@ so nothing failed.
 Test layout: `<module>/src/test/java/...` mirrors the main source package.
 Instrumented tests live in `app/src/androidTest/`.
 
-**Measured state (2026-09-20; `core-security` row updated 2026-09-21 by 2.0.1)** — see
-`roadmap.md` Phase 2.0 for the remediation plan:
+**Measured state (2026-09-20; core-security row updated 2026-09-21 by 2.0.1; module rows
+refreshed 2026-09-27 by 2.0.6)** — see `roadmap.md` Phase 2.0 for the remediation plan:
 
 | Module | Tests | Result |
 | --- | --- | --- |
-| `domain` | 63 | pass |
-| `feature-onboarding` | 30 | pass |
-| `core-datastore` | 27 | pass |
-| `data` | 27 | pass |
-| `feature-auth` | 14 | pass |
-| `app` | 1 | pass (template stub) |
-| `core-security` | 61 | pass (1 skipped) — **compiled and ran for the first time on 2026-09-21**; was 64 tests that never built |
-| `core-network`, `core-database`, `core-ui`, `feature-home`, `feature-tokens` | 0 | no tests at all |
+| `domain` | 71 | pass |
+| `core-security` | 64 | pass (1 skipped) — compiled and ran for the first time on 2026-09-21 |
+| `data` | 53 | pass |
+| `feature-onboarding` | 35 | pass |
+| `core-datastore` | 29 | pass |
+| `core-network` | 20 | pass — was 0 until 2.0.4/2.0.4b (explorer tests) + 2.0.6 (TC-NET adapter tests) |
+| `feature-auth` | 15 | pass (was 14; +1 TC-VM-009 lockout test in 2.0.6) |
+| `feature-tokens` | 6 | pass — was 0 until 2.0.6 (`TokenDetailViewModelTest`) |
+| `core-database` | 3 | pass — was 0 until 2.0.6 (`NexVaultDaoTest`, Robolectric) |
+| `feature-home` | 2 | pass — was 0 until 2.0.6 (`HomeViewModelTest`) |
+| `app` | 1 | pass (unit) + **3 instrumented** (`BackupPolicyTest`) + **1 E2E** (`CreationFlowE2ETest`, TC-INT-001) |
 
-Repository total: **223 tests, 222 passing, 1 skipped, 0 failing** (2026-09-21).
+Repository total: **299 unit tests, 298 passing, 1 skipped, 0 failing** (2026-09-27) plus
+4 instrumented device tests.
 
 `doc/07-TEST-CASES.md` defines 52 test cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
-TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). Nothing maps a TC id to a test method
-today; building that traceability is Phase 2.0.6.
+TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). Since 2.0.6 (2026-09-27) every id is
+traced: 25 are mapped to test methods carrying `// TC-XXX-NNN` markers, 27 are registered
+as unimplemented with named owning roadmap items — the authoritative register is
+`specs/features/2026-09-27-2.0.6-tc-traceability/traceability.md`.
 
 ## 6. Quality gates
 

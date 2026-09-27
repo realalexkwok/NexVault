@@ -168,6 +168,7 @@ decision is **2.0.5** and was deliberately not taken here.
 | Repo-wide ktlint reformat / `.editorconfig` decision | Style-vocabulary conflict, untouched on purpose | **2.0.5** |
 | detekt `TooManyFunctions` on `WalletRepository` (now 14/11) and `WalletRepositoryImpl` (19/11) | Threshold decision belongs to the same gate item; the ratios grew because this item added the `generateWallet`/`completeOnboarding` contract | **2.0.5** |
 | Instrumented UI tests for the onboarding screens (incl. the grid layout that D1 crashed on) | TC-UI has no home yet | **2.0.6** |
+| ^ — resolved by 2.0.6 (2026-09-27): replanned to **4.18** (new roadmap row owning TC-UI-001…005; see `2026-09-27-2.0.6-tc-traceability/requirements.md` handoff table) | | |
 | PIN-based re-key of wallet material, biometric PIN recovery, change-PIN re-key | Owner decision Q2 chose KeyStore-only + session gate for this round | Unassigned — security hardening (**4.7**-adjacent) |
 | Replacing the reactive root router (roadmap option C) | Out of scope per Q1; the session-first ordering plus `NonCancellable` completion removes the mid-flow class for onboarding | Unassigned — revisit if another mid-flow swap appears |
 | Settings-screen behaviour after deleting the last wallet (`V2`) | No production caller yet; 3.4 will exercise it | **3.4** |
