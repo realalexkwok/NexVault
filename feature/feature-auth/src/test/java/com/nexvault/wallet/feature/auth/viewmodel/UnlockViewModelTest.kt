@@ -26,7 +26,6 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UnlockViewModelTest {
-
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
@@ -141,7 +140,7 @@ class UnlockViewModelTest {
     fun `TC-UNLOCK-006 incorrect PIN shows error with remaining attempts`() = testScope.runTest {
         coEvery { verifyPinUseCase.invoke("000000") } returns AuthResult.Failed(
             remainingAttempts = 4,
-            message = "Incorrect PIN"
+            message = "Incorrect PIN",
         )
 
         val viewModel = createViewModel()
@@ -223,7 +222,7 @@ class UnlockViewModelTest {
     fun `TC-UNLOCK-011 clear shake error after animation`() = testScope.runTest {
         coEvery { verifyPinUseCase.invoke("000000") } returns AuthResult.Failed(
             remainingAttempts = 4,
-            message = "Incorrect PIN"
+            message = "Incorrect PIN",
         )
 
         val viewModel = createViewModel()

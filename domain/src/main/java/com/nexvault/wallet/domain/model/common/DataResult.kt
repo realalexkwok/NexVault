@@ -6,6 +6,7 @@ package com.nexvault.wallet.domain.model.common
  */
 sealed interface DataResult<out T> {
     data class Success<T>(val data: T) : DataResult<T>
+
     data class Error(
         val exception: Throwable,
         val message: String? = null,

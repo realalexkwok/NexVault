@@ -108,20 +108,35 @@ Dark theme is the default and currently the only theme (`NexVaultTheme(darkTheme
 - **Two-sided verification.** Every item needs an automatic half (Gradle tests, build,
   gates — with absolute artifact paths) and a manual half (the owner runs the app).
 
-## Current reality (2026-09-20)
+## Current reality (baseline 2026-09-20, kept honest on 2026-09-26)
 
-Recorded here so no reader mistakes intent for achievement:
+Recorded here so no reader mistakes intent for achievement. The plain lines are the
+2026-09-20 measurement; every `→` note is what has moved since, with its owning item.
 
 - The app **compiles and packages** (`app/build/outputs/apk/debug/app-debug.apk`), and
   162 unit tests across 6 modules pass.
+  → **274 tests / 0 failures / 0 errors / 1 skipped** as of 2026-09-26 (2.0.5).
 - The app has **never been run on a device or emulator** — no emulator is installed and
   no AVD exists. Every "the screen works" claim in the archive is therefore unverified.
+  → **refuted 2026-09-21**: a physical Pixel 6a is attached, and the app has been built,
+    installed, launched and walked through onboarding, unlock and the network-backed screens
+    (2.0.2, 2.0.2b, 2.0.3, 2.0.4). 2.0.4b's funded history rows are still owed.
 - The `core-security` test suite (64 tests) **does not compile** and has never run.
+  → **fixed 2026-09-21** by 2.0.1: the suite compiles, 61 tests run, 1 is skipped.
 - Both quality gates fail: 1656 ktlint violations across 178 files, 75 detekt issues
   against `maxIssues: 0`.
+  → **fixed 2026-09-26** by 2.0.5: `./gradlew detekt ktlintCheck` → BUILD SUCCESSFUL
+    (exit 0), detekt 65 → 0 and ktlint 1556 → 0 at that date (the 2026-09-20 numbers were
+    75 / 1656). The item's device walk is still owed, and nothing runs the gates
+    automatically until 4.3 adds CI.
 - 4 of the 5 main tabs are placeholders; send / receive / swap / history callbacks in
   the main scaffold are empty functions.
+  → still true; 2.0.3 disabled the dead controls with visible captions, and Phase 2.6–2.8
+    implement the destinations.
 - All five API keys in `local.properties` are placeholders, so every network-backed
   screen is expected to degrade until real keys are supplied.
+  → **superseded 2026-09-25** by 2.0.4: real keys are supplied and are the supported path;
+    a key-absent surface shows an explicit "Not configured" state instead of degrading
+    silently.
 
 See `roadmap.md` → **Phase 2.0** for the plan that closes these gaps.

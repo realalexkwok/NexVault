@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface NftDao {
-
     /**
      * Observes all NFTs for a wallet on a specific chain.
      *

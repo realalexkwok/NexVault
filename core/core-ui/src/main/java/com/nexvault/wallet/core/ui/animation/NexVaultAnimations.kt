@@ -25,13 +25,13 @@ object NexVaultAnimations {
             animationSpec = tween(
                 durationMillis = durationMillis,
                 easing = FastOutSlowInEasing,
-            )
+            ),
         ) + slideInVertically(
             initialOffsetY = { it / 4 },
             animationSpec = tween(
                 durationMillis = durationMillis,
                 easing = FastOutSlowInEasing,
-            )
+            ),
         )
     }
 
@@ -42,16 +42,17 @@ object NexVaultAnimations {
             animationSpec = tween(
                 durationMillis = durationMillis,
                 easing = FastOutSlowInEasing,
-            )
+            ),
         ) + slideOutVertically(
             targetOffsetY = { it / 4 },
             animationSpec = tween(
                 durationMillis = durationMillis,
                 easing = FastOutSlowInEasing,
-            )
+            ),
         )
     }
 
     fun defaultEnterTransition(): EnterTransition = fadeSlideInVertically()
+
     fun defaultExitTransition(): ExitTransition = fadeSlideOutVertically()
 }

@@ -48,7 +48,7 @@ fun EmptyStateView(
         when {
             lottieResId != null -> {
                 val composition by rememberLottieComposition(
-                    LottieCompositionSpec.RawRes(lottieResId)
+                    LottieCompositionSpec.RawRes(lottieResId),
                 )
                 LottieAnimation(
                     composition = composition,

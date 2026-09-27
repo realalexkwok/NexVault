@@ -6,13 +6,14 @@ import com.nexvault.wallet.domain.model.common.InsufficientBalanceException
 import com.nexvault.wallet.domain.model.common.InvalidAddressException
 import com.nexvault.wallet.domain.model.common.InvalidMnemonicException
 import com.nexvault.wallet.domain.model.common.InvalidPrivateKeyException
-import com.nexvault.wallet.domain.model.common.NexVaultException
 import com.nexvault.wallet.domain.model.common.NetworkException
+import com.nexvault.wallet.domain.model.common.NexVaultException
 import com.nexvault.wallet.domain.model.common.TransactionFailedException
 import com.nexvault.wallet.domain.model.common.WalletAlreadyExistsException
 import com.nexvault.wallet.domain.model.common.WalletNotFoundException
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.Assert.*
 
 class ExceptionsTest {
     @Test

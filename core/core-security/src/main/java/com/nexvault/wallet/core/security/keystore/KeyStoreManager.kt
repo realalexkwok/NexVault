@@ -4,20 +4,17 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.security.KeyStore
-import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
-import javax.crypto.SecretKeyFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class KeyStoreManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
     companion object {
         private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
@@ -43,12 +40,12 @@ class KeyStoreManager @Inject constructor(
     private fun generateMasterKey(): SecretKey {
         val keyGenerator = KeyGenerator.getInstance(
             KeyProperties.KEY_ALGORITHM_AES,
-            KEYSTORE_PROVIDER
+            KEYSTORE_PROVIDER,
         )
 
         val builder = KeyGenParameterSpec.Builder(
             MASTER_KEY_ALIAS,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
         )
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -74,12 +71,12 @@ class KeyStoreManager @Inject constructor(
     private fun generateBiometricKey(): SecretKey {
         val keyGenerator = KeyGenerator.getInstance(
             KeyProperties.KEY_ALGORITHM_AES,
-            KEYSTORE_PROVIDER
+            KEYSTORE_PROVIDER,
         )
 
         val builder = KeyGenParameterSpec.Builder(
             BIOMETRIC_KEY_ALIAS,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
         )
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -87,7 +84,7 @@ class KeyStoreManager @Inject constructor(
             .setUserAuthenticationRequired(true)
             .setUserAuthenticationParameters(
                 0,
-                KeyProperties.AUTH_BIOMETRIC_STRONG
+                KeyProperties.AUTH_BIOMETRIC_STRONG,
             )
             .setInvalidatedByBiometricEnrollment(true)
 
@@ -114,11 +111,11 @@ class KeyStoreManager @Inject constructor(
         return try {
             val keyGenerator = KeyGenerator.getInstance(
                 KeyProperties.KEY_ALGORITHM_AES,
-                KEYSTORE_PROVIDER
+                KEYSTORE_PROVIDER,
             )
             val spec = KeyGenParameterSpec.Builder(
                 STRONGBOX_PROBE_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT
+                KeyProperties.PURPOSE_ENCRYPT,
             )
                 .setIsStrongBoxBacked(true)
                 .setKeySize(256)

@@ -18,7 +18,6 @@ import org.junit.Test
  * function-count threshold.
  */
 class AppStateManagerSessionTest {
-
     private lateinit var userPreferences: UserPreferencesDataStore
     private lateinit var securityPreferences: SecurityPreferencesDataStore
     private lateinit var appStateManager: AppStateManager
@@ -39,7 +38,7 @@ class AppStateManagerSessionTest {
             securityPreferences = securityPreferences,
             walletMetadata = mockk(relaxed = true),
             walletStore = mockk(relaxed = true),
-            keyStoreManager = mockk(relaxed = true)
+            keyStoreManager = mockk(relaxed = true),
         )
     }
 

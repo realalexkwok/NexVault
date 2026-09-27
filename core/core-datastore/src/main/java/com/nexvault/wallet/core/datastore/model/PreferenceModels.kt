@@ -3,7 +3,7 @@ package com.nexvault.wallet.core.datastore.model
 enum class ThemeMode {
     LIGHT,
     DARK,
-    SYSTEM
+    SYSTEM,
 }
 
 /**
@@ -17,7 +17,7 @@ enum class NetworkType {
     MAINNET,
     SEPOLIA,
     BSC,
-    POLYGON
+    POLYGON,
 }
 
 enum class AutoLockTimeout(val seconds: Long) {
@@ -26,7 +26,8 @@ enum class AutoLockTimeout(val seconds: Long) {
     FIVE_MINUTES(300),
     FIFTEEN_MINUTES(900),
     THIRTY_MINUTES(1800),
-    NEVER(-1);
+    NEVER(-1),
+    ;
 
     companion object {
         fun fromSeconds(seconds: Long): AutoLockTimeout {

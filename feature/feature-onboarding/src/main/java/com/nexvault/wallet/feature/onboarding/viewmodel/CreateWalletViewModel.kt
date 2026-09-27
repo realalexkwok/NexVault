@@ -37,7 +37,6 @@ class CreateWalletViewModel @Inject constructor(
     internal val generateWalletDraftUseCase: GenerateWalletDraftUseCase,
     internal val createWalletUseCase: CreateWalletUseCase,
 ) : ViewModel() {
-
     data class UiState(
         val mnemonicWords: List<String> = emptyList(),
         val walletId: String = "",
@@ -119,7 +118,7 @@ class CreateWalletViewModel @Inject constructor(
                         )
                     }
                     _navigationEvent.tryEmit(
-                        NavigationEvent.NavigateToVerifyMnemonic(result.data.walletId)
+                        NavigationEvent.NavigateToVerifyMnemonic(result.data.walletId),
                     )
                 }
                 is DataResult.Error -> {

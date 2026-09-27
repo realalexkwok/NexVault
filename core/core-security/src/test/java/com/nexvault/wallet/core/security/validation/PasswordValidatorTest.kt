@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PasswordValidatorTest {
-
     @Test
     fun testValidPassword() {
         val result = PasswordValidator.validate("SecurePass1!")

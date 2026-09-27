@@ -24,9 +24,8 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,6 +33,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,15 +52,14 @@ import com.nexvault.wallet.core.ui.components.ChainSelectorDropdown
 import com.nexvault.wallet.core.ui.components.NexVaultCard
 import com.nexvault.wallet.core.ui.components.SimpleLineChart
 import com.nexvault.wallet.core.ui.components.TokenIcon
+import com.nexvault.wallet.core.ui.mapper.toChainUi
 import com.nexvault.wallet.core.ui.theme.NexVaultDimens
 import com.nexvault.wallet.core.ui.util.formatFiatValue
 import com.nexvault.wallet.core.ui.util.formatTokenBalance
-import com.nexvault.wallet.core.ui.mapper.toChainUi
 import com.nexvault.wallet.domain.model.chain.Chain
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
 import com.nexvault.wallet.feature.home.R
-import java.math.BigDecimal
 
 /**
  * Home dashboard: portfolio value, chart, token list, and quick actions.

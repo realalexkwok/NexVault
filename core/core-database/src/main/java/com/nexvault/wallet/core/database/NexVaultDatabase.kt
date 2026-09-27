@@ -48,7 +48,6 @@ import com.nexvault.wallet.core.database.entity.TransactionEntity
     exportSchema = true,
 )
 abstract class NexVaultDatabase : RoomDatabase() {
-
     /** DAO for token balance and price operations. */
     abstract fun tokenDao(): TokenDao
 

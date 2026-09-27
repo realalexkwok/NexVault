@@ -1,6 +1,7 @@
 package com.nexvault.wallet.core.datastore.security
 
 import android.content.Context
+import android.util.Base64
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -21,13 +22,13 @@ private val Context.securityPreferencesDataStore by preferencesDataStore(name = 
 
 enum class AuthMethod {
     PIN,
-    PASSWORD
+    PASSWORD,
 }
 
 @Singleton
 class SecurityPreferencesDataStore @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val encryptionManager: EncryptionManager
+    private val encryptionManager: EncryptionManager,
 ) {
     private val dataStore: DataStore<Preferences> = context.securityPreferencesDataStore
 
@@ -114,8 +115,8 @@ class SecurityPreferencesDataStore @Inject constructor(
         val encryptedSalt = encryptionManager.encryptWithKeystore(salt)
 
         dataStore.edit { preferences ->
-            preferences[KEY_PASSWORD_HASH] = android.util.Base64.encodeToString(encryptedHash, android.util.Base64.NO_WRAP)
-            preferences[KEY_PASSWORD_SALT] = android.util.Base64.encodeToString(encryptedSalt, android.util.Base64.NO_WRAP)
+            preferences[KEY_PASSWORD_HASH] = Base64.encodeToString(encryptedHash, Base64.NO_WRAP)
+            preferences[KEY_PASSWORD_SALT] = Base64.encodeToString(encryptedSalt, Base64.NO_WRAP)
         }
     }
 
@@ -126,8 +127,8 @@ class SecurityPreferencesDataStore @Inject constructor(
             val encryptedSaltStr = preferences[KEY_PASSWORD_SALT]
 
             if (encryptedHashStr != null && encryptedSaltStr != null) {
-                val encryptedHash = android.util.Base64.decode(encryptedHashStr, android.util.Base64.NO_WRAP)
-                val encryptedSalt = android.util.Base64.decode(encryptedSaltStr, android.util.Base64.NO_WRAP)
+                val encryptedHash = Base64.decode(encryptedHashStr, Base64.NO_WRAP)
+                val encryptedSalt = Base64.decode(encryptedSaltStr, Base64.NO_WRAP)
 
                 val hash = encryptionManager.decryptWithKeystore(encryptedHash)
                 val salt = encryptionManager.decryptWithKeystore(encryptedSalt)

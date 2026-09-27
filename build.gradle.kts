@@ -17,3 +17,8 @@ subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "com.diffplug.spotless")
 }
+
+// The root project is not a subproject, so the block above never reaches it. 2.0.5 gates the
+// two root Kotlin scripts (`build.gradle.kts`, `settings.gradle.kts`) as well; detekt and
+// spotless stay subproject-only.
+apply(plugin = "org.jlleitschuh.gradle.ktlint")

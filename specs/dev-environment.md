@@ -53,14 +53,29 @@ build still works.
 | `emulator` package | ❌ not installed — **not required** (owner uses a physical device) |
 | System images | `android-25;google_apis`, `android-29;default`, `android-30;{google_apis,aosp_atd,default,google_apis_playstore}`, `android-33;{google_apis,default,google_apis_playstore,android-desktop}`, `android-36.1;google_apis_playstore;arm64-v8a` |
 | Configured AVDs | none (`~/.android/avd` is empty) — not required |
-| Connected device | ✅ **Pixel 6a** (`bluejay`), Android 16 / API 36, over adb Wi-Fi |
+| Connected device | ✅ **Pixel 6a** (`bluejay`), **Android 17 / API 37** since 2026-09-27 (was API 36 when this doc was written), over adb **Wi-Fi** — the endpoint changes when the device idles, so it is deliberately **not** recorded; select the first device from `adb devices` |
 
 Toolchain raised to SDK 37 on 2026-09-21 (owner-approved). The 36.x packages are still
 installed, so a rollback needs no download.
 
-**`targetSdk` 37 vs an API-36 device:** the project targets 37 but the only test device
-runs 36. That is legal and installs fine — it simply means Android 17's runtime behaviour
-changes are not exercised by anything here. Tracked as Phase 4 item 4.15.
+**`targetSdk` 37 vs the device:** the device itself was upgraded to **Android 17 / API 37** on
+2026-09-27, so Android 17's runtime behaviour *is* exercised by the 2.0.x device walks. Phase 4
+item 4.15 asked for that verification before 3.7 — it is satisfied by the device being on 37, as
+long as future walks record it.
+
+**adb note (owner rule, 2026-09-27):** the phone is connected **over Wi-Fi, and the endpoint
+changes** — adb drops the transport when the device idles and reconnects on a different
+`ip:port`. Do **not** record or hard-code the address, port or serial anywhere, and do not treat
+them as identifiers. Take the **first connected device** instead:
+
+```bash
+S="$(adb devices | awk 'NR==2 {print $1}')"     # first connected device, whatever its endpoint
+adb -s "$S" shell getprop ro.product.model
+```
+
+The same phone can also appear twice at once (the TCP endpoint plus an
+`adb-<serial>._adb-tls-connect._tcp` mDNS entry); both resolve to the same physical device, and
+`awk 'NR==2'` picks whichever is listed first, so a stale duplicate is harmless.
 
 ## 3. Device setup for the manual verification half
 
@@ -169,16 +184,19 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 # --- test ---
 ./gradlew testDebugUnitTest           # Android library/application modules
 ./gradlew :domain:test                # domain is a pure-Kotlin JVM module
-./gradlew :core:core-security:testDebugUnitTest   # currently fails to compile (2.0.1)
+./gradlew :core:core-security:testDebugUnitTest   # 61 tests, 1 skipped (repaired by 2.0.1)
 
 # --- quality gates ---
 ./gradlew detekt                      # config: config/detekt/detekt.yml, maxIssues 0
-./gradlew ktlintCheck                 # no .editorconfig; ktlint 1.x defaults
+./gradlew ktlintCheck                 # .editorconfig codifies the style since 2.0.5
+./gradlew ktlintFormat                # applies the auto-correctable fixes; review the diff
+./gradlew detekt ktlintCheck --continue   # both gates, no fail-fast (green since 2.0.5)
 
 # --- reports ---
 # test results: <module>/build/test-results/testDebugUnitTest/TEST-*.xml
 # ktlint:       <module>/build/reports/ktlint/ktlint*Check/ktlint*Check.txt
 # detekt:       <module>/build/reports/detekt/detekt.{txt,html,md,sarif}
+# the root project's own scripts report to build/reports/ktlint/ktlintKotlinScriptCheck/
 ```
 
 The quality reports above are the evidence source for `validation.md` — cite the
@@ -194,7 +212,8 @@ Before claiming any roadmap item is verified, confirm:
 - [ ] An emulator or physical device is attached (`adb devices` is non-empty)
 - [ ] `./gradlew :app:assembleDebug` succeeds and the APK path is recorded
 - [ ] The relevant `testDebugUnitTest` / `:domain:test` task passes
-- [ ] `detekt` and `ktlintCheck` are green (only possible from Phase 2.0.5 onward)
+- [ ] `detekt` and `ktlintCheck` are green — **both pass since 2.0.5 (2026-09-26)**; record the
+      exit codes, not just "no output"
 - [ ] Absolute artifact paths and raw command output are in `validation.md`
 - [ ] The owner has walked the flow on the device and reported the result
 
@@ -313,7 +332,7 @@ non-interactive shells, so `ssh host 'adb devices'` needs
 | APK | 43 MB — identical to the Mac's clean build |
 | `./gradlew testDebugUnitTest :domain:test` | **223 tests, 222 passing, 1 skipped, 0 failing** |
 | Per-module test counts | identical to the Mac, module for module |
-| `adb devices` | Pixel 6a (bluejay), Android 16 / API 36, over adb TLS |
+| `adb devices` | Pixel 6a (bluejay), Android 16 / API 36, over adb TLS — **the device was upgraded to Android 17 / API 37 on 2026-09-27**, see §5 |
 | `sudo` prompts during setup | **zero** |
 
 ### Caveats specific to this host

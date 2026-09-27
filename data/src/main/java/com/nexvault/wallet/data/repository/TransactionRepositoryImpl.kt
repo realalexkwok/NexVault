@@ -39,7 +39,6 @@ class TransactionRepositoryImpl @Inject constructor(
     private val chainConfigProvider: ChainConfigProvider,
     private val walletRepository: WalletRepository,
 ) : TransactionRepository {
-
     override suspend fun estimateGas(
         fromAddress: String,
         toAddress: String,

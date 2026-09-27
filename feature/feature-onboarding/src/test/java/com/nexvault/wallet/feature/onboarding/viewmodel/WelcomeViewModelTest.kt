@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WelcomeViewModelTest {
-
     @Test
     fun onCreateWalletClickedEmitsNavigateToCreateWallet() = runTest {
         val viewModel = WelcomeViewModel()

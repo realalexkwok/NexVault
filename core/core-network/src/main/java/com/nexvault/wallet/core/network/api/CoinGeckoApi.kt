@@ -15,7 +15,6 @@ import retrofit2.http.Query
  * Ref: doc/05-IMPLEMENTATION-PLAN-PHASE2.md Task 2.1.3
  */
 interface CoinGeckoApi {
-
     /**
      * Fetches current prices for multiple tokens in the specified currency.
      *

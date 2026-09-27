@@ -1,6 +1,5 @@
 package com.nexvault.wallet.data.repository
 
-import com.nexvault.wallet.core.datastore.model.NetworkType
 import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.data.mapper.ChainMapper
 import com.nexvault.wallet.domain.model.chain.Chain
@@ -18,7 +17,6 @@ import javax.inject.Singleton
 class ChainRepositoryImpl @Inject constructor(
     private val userPreferences: UserPreferencesDataStore,
 ) : ChainRepository {
-
     private val hiddenChainIds = MutableStateFlow<Set<Int>>(emptySet())
 
     override fun getSupportedChains(): Flow<List<Chain>> {

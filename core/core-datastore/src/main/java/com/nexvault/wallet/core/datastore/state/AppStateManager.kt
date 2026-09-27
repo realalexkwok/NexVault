@@ -18,8 +18,11 @@ import javax.inject.Singleton
 
 sealed class AuthFailureResult {
     data class TemporaryLockout(val seconds: Long, val attemptCount: Int) : AuthFailureResult()
+
     data class Warning(val message: String, val attemptCount: Int) : AuthFailureResult()
+
     object WalletWiped : AuthFailureResult()
+
     data class NoLockout(val attemptCount: Int) : AuthFailureResult()
 }
 
@@ -29,7 +32,7 @@ class AppStateManager @Inject constructor(
     private val securityPreferences: SecurityPreferencesDataStore,
     private val walletMetadata: WalletMetadataDataStore,
     private val walletStore: WalletStore,
-    private val keyStoreManager: KeyStoreManager
+    private val keyStoreManager: KeyStoreManager,
 ) {
     companion object {
         private const val LOCKOUT_5_ATTEMPTS = 30L
@@ -60,7 +63,7 @@ class AppStateManager @Inject constructor(
 
     val isFirstRun: Flow<Boolean> = combine(
         securityPreferences.isWalletSetUp,
-        userPreferences.hasCompletedOnboarding
+        userPreferences.hasCompletedOnboarding,
     ) { isWalletSetUp, hasCompletedOnboarding ->
         !isWalletSetUp && !hasCompletedOnboarding
     }
@@ -68,7 +71,7 @@ class AppStateManager @Inject constructor(
     val isWalletLocked: Flow<Boolean> = combine(
         securityPreferences.isWalletSetUp,
         securityPreferences.lastAuthTimestamp,
-        userPreferences.autoLockTimeout
+        userPreferences.autoLockTimeout,
     ) { isSetUp, lastAuth, timeout ->
         if (!isSetUp) return@combine false
 
@@ -87,7 +90,7 @@ class AppStateManager @Inject constructor(
 
     val isLockedOut: Flow<Boolean> = combine(
         securityPreferences.failedAttemptCount,
-        securityPreferences.lockoutEndTime
+        securityPreferences.lockoutEndTime,
     ) { attemptCount, lockoutEndTime ->
         if (attemptCount < 5) return@combine false
 
@@ -128,7 +131,7 @@ class AppStateManager @Inject constructor(
                 securityPreferences.setLockoutEndTime(lockoutEnd)
                 AuthFailureResult.Warning(
                     message = "Too many failed attempts. You have 1 hour before wallet wipe warning.",
-                    attemptCount = newCount
+                    attemptCount = newCount,
                 )
             }
             newCount >= 10 -> {
@@ -136,7 +139,7 @@ class AppStateManager @Inject constructor(
                 securityPreferences.setLockoutEndTime(lockoutEnd)
                 AuthFailureResult.TemporaryLockout(
                     seconds = LOCKOUT_10_ATTEMPTS,
-                    attemptCount = newCount
+                    attemptCount = newCount,
                 )
             }
             newCount >= 8 -> {
@@ -144,7 +147,7 @@ class AppStateManager @Inject constructor(
                 securityPreferences.setLockoutEndTime(lockoutEnd)
                 AuthFailureResult.TemporaryLockout(
                     seconds = LOCKOUT_8_ATTEMPTS,
-                    attemptCount = newCount
+                    attemptCount = newCount,
                 )
             }
             newCount >= 5 -> {
@@ -152,7 +155,7 @@ class AppStateManager @Inject constructor(
                 securityPreferences.setLockoutEndTime(lockoutEnd)
                 AuthFailureResult.TemporaryLockout(
                     seconds = LOCKOUT_5_ATTEMPTS,
-                    attemptCount = newCount
+                    attemptCount = newCount,
                 )
             }
             else -> {

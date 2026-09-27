@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class WalletMetadataTest {
-
     @Test
     fun walletMetadata_creationWithAllFields() {
         val wallet = WalletMetadata(
@@ -13,7 +12,7 @@ class WalletMetadataTest {
             createdAt = 1700000000000L,
             type = WalletType.HD,
             accountCount = 5,
-            isActive = true
+            isActive = true,
         )
 
         assertEquals("test-uuid-1234", wallet.id)
@@ -33,7 +32,7 @@ class WalletMetadataTest {
             name = "Account 1",
             derivationPath = "m/44'/60'/0'/0/0",
             isActive = true,
-            addedAt = 1700000000000L
+            addedAt = 1700000000000L,
         )
 
         assertEquals("wallet-123", account.walletId)
@@ -61,7 +60,7 @@ class WalletMetadataTest {
             createdAt = 1700000000000L,
             type = WalletType.IMPORTED,
             accountCount = 1,
-            isActive = false
+            isActive = false,
         )
 
         assertEquals(WalletType.IMPORTED, wallet.type)

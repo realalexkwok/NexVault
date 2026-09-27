@@ -1,14 +1,13 @@
 package com.nexvault.wallet.data.repository
 
 import app.cash.turbine.test
-import com.nexvault.wallet.core.datastore.model.AutoLockTimeout
+import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.core.datastore.security.AuthMethod
 import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
 import com.nexvault.wallet.core.datastore.state.AppStateManager
 import com.nexvault.wallet.core.datastore.state.AuthFailureResult
 import com.nexvault.wallet.core.security.biometric.BiometricHelper
 import com.nexvault.wallet.core.security.biometric.BiometricStatus
-import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.core.security.util.SecurityUtils
 import com.nexvault.wallet.domain.model.auth.AuthResult
 import com.nexvault.wallet.domain.model.common.DataResult
@@ -22,13 +21,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 class AuthRepositoryImplTest {
-
     private lateinit var securityPreferences: SecurityPreferencesDataStore
     private lateinit var appStateManager: AppStateManager
     private lateinit var biometricHelper: BiometricHelper
@@ -45,7 +42,7 @@ class AuthRepositoryImplTest {
             securityPreferences,
             appStateManager,
             biometricHelper,
-            userPreferences
+            userPreferences,
         )
     }
 
@@ -71,7 +68,8 @@ class AuthRepositoryImplTest {
         mockkObject(SecurityUtils)
         every { appStateManager.isLockedOut } returns flowOf(false)
         every { appStateManager.lockoutRemainingSeconds } returns flowOf(0L)
-        coEvery { securityPreferences.getPasswordHash() } returns Pair("hashedpin123".toByteArray(), "salt".toByteArray())
+        coEvery { securityPreferences.getPasswordHash() } returns
+            Pair("hashedpin123".toByteArray(), "salt".toByteArray())
         coEvery { securityPreferences.setLastAuthTimestamp(any()) } returns Unit
         coEvery { appStateManager.onAuthenticationSuccess() } returns Unit
         every { SecurityUtils.verifyPassword(any(), any()) } returns true
@@ -86,7 +84,8 @@ class AuthRepositoryImplTest {
         mockkObject(SecurityUtils)
         every { appStateManager.isLockedOut } returns flowOf(false)
         every { appStateManager.lockoutRemainingSeconds } returns flowOf(0L)
-        coEvery { securityPreferences.getPasswordHash() } returns Pair("hashedpin123".toByteArray(), "salt".toByteArray())
+        coEvery { securityPreferences.getPasswordHash() } returns
+            Pair("hashedpin123".toByteArray(), "salt".toByteArray())
         coEvery { appStateManager.onAuthenticationFailure() } returns AuthFailureResult.NoLockout(1)
         every { SecurityUtils.verifyPassword(any(), any()) } returns false
 
@@ -111,7 +110,8 @@ class AuthRepositoryImplTest {
         mockkObject(SecurityUtils)
         every { appStateManager.isLockedOut } returns flowOf(false)
         every { appStateManager.lockoutRemainingSeconds } returns flowOf(0L)
-        coEvery { securityPreferences.getPasswordHash() } returns Pair("hashedpin123".toByteArray(), "salt".toByteArray())
+        coEvery { securityPreferences.getPasswordHash() } returns
+            Pair("hashedpin123".toByteArray(), "salt".toByteArray())
         coEvery { securityPreferences.setLastAuthTimestamp(any()) } returns Unit
         coEvery { appStateManager.onAuthenticationSuccess() } returns Unit
         coEvery { securityPreferences.storePasswordHash(any(), any()) } returns Unit
@@ -128,7 +128,8 @@ class AuthRepositoryImplTest {
         mockkObject(SecurityUtils)
         every { appStateManager.isLockedOut } returns flowOf(false)
         every { appStateManager.lockoutRemainingSeconds } returns flowOf(0L)
-        coEvery { securityPreferences.getPasswordHash() } returns Pair("hashedpin123".toByteArray(), "salt".toByteArray())
+        coEvery { securityPreferences.getPasswordHash() } returns
+            Pair("hashedpin123".toByteArray(), "salt".toByteArray())
         coEvery { appStateManager.onAuthenticationFailure() } returns AuthFailureResult.NoLockout(1)
         every { SecurityUtils.verifyPassword(any(), any()) } returns false
 

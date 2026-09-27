@@ -1,11 +1,8 @@
 package com.nexvault.wallet.feature.onboarding.viewmodel
 
-import com.nexvault.wallet.domain.model.auth.WalletCreationResult
-import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.usecase.wallet.ImportFromMnemonicUseCase
 import com.nexvault.wallet.domain.usecase.wallet.ImportFromPrivateKeyUseCase
 import com.nexvault.wallet.feature.onboarding.R
-import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,13 +12,14 @@ import org.junit.Before
 import org.junit.Test
 
 class ImportWalletViewModelTest {
-
     private lateinit var importFromMnemonicUseCase: ImportFromMnemonicUseCase
     private lateinit var importFromPrivateKeyUseCase: ImportFromPrivateKeyUseCase
     private lateinit var viewModel: ImportWalletViewModel
 
     private val validMnemonic12 = "apple brave crane delta eagle frost grape house ivory jump king lamp"
-    private val validMnemonic24 = "apple brave crane delta eagle frost grape house ivory jump king lamp moon peace quiet brave delta eagle float glad gift knee river peace"
+    private val validMnemonic24 =
+        "apple brave crane delta eagle frost grape house ivory jump king lamp moon " +
+            "peace quiet brave delta eagle float glad gift knee river peace"
 
     @Before
     fun setup() {
@@ -46,7 +44,9 @@ class ImportWalletViewModelTest {
 
     @Test
     fun modeSwitchClearsErrors() {
-        viewModel.onMnemonicInputChanged("word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12")
+        viewModel.onMnemonicInputChanged(
+            "word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12",
+        )
         assertTrue(viewModel.uiState.value.mnemonicErrorRes != null)
 
         viewModel.onImportModeChanged(ImportWalletViewModel.ImportMode.PRIVATE_KEY)
@@ -88,7 +88,9 @@ class ImportWalletViewModelTest {
 
     @Test
     fun mnemonicWithInvalidCharsShowsError() {
-        viewModel.onMnemonicInputChanged("word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12")
+        viewModel.onMnemonicInputChanged(
+            "word1 word2 123number word4 word5 word6 word7 word8 word9 word10 word11 word12",
+        )
 
         val state = viewModel.uiState.value
         assertEquals(R.string.import_wallet_mnemonic_invalid_chars, state.mnemonicErrorRes)
@@ -97,7 +99,9 @@ class ImportWalletViewModelTest {
 
     @Test
     fun mnemonicWithTooManyWordsShowsError() {
-        val tooMany = "apple brave crane delta eagle frost grape house ivory jump king lamp moon peace quiet brave delta eagle float glad gift knee river peace quiet extra"
+        val tooMany =
+            "apple brave crane delta eagle frost grape house ivory jump king lamp moon " +
+                "peace quiet brave delta eagle float glad gift knee river peace quiet extra"
         viewModel.onMnemonicInputChanged(tooMany)
 
         val state = viewModel.uiState.value

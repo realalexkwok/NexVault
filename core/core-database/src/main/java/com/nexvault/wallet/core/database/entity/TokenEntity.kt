@@ -17,7 +17,6 @@
 package com.nexvault.wallet.core.database.entity
 
 import androidx.room.Entity
-import androidx.room.Index
 
 /**
  * Room entity for cryptocurrency tokens tracked by the user.

@@ -1,11 +1,10 @@
 package com.nexvault.wallet.core.security.encryption
 
 import com.nexvault.wallet.core.security.keystore.KeyStoreManager
-import com.nexvault.wallet.core.security.util.SecurityUtils
 import com.nexvault.wallet.core.security.util.SecureUtils.secureWipe
+import com.nexvault.wallet.core.security.util.SecurityUtils
 import java.security.SecureRandom
 import javax.crypto.Cipher
-import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
@@ -15,7 +14,7 @@ import javax.inject.Singleton
 
 @Singleton
 class EncryptionManager @Inject constructor(
-    private val keyStoreManager: KeyStoreManager
+    private val keyStoreManager: KeyStoreManager,
 ) {
     companion object {
         private const val AES_GCM_ALGORITHM = "AES/GCM/NoPadding"
@@ -116,12 +115,12 @@ class EncryptionManager @Inject constructor(
             cipher.init(
                 if (forEncryption) Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE,
                 key,
-                spec
+                spec,
             )
         } else {
             cipher.init(
                 if (forEncryption) Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE,
-                key
+                key,
             )
         }
 

@@ -2,7 +2,6 @@ package com.nexvault.wallet.data.repository
 
 import com.nexvault.wallet.core.datastore.model.AccountMetadata
 import com.nexvault.wallet.core.datastore.model.WalletMetadata
-import com.nexvault.wallet.core.datastore.model.WalletType as DataStoreWalletType
 import com.nexvault.wallet.core.datastore.preferences.UserPreferencesDataStore
 import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
 import com.nexvault.wallet.core.datastore.state.AppStateManager
@@ -13,6 +12,7 @@ import com.nexvault.wallet.core.security.wallet.HDKeyManager
 import com.nexvault.wallet.core.security.wallet.WalletStore
 import com.nexvault.wallet.data.mapper.WalletMapper
 import com.nexvault.wallet.domain.model.auth.WalletCreationResult
+import com.nexvault.wallet.domain.model.chain.SupportedChains
 import com.nexvault.wallet.domain.model.common.AuthenticationException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.model.common.EncryptionException
@@ -22,7 +22,6 @@ import com.nexvault.wallet.domain.model.common.WalletNotFoundException
 import com.nexvault.wallet.domain.model.wallet.Account
 import com.nexvault.wallet.domain.model.wallet.Wallet
 import com.nexvault.wallet.domain.model.wallet.WalletDraft
-import com.nexvault.wallet.domain.model.chain.SupportedChains
 import com.nexvault.wallet.domain.repository.TokenRepository
 import com.nexvault.wallet.domain.repository.WalletRepository
 import kotlinx.coroutines.NonCancellable
@@ -37,6 +36,7 @@ import java.math.BigInteger
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.nexvault.wallet.core.datastore.model.WalletType as DataStoreWalletType
 
 @Singleton
 class WalletRepositoryImpl @Inject constructor(
@@ -49,7 +49,6 @@ class WalletRepositoryImpl @Inject constructor(
     private val appStateManager: AppStateManager,
     private val tokenRepository: TokenRepository,
 ) : WalletRepository {
-
     companion object {
         private const val DEFAULT_DERIVATION_PATH = "m/44'/60'/0'/0/0"
         private const val DERIVATION_PATH_PREFIX = "m/44'/60'/0'/0/"
@@ -72,7 +71,7 @@ class WalletRepositoryImpl @Inject constructor(
                     mnemonic = mnemonic,
                     mnemonicWords = mnemonic.split(" "),
                     address = address,
-                )
+                ),
             )
         } catch (e: Exception) {
             DataResult.Error(EncryptionException("Failed to generate wallet: ${e.message}", e))
@@ -103,7 +102,7 @@ class WalletRepositoryImpl @Inject constructor(
                     walletId = walletId,
                     address = draft.address,
                     mnemonicWords = draft.mnemonicWords,
-                )
+                ),
             )
         } catch (e: Exception) {
             DataResult.Error(EncryptionException("Failed to create wallet: ${e.message}", e))
@@ -145,7 +144,7 @@ class WalletRepositoryImpl @Inject constructor(
                     walletId = walletId,
                     address = address,
                     mnemonicWords = mnemonic.split(" "),
-                )
+                ),
             )
         } catch (e: Exception) {
             DataResult.Error(EncryptionException("Failed to import wallet: ${e.message}", e))
@@ -184,7 +183,7 @@ class WalletRepositoryImpl @Inject constructor(
                     walletId = walletId,
                     address = address,
                     mnemonicWords = emptyList(),
-                )
+                ),
             )
         } catch (e: Exception) {
             DataResult.Error(
@@ -303,7 +302,7 @@ class WalletRepositoryImpl @Inject constructor(
             wallet.copy(
                 accounts = wallet.accounts.map { account ->
                     account.copy(isActive = account.index == activeAccountIdx)
-                }
+                },
             )
         }
     }

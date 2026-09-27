@@ -31,14 +31,13 @@ class TokenDetailViewModel @Inject constructor(
     private val getRecentTokenTransactionsUseCase: GetRecentTokenTransactionsUseCase,
     private val refreshTransactionHistoryUseCase: RefreshTransactionHistoryUseCase,
 ) : ViewModel() {
-
     private val contractAddress: String = checkNotNull(savedStateHandle.get<String>("contractAddress"))
 
     private val chainId: Int = checkNotNull(
         savedStateHandle.get<Int>("chainId"),
     )
 
-    private val _selectedChartDays = MutableStateFlow(7)
+    private val selectedChartDaysFlow = MutableStateFlow(7)
 
     private val _uiState = MutableStateFlow(TokenDetailUiState())
     val uiState: StateFlow<TokenDetailUiState> = _uiState.asStateFlow()
@@ -66,7 +65,7 @@ class TokenDetailViewModel @Inject constructor(
 
     private suspend fun loadChartDataSync() {
         _uiState.update { it.copy(isChartLoading = true) }
-        val days = _selectedChartDays.value
+        val days = selectedChartDaysFlow.value
         when (
             val result = getTokenPriceChartUseCase(chainId, contractAddress, days)
         ) {
@@ -119,7 +118,7 @@ class TokenDetailViewModel @Inject constructor(
      * @param days One of 1, 7, 30, or 365.
      */
     fun onChartRangeSelected(days: Int) {
-        _selectedChartDays.value = days
+        selectedChartDaysFlow.value = days
         viewModelScope.launch {
             loadChartDataSync()
         }

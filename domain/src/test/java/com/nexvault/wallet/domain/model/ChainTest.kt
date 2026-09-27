@@ -1,8 +1,12 @@
 package com.nexvault.wallet.domain.model
 
 import com.nexvault.wallet.domain.model.chain.SupportedChains
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.Assert.*
 
 class ChainTest {
     @Test

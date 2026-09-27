@@ -6,6 +6,7 @@ import com.nexvault.wallet.core.datastore.security.SecurityPreferencesDataStore
 import com.nexvault.wallet.core.datastore.state.AppStateManager
 import com.nexvault.wallet.core.datastore.state.AuthFailureResult
 import com.nexvault.wallet.core.security.biometric.BiometricHelper
+import com.nexvault.wallet.core.security.biometric.BiometricStatus
 import com.nexvault.wallet.core.security.util.SecurityUtils
 import com.nexvault.wallet.data.mapper.AuthMapper
 import com.nexvault.wallet.domain.model.auth.AuthMethod
@@ -28,7 +29,6 @@ class AuthRepositoryImpl @Inject constructor(
     private val biometricHelper: BiometricHelper,
     private val userPreferences: UserPreferencesDataStore,
 ) : AuthRepository {
-
     override suspend fun setPin(pin: String): DataResult<Unit> {
         return try {
             val hash = SecurityUtils.hashPassword(pin)
@@ -84,11 +84,11 @@ class AuthRepositoryImpl @Inject constructor(
             is AuthFailureResult.TemporaryLockout -> AuthResult.LockedOut(result.seconds)
             is AuthFailureResult.Warning -> AuthResult.Failed(
                 remainingAttempts = result.attemptCount,
-                message = result.message
+                message = result.message,
             )
             is AuthFailureResult.NoLockout -> AuthResult.Failed(
                 remainingAttempts = result.attemptCount,
-                message = "Incorrect PIN"
+                message = "Incorrect PIN",
             )
         }
     }
@@ -106,7 +106,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isBiometricAvailable(): Boolean {
-        return biometricHelper.isBiometricAvailable() == com.nexvault.wallet.core.security.biometric.BiometricStatus.AVAILABLE
+        return biometricHelper.isBiometricAvailable() == BiometricStatus.AVAILABLE
     }
 
     override suspend fun setBiometricEnabled(enabled: Boolean): DataResult<Unit> {

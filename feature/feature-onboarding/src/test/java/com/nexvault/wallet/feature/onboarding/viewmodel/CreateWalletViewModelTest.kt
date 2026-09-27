@@ -29,7 +29,6 @@ import org.junit.Test
  * only after the user acknowledges the mnemonic and taps Continue.
  */
 class CreateWalletViewModelTest {
-
     private lateinit var generateWalletDraftUseCase: GenerateWalletDraftUseCase
     private lateinit var createWalletUseCase: CreateWalletUseCase
     private val testDispatcher = StandardTestDispatcher()
@@ -48,7 +47,7 @@ class CreateWalletViewModelTest {
 
     private val testMnemonic = listOf(
         "apple", "brave", "crane", "delta", "eagle", "frost",
-        "grape", "house", "ivory", "jump", "king", "lamp"
+        "grape", "house", "ivory", "jump", "king", "lamp",
     )
 
     private val testDraft = WalletDraft(
@@ -67,7 +66,7 @@ class CreateWalletViewModelTest {
                 walletId = walletId,
                 address = testDraft.address,
                 mnemonicWords = testMnemonic,
-            )
+            ),
         )
     }
 
@@ -172,7 +171,7 @@ class CreateWalletViewModelTest {
                         walletId = "retry-id",
                         address = testDraft.address,
                         mnemonicWords = testMnemonic,
-                    )
+                    ),
                 )
             }
         }

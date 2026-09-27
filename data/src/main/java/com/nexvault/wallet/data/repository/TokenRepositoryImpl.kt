@@ -44,7 +44,6 @@ class TokenRepositoryImpl @Inject constructor(
     private val chainRepository: ChainRepository,
     private val chainConfigProvider: ChainConfigProvider,
 ) : TokenRepository {
-
     private val refreshMutex = Mutex()
 
     override fun getTokensWithBalances(chainId: Int, address: String): Flow<List<Token>> {
@@ -424,26 +423,49 @@ class TokenRepositoryImpl @Inject constructor(
         return when (chainId) {
             1 -> listOf(
                 makeDefaultToken(1, "native", "ETH", "Ethereum", 18, "ethereum", 0, now),
-                makeDefaultToken(1, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "USDC", "USD Coin", 6, "usd-coin", 1, now),
-                makeDefaultToken(1, "0xdac17f958d2ee523a2206206994597c13d831ec7", "USDT", "Tether USD", 6, "tether", 2, now),
-                makeDefaultToken(1, "0x6b175474e89094c44da98b954eedeac495271d0f", "DAI", "Dai Stablecoin", 18, "dai", 3, now),
-                makeDefaultToken(1, "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "WETH", "Wrapped Ether", 18, "weth", 4, now),
-                makeDefaultToken(1, "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "UNI", "Uniswap", 18, "uniswap", 5, now),
-                makeDefaultToken(1, "0x514910771af9ca656af840dff83e8264ecf986ca", "LINK", "Chainlink", 18, "chainlink", 6, now),
+                makeDefaultToken(
+                    1, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "USDC", "USD Coin", 6, "usd-coin", 1, now,
+                ),
+                makeDefaultToken(
+                    1, "0xdac17f958d2ee523a2206206994597c13d831ec7", "USDT", "Tether USD", 6, "tether", 2, now,
+                ),
+                makeDefaultToken(
+                    1, "0x6b175474e89094c44da98b954eedeac495271d0f", "DAI", "Dai Stablecoin", 18, "dai", 3, now,
+                ),
+                makeDefaultToken(
+                    1, "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "WETH", "Wrapped Ether", 18, "weth", 4, now,
+                ),
+                makeDefaultToken(
+                    1, "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "UNI", "Uniswap", 18, "uniswap", 5, now,
+                ),
+                makeDefaultToken(
+                    1, "0x514910771af9ca656af840dff83e8264ecf986ca", "LINK", "Chainlink", 18, "chainlink", 6, now,
+                ),
             )
             11155111 -> listOf(
                 makeDefaultToken(11155111, "native", "ETH", "Sepolia ETH", 18, "ethereum", 0, now),
             )
             56 -> listOf(
                 makeDefaultToken(56, "native", "BNB", "BNB", 18, "binancecoin", 0, now),
-                makeDefaultToken(56, "0xe9e7cea3dedca5984780bafc599bd69add087d56", "BUSD", "Binance USD", 18, "binance-usd", 1, now),
-                makeDefaultToken(56, "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82", "CAKE", "PancakeSwap", 18, "pancakeswap-token", 2, now),
-                makeDefaultToken(56, "0x55d398326f99059ff775485246999027b3197955", "USDT", "Tether USD", 18, "tether", 3, now),
+                makeDefaultToken(
+                    56, "0xe9e7cea3dedca5984780bafc599bd69add087d56", "BUSD", "Binance USD", 18, "binance-usd", 1, now,
+                ),
+                makeDefaultToken(
+                    56, "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+                    "CAKE", "PancakeSwap", 18, "pancakeswap-token", 2, now,
+                ),
+                makeDefaultToken(
+                    56, "0x55d398326f99059ff775485246999027b3197955", "USDT", "Tether USD", 18, "tether", 3, now,
+                ),
             )
             137 -> listOf(
                 makeDefaultToken(137, "native", "MATIC", "Polygon", 18, "matic-network", 0, now),
-                makeDefaultToken(137, "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", "USDC", "USD Coin", 6, "usd-coin", 1, now),
-                makeDefaultToken(137, "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", "WETH", "Wrapped Ether", 18, "weth", 2, now),
+                makeDefaultToken(
+                    137, "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", "USDC", "USD Coin", 6, "usd-coin", 1, now,
+                ),
+                makeDefaultToken(
+                    137, "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", "WETH", "Wrapped Ether", 18, "weth", 2, now,
+                ),
             )
             else -> emptyList()
         }

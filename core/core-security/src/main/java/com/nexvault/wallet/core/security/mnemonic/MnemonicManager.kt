@@ -7,7 +7,6 @@ import javax.inject.Singleton
 
 @Singleton
 class MnemonicManager @Inject constructor() {
-
     private val secureRandom = SecureRandom()
 
     fun generateMnemonic(wordCount: Int = 12): String {

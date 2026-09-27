@@ -41,8 +41,8 @@ fun NexVaultButton(
             border = ButtonDefaults.outlinedButtonBorder.copy(
                 brush = androidx.compose.ui.graphics.SolidColor(
                     if (enabled) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                )
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                ),
             ),
             contentPadding = PaddingValues(horizontal = NexVaultDimens.spacingLg, vertical = NexVaultDimens.spacingMd),
         ) {

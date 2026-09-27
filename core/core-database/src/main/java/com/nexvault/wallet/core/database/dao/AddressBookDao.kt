@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface AddressBookDao {
-
     /**
      * Observes all address book entries, ordered by creation date descending.
      *

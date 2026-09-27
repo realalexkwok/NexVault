@@ -2,17 +2,16 @@ package com.nexvault.wallet.core.security.wallet
 
 import com.nexvault.wallet.core.security.util.SecurityUtils
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HDKeyManagerTest {
-
     private val hdKeyManager = HDKeyManager()
 
     // BIP39 test vector mnemonic
-    private val testMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+    private val testMnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 
     @Test
     fun testDeriveAddressFromKnownMnemonic() {

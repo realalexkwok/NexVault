@@ -34,7 +34,6 @@ class HomeViewModel @Inject constructor(
     private val getSelectedChainUseCase: GetSelectedChainUseCase,
     private val setSelectedChainUseCase: SetSelectedChainUseCase,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 

@@ -1,0 +1,25 @@
+root = true
+
+# 2.0.5 owner decision (Q1, 2026-09-26): the project keeps the code style Android Studio
+# produces, so ktlint's ktlint_official *layout* rules are disabled here and every hygiene
+# rule stays enabled. detekt's MaxLineLength (120) is the single line-length ceiling —
+# `max_line_length` is deliberately NOT set, because setting it to 120 additionally
+# activates ktlint's `function-literal` (8 findings) and `binary-expression-wrapping`
+# (7 findings) on the measured tree.
+#
+# Rule-by-rule rationale plus before/after counts:
+# specs/features/2026-09-26-2.0.5-quality-gates/{requirements,validation}.md
+[*.{kt,kts}]
+# Compose screens are PascalCase by convention (`@Composable fun HomeScreen()`).
+ktlint_function_naming_ignore_when_annotated_with = Composable
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_function-signature = disabled
+ktlint_standard_function-expression-body = disabled
+ktlint_standard_annotation = disabled
+ktlint_standard_class-signature = disabled
+ktlint_standard_chain-method-continuation = disabled
+ktlint_standard_argument-list-wrapping = disabled
+ktlint_standard_parameter-list-wrapping = disabled
+ktlint_standard_if-else-wrapping = disabled
+ktlint_standard_multiline-if-else = disabled
+ktlint_standard_condition-wrapping = disabled

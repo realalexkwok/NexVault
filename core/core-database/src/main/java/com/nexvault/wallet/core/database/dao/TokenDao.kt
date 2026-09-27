@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface TokenDao {
-
     /**
      * Observes all tokens for a specific chain, ordered by fiat value descending.
      * Tokens with null fiat value are sorted to the bottom.

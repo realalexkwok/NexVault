@@ -29,9 +29,8 @@ import javax.inject.Singleton
 @Singleton
 class WalletStore @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val encryptionManager: EncryptionManager
+    private val encryptionManager: EncryptionManager,
 ) {
-
     companion object {
         private const val WALLET_DIR = "wallet"
         private const val MNEMONIC_FILE = "mnemonic.enc"

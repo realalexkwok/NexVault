@@ -41,7 +41,6 @@ class SetPinViewModel @Inject constructor(
     private val completeOnboardingUseCase: CompleteOnboardingUseCase,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-
     enum class PinPhase {
         SET,
         CONFIRM,
