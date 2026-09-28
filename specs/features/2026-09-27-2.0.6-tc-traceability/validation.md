@@ -182,7 +182,7 @@ reality counters, `--no-ff` merge, push, branch delete — the 2.0.5 procedure.
 | V3 | The one production fix | `RefreshTransactionHistoryUseCase.invoke` returns `DataResult<Unit>` (was `Unit`); no-wallet → `DataResult.Error(WalletNotFoundException())`; the `TokenDetailViewModel` branches (`is DataResult.Error` → `isHistoryConfigured`/`isHistoryPlanGated`) were dead before the fix and are now exercised by `TokenDetailViewModelTest`'s two notice cases + `RefreshTransactionHistoryUseCaseTest` (3) | ✅ (the pre-fix tree compiled, so the constant-false branch was silently dead — exactly as claimed) |
 | V4 | Suite 299 / 0 / 0 / 1 | fresh `--rerun-tasks` (660 tasks executed): **299 tests, 0 failures, 0 errors, 1 skipped** — matches the claim and the +25 attribution sums exactly (6+3+2+6+4+1+3) | ✅ |
 | V5 | Both gates exit 0 | same fresh run included `detekt ktlintCheck` (13 detekt + 276 ktlint task lines): **exit 0, no failed tasks** | ✅ |
-| V6 | Instrumented 5/5 | could not be re-driven: no adb device was attached during the review (the Pixel 6a was offline). The developer's §A5 record (5/5: BackupPolicyTest 3, CreationFlowE2ETest 1, ExampleInstrumentedTest 1) + the XML path and the three environment findings stand as recorded; the manual half is the owner's confirmation. | ⏸ device offline at review time |
+| V6 | Instrumented 5/5 | **Re-driven by the reviewer 2026-09-27** with the device reconnected: stale duplicate adb entry disconnected, screen woken + keyguard dismissed (`mWakefulness=Awake`), `pm clear`, `ANDROID_SERIAL=<mDNS transport> ./gradlew :app:connectedDebugAndroidTest` → **BUILD SUCCESSFUL, exit 0**. Fresh XML `TEST-Pixel 6a - 17.xml`: **5 tests, 0 failures** — `BackupPolicyTest` 3/3, `CreationFlowE2ETest` 1/1, `ExampleInstrumentedTest` 1/1 (the latter proving legacy CR finding **1.1-3** fixed — `BuildConfig.APPLICATION_ID` — row closed in the legacy records). | ✅ verified by reviewer |
 | V7 | Diff scope | `git diff --name-only main...HEAD` filtered to `src/main` (excluding `res`): **exactly one production file** — `RefreshTransactionHistoryUseCase.kt`; everything else is tests, three build scripts and specs | ✅ |
 | V8 | Records match the tree | roadmap 2.0.6 `[~]` + new **4.18** row + next-entry 2.0.7; tech-stack §5 counts (core-network 20, core-database 3, feature-home 2, feature-tokens 6); legacy CR rows 2.1-1/2.2-1/2.4-1/2.5-1 closed-by-2.0.6 with replans, 1.2-5 split verdict recorded | ✅ |
 
@@ -196,9 +196,9 @@ guards against going forward.
 
 ### Verdict
 
-**PASS (automatic + diff).** The matrix is complete and disjoint (52 = 25 ∪ 27), every marker is
-adjacent to its `@Test`, the single production change is justified and locked by tests, the suite
-is green at 299/0/0/1 from a fresh run, both gates exit 0, and the records match the tree. The
-instrumented E2E remains developer-recorded (device offline during this review). Remaining for
-closure: the owner's manual-half confirmation, then the owner-directed close (row flip,
-AGENTS.md → 2.0.7, mission counters, `--no-ff` merge, push, branch delete).
+**PASS (automatic + diff + device).** The matrix is complete and disjoint (52 = 25 ∪ 27), every
+marker is adjacent to its `@Test`, the single production change is justified and locked by tests,
+the suite is green at 299/0/0/1 from a fresh run, both gates exit 0, the records match the tree,
+and the reviewer re-ran the instrumented suite **5/5** on the Pixel 6a. Remaining for closure: the
+owner-directed close (row flip, AGENTS.md → 2.0.7, mission counters, `--no-ff` merge, push,
+branch delete).
