@@ -108,7 +108,7 @@ Dark theme is the default and currently the only theme (`NexVaultTheme(darkTheme
 - **Two-sided verification.** Every item needs an automatic half (Gradle tests, build,
   gates — with absolute artifact paths) and a manual half (the owner runs the app).
 
-## Current reality (baseline 2026-09-20, kept honest on 2026-09-26)
+## Current reality (baseline 2026-09-20, kept honest on 2026-09-27)
 
 Recorded here so no reader mistakes intent for achievement. The plain lines are the
 2026-09-20 measurement; every `→` note is what has moved since, with its owning item.
@@ -118,6 +118,9 @@ Recorded here so no reader mistakes intent for achievement. The plain lines are 
   → **299 tests / 0 failures / 0 errors / 1 skipped** as of 2026-09-27 (2.0.6; 274 at
     2.0.5's close) plus **5 instrumented device tests** — BackupPolicy 3, the TC-INT-001
     creation-flow E2E, and the app-context smoke test — green on the Pixel 6a.
+  → **Phase 2.0 is closed `[x]`** (2.0.7, 2026-09-27): 2.0.1–2.0.6 verified, the Phase 0 rows
+    re-graded, and every deferred item handed to a named Phase 2.6+ / Phase 4 owner in the
+    consolidated Handoff.
 - The app has **never been run on a device or emulator** — no emulator is installed and
   no AVD exists. Every "the screen works" claim in the archive is therefore unverified.
   → **refuted 2026-09-21**: a physical Pixel 6a is attached, and the app has been built,

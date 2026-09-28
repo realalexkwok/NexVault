@@ -240,7 +240,8 @@ Test layout: `<module>/src/test/java/...` mirrors the main source package.
 Instrumented tests live in `app/src/androidTest/`.
 
 **Measured state (2026-09-20; core-security row updated 2026-09-21 by 2.0.1; module rows
-refreshed 2026-09-27 by 2.0.6)** — see `roadmap.md` Phase 2.0 for the remediation plan:
+refreshed 2026-09-27 by 2.0.6)** — Phase 2.0's remediation closed 2026-09-27 by 2.0.7; the
+closing evidence is `specs/features/2026-09-20-2.0.0-stabilization/validation.md` §2.0.7:
 
 | Module | Tests | Result |
 | --- | --- | --- |

@@ -3,9 +3,10 @@
 > **Status: CLOSED 2026-09-26 as `[~]` — MERGED TO `main`, NOT VERIFIED (owner-directed; §Close).**
 > The automatic half is complete, and the reviewer session verified it **PASS** (`744251d` on
 > `e82eba2`, R1–R9 — its R10 device re-walk was blocked by a locked phone and left owner-pending). The
-> manual half is **not** verified: M1/M2 are suspended with the funding decision and M3–M5 have not
-> been run. The roadmap row therefore stays **implemented-unverified** (`[~]`) and may only move to
-> `[x]` when M1/M2 pass after funding.
+> manual half is now **partially verified (2026-09-28): M3 and M4 PASSED** on the Pixel 6a (both
+> notices rendered — see the M-table), while **M1/M2 remain suspended** with the funding decision and
+> **M5 (crash watch) is still owed**. The roadmap row therefore stays **implemented-unverified**
+> (`[~]`) and may only move to `[x]` when M1/M2 pass after funding.
 > Requirements: `requirements.md` (Q1–Q6, AC-1–AC-8). Plan: `plan.md`.
 
 **Host used for every command below:** Linux (`superguo-SQM2270`), `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`
@@ -54,18 +55,19 @@ plan-gated** (AC-8), exactly as the planning probe found. No billing change was 
 
 `spotless` was not used as evidence (it has no configuration block — a no-op).
 
-## Manual half — device (Pixel 6a) — NOT RUN (M1/M2 suspended, M3–M5 walkable)
+## Manual half — device (Pixel 6a) — M3/M4 CLOSED 2026-09-28, M1/M2 suspended, M5 owed
 
 | # | Step | Observed | Verdict |
 | --- | --- | --- | --- |
 | M1 | Real keys, **owner-supplied** known-active address → TokenDetail history (mainnet) | ⏸ **SUSPENDED — zero balance, funding on hold (§Suspended)** | ⏸ |
 | M2 | Same walk on Polygon (`chainid` 137, one key) | ⏸ **SUSPENDED — zero balance, funding on hold (§Suspended)** | ⏸ |
-| M3 | Same walk on BSC (`chainid` 56) → **explicit plan notice**, not an empty list (AC-8) | ☐ not run | ☐ |
-| M4 | Blank `ETHERSCAN_API_KEY` (backup → blank → rebuild → restore) → explicit "Not configured" on **BSC/Polygon too** (new behaviour) | ☐ not run | ☐ |
-| M5 | Crash watch (`FATAL EXCEPTION`) | ☐ not run | ☐ |
+| M3 | BSC (`chainid` 56) → **explicit plan notice**, not an empty list (AC-8) | ✅ **PASSED 2026-09-28** — walked on the Pixel 6a (agent-executed at the owner's instruction, `feature/2.0.7-record-and-close`): Home → chain selector → **BNB Smart Chain** → BNB token detail → the persistent red notice **"Transaction history for this chain is not covered by the current Etherscan plan."** rendered above "No transactions yet". Screenshot `/tmp/m3-20-plan-notice.png`; UI-tree dumps in the session log. This state was **dead code before 2.0.6's fix** (the refresh use case swallowed its result) — 2.0.6 is what made it observable. | ✅ |
+| M4 | Blank `ETHERSCAN_API_KEY` (backup → blank → rebuild → restore) → explicit "Not configured" on **BSC/Polygon too** (new behaviour) | ✅ **PASSED 2026-09-28** — `ETHERSCAN_API_KEY` set to **empty** (backup outside the repo, restored + reinstalled afterwards; the real value never printed by the app or the record), rebuilt, installed, BNB token detail → **"Transaction history is not configured. Add ETHERSCAN_API_KEY to local.properties and rebuild."** Screenshot `/tmp/m4-10-not-configured.png`. **Procedure correction found by running it:** blanking to the placeholder string `your_key_here` does **not** trip the state — `ChainConfigProvider.isExplorerConfigured` checks `isNotBlank()`, so only an **empty** value counts as unconfigured; AGENTS.md's parenthetical was corrected accordingly. | ✅ |
+| M5 | Crash watch (`FATAL EXCEPTION`) | ☐ not run (still owed) | ☐ |
 
-Screenshots: *(none yet)*. **P4 blocker, now suspended:** the 2.0.4 test wallet holds 0 wei and so
-does the account imported on 2026-09-26, so an empty history there proves nothing — see §Suspended.
+Screenshots: M3 `/tmp/m3-20-plan-notice.png`, M4 `/tmp/m4-10-not-configured.png` (both captured
+2026-09-28 on the Pixel 6a; the onboarding screens' FLAG_SECURE blackened the screenshot during the
+wallet-creation steps, so those steps were driven from the UI-tree dump instead).
 
 ## Suspended — funding on hold (owner decision, 2026-09-26)
 
@@ -93,8 +95,9 @@ empty list is a *legitimate* result, so running these rows would prove nothing:
 | M2 — Polygon history | ⏸ suspended |
 | P4 — known-active addresses | ⏸ suspended with them |
 
-**Still walkable without funding** (no balance involved): M3 (BSC shows the plan notice), M4 (blank
-key → "Not configured" on all four chains), M5 (crash watch).
+**Still walkable without funding** (no balance involved): M3 (BSC shows the plan notice) and M4
+(blank key → "Not configured" on all four chains) — **both closed 2026-09-28**; **M5** (crash watch)
+remains owed.
 
 **Resume condition (owner's rule):** the rows stay suspended **until the balance is not zero**. When
 the owner funds the active account, the implementing session re-probes it *before* the walk — the

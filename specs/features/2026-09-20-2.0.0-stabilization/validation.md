@@ -2,7 +2,8 @@
 
 > Evidence record for the Phase 2.0 stabilization item. One section per sub-item.
 > Requirements: `requirements.md`. Plan: `plan.md`.
-> Changes are **uncommitted** in the working tree per the owner-commit rule.
+> **Phase 2.0 CLOSED 2026-09-27 by item 2.0.7** — the closing evidence, the Phase 0 flip table and
+> the consolidated Handoff are in §"2.0.7 — Phase 2.0 close" at the end of this file.
 
 ---
 
@@ -637,5 +638,155 @@ them — that is 2.0.5, and it still needs the `.editorconfig`-vs-reformat decis
 | The three coexisting Jackson variants | Two are transitive and cannot be excluded safely without proving nothing on those paths is called | **4.4**-adjacent; revisit if APK size matters |
 | Debug-vs-release APK size | Release has never been built; `doc/08`'s 25 MB bar is unverified | **3.7** |
 | `junit-jupiter`, `kotlinx-collections-immutable`, 4 unused bundles | Kept on purpose; adopt-or-delete is a product decision | **4.5** |
+
+---
+
+# 2.0.7 — Phase 2.0 close
+
+> Status: **CLOSED 2026-09-28 — owner-directed, both halves recorded (M-A1 and M-A3 confirmed, M-A2
+> walked).** Owner decisions for this item: `requirements.md` §"Phase 2.0 close — owner decisions
+> (item 2.0.7)". Branch: `feature/2.0.7-record-and-close` (committed, merged to `main` with
+> `--no-ff`, pushed, branch deleted). **This item changed records only** — no production, test or
+> build-script file is touched (diff is `specs/` + `AGENTS.md`).
+
+## What this close certifies — 2.0.1 → 2.0.6
+
+| Item | What it did | Verification state | Record |
+| --- | --- | --- | --- |
+| 2.0.1 | Repaired the `core-security` suite (64 tests that never compiled); nine test-vs-implementation judgments, one real production bug (`getWordList()` 100 → 2048 words) | Automatic green; the owner's review of the nine judgments is confirmed **in this close** (§Manual half M-A1) | this file §2.0.1 |
+| 2.0.2 | First run on a device: the app had **no entry point** (no `<activity>`, no `@HiltAndroidApp` registration) — fixed; SDK 37 toolchain raised | Entry point verified by every walk since; the happy path was observed by 2.0.2b | this file §2.0.2 |
+| 2.0.2b | Onboarding repair: mnemonic shown + verified before persistence, `is_wallet_set_up` written only after the PIN, CR 1.6-1 (KeyStore-only, session gate), abandoned-attempt wipe, grid-crash fix | **Device walk M1–M11 passed**; 249 tests; owner-signed | [`2026-09-25-2.0.2b-onboarding-repair/validation.md`](../2026-09-25-2.0.2b-onboarding-repair/validation.md) |
+| 2.0.3 | Navigation dead ends: Send/Receive/Swap/See-All disabled with phase captions; empty callbacks deleted | Reviewer-verified (`da3d9ff`/`c3858cf`) incl. a device re-walk; 249 tests | [`2026-09-25-2.0.3-navigation-dead-ends/validation.md`](../2026-09-25-2.0.3-navigation-dead-ends/validation.md) |
+| 2.0.4 | API-key strategy: real keys are the supported path; explicit "Not configured" states; CoinGecko key-optional | Reviewer PASS (`bf8daf5`); keys live in `local.properties` (never committed) | [`2026-09-25-2.0.4-api-key-strategy/validation.md`](../2026-09-25-2.0.4-api-key-strategy/validation.md) |
+| 2.0.4b | Etherscan V1 → V2 migration (V1 was deprecated, history could not return data); plan-gate + rejection envelopes surfaced | Reviewer-verified (`e82eba2`); **M3/M4 closed in this close**; M1/M2 suspended (zero balance), M5 still owed | [`2026-09-26-2.0.4b-etherscan-v2-migration/validation.md`](../2026-09-26-2.0.4b-etherscan-v2-migration/validation.md) |
+| 2.0.5 | Quality gates green: detekt **65 → 0**, ktlint **1556 → 0**; `.editorconfig` codifies the style | Reviewer PASS (`729d663`, fresh 633-task run) + owner device walk | [`2026-09-26-2.0.5-quality-gates/validation.md`](../2026-09-26-2.0.5-quality-gates/validation.md) |
+| 2.0.6 | TC traceability: all 52 `doc/07` ids mapped or registered; first Robolectric suite; creation-flow E2E; one dead-code production fix (the 2.0.4/2.0.4b notices) | Reviewer PASS (`e7b0c5f` + `1efe2e8`, fresh rerun + 5/5 device) | [`2026-09-27-2.0.6-tc-traceability/validation.md`](../2026-09-27-2.0.6-tc-traceability/validation.md) |
+
+## Automatic half — fresh evidence (2026-09-27, `feature/2.0.7-record-and-close`)
+
+Every command ran with `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` on this branch, whose tree is
+identical to `main` + this record's edits.
+
+| # | Command | Observed result |
+| --- | --- | --- |
+| A1 | `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck --rerun-tasks --continue` | **BUILD SUCCESSFUL, exit 0 — 571 tasks executed** (nothing cached), **0 failed tasks**. Report root: `/home/superguo/Projects/NexVault/<module>/build/test-results/` |
+| A2 | Test sums from the XML reports (A1) | **299 tests, 0 failures, 0 errors, 1 skipped** — app 1, core-database 3, core-datastore 29, core-network 20, core-security 64 (1 skipped), data 53, domain 71, feature-auth 15, feature-home 2, feature-onboarding 35, feature-tokens 6 |
+| A3 | `./gradlew :app:assembleDebug` (up-to-date for this tree — Gradle verified no input changed) | `/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk`, **45,923,819 bytes**, 2026-09-27 21:55 |
+| A4 | TC audit re-run (grep + `comm`) | `doc/07` ids **52**; `// TC-` markers **25**; registered **27**; **0 orphan markers**; 52 = 25 ∪ 27; marker adjacency 25/25 |
+| A5 | `adb shell pm clear com.nexvault.wallet.debug` (screen woken first) → `ANDROID_SERIAL=adb-26111jEGR13989-MJzh3R._adb-tls-connect._tcp ./gradlew :app:connectedDebugAndroidTest` | **BUILD SUCCESSFUL, exit 0 — 5/5 pass**: `BackupPolicyTest` 3/3, `CreationFlowE2ETest` 1/1 (create → verify → PIN → Home), `ExampleInstrumentedTest` 1/1. XML: `app/build/outputs/androidTest-results/connected/debug/TEST-Pixel 6a - 17.xml` |
+
+`spotless` was not used as evidence anywhere (no configuration block — a no-op).
+
+## Phase 0 flip table (owner decision Q1)
+
+Basis, in this order: (1) the row's CR task file has **no open finding**; (2) its deliverable has
+been exercised by a device walk or an instrumented test **or** its missing coverage is explicitly
+owned elsewhere; (3) both gates and the full suite are green on the closing tree (A1–A2).
+
+| Row | Findings state | Verification basis | Verdict |
+| --- | --- | --- | --- |
+| 1.1 Project scaffolding | 1.1-3 **Closed** 2026-09-27 (reviewer-verified on device) | Build/packaging green; the scaffold is what every walk has run on | **`[x]`** |
+| 1.2 Design system & theme | **1.2-6, 1.2-7 open** → 4.17; 1.2-5 composables → 4.18 | Components render in every walk, but open findings remain | stays `[~]` |
+| 1.3 Security module | no open rows | Suite repaired by 2.0.1 (64 tests / 1 skipped); PIN, mnemonic, import/flows walked | **`[x]`** |
+| 1.4 DataStore & preferences | **1.4-4 open** → 4.17 | 1.4-1 fixed by 2.0.2b; one open string-adoption finding remains | stays `[~]` |
+| 1.5 Domain models & repos | no open rows | 71 domain tests; use cases exercised through every walked flow | **`[x]`** |
+| 1.6 Data layer | 1.6-1 **Closed** by 2.0.2b (KeyStore-only + session gate) | 53 data tests incl. the Etherscan V2 round; wallet material walked | **`[x]`** |
+| 1.7 Onboarding | no open rows | Device walk M1–M11 (2.0.2b); 35 tests; creation E2E on device (A5) | **`[x]`** |
+| 1.8 Auth / unlock | no open rows | Cold-start unlock + lockout walked; 15 tests incl. TC-VM-009 | **`[x]`** |
+| 1.9 Main scaffold | no open rows | 5-tab shell re-walked in 2.0.3; the 4 placeholder tabs are 2.6–2.8 scope (recorded, not hidden) | **`[x]`** |
+| 2.1 Network module | 2.1-1 **Closed** by 2.0.6 | 20 tests (explorer + adapters); live balances/prices rendered in the 2.0.5 walk | **`[x]`** |
+| 2.2 Database module | 2.2-1 **Closed** by 2.0.6 | 3 Robolectric DAO tests; Room is the read model behind every walked screen | **`[x]`** |
+| 2.3 Chain management | no open rows | Chain switch walked; 2.3-1 (dead fields) fixed and verified | **`[x]`** |
+| 2.4 Home dashboard | 2.4-1 **Closed** by 2.0.6 (VM half) | 2 VM tests; Home walked with live prices/chart (2.0.5). TC-UI-004/005 → 4.18 | **`[x]`** |
+| 2.5 Token detail | 2.5-1 **Closed** by 2.0.6 | 6 VM tests; screen walked incl. the notice paths | **`[x]`** |
+| 2.0.1 | — | Nine judgments reviewed by the owner **in this close** (M-A1); suite 64 tests since | **`[x]`** |
+| 2.0.2 | — | Exit criteria met: happy path observed on the device (2.0.2b walk), entry point fixed, no crash filed | **`[x]`** |
+| 2.0.4b | M1–M5 | M3/M4 closed in this close (M-table below); M1/M2 suspended, M5 owed | stays `[~]` |
+| 2.9 Default token list | — | Seeded ETH/USDC rows rendered on the Home screen in the 2.0.5 walk; seeding logic covered by `RefreshBalancesUseCaseTest` | **`[x]`** |
+
+**Result: 15 rows `[x]`** (12 Phase 0 + 2.0.1 + 2.0.2 + 2.9), **3 rows stay `[~]`** (1.2, 1.4, 2.0.4b)
+— each with the reason above, none silently.
+
+## Consolidated Handoff — Phase 2.0 → Phase 2.6+ (union of all seven Phase 2.0 handoff lists)
+
+| Deferred | Why it is still deferred | Owner |
+| --- | --- | --- |
+| `TransactionRepositoryImpl` write paths (`estimateGas`, `sendNativeTransaction`, `sendTokenTransaction`) | Send flow is 2.6 (they throw `UnsupportedOperationException` today) | **2.6** |
+| Home/TokenDetail Send + Receive callbacks, "See All" | Destinations arrive with 2.6 / 2.7 / 2.8 / 3.3 (2.0.3 disabled them) | **2.6 / 2.7 / 2.8 / 3.3** |
+| "See All" device exercise | Needs real history (2.8) | **2.8** |
+| True pagination (`page`/`pageSize` ignored) and `updateTransactionStatus` chain check | History work | **2.8** |
+| Dedicated in-app history error banner for generic `ExplorerApiException` | History UI owns the surface | **2.8** |
+| Key-absent states on screens built later (send/receive/swap/history) | Their error surfaces arrive with their items | **2.6 / 2.7 / 3.3 / 2.8** |
+| Alchemy key still unused (no failover/RPC switching) | Signing/RPC choice | **2.6 / 2.7** |
+| WalletConnect project id consumed by nothing | DApp pairing | **3.1** |
+| TC-REPO-003/004, TC-VM-003/004/005, TC-UI-006, TC-UI-010, TC-INT-002 | TC ids registered by 2.0.6 | **2.6** |
+| TC-REPO-005, TC-UI-008 | TC ids registered by 2.0.6 | **2.8** |
+| TC-INT-003 | TC id registered by 2.0.6 | **3.1** |
+| TC-UI-007 | TC id registered by 2.0.6 | **3.2** |
+| TC-VM-010 | TC id registered by 2.0.6 | **3.3** |
+| TC-UI-009, TC-SECTEST-005, TC-INT-004; Settings-screen delete-last-wallet behaviour | Settings work (2.0.2b handoff) | **3.4** |
+| Release-vs-debug APK size (`doc/08`'s 25 MB bar, never measured on a release build) | Release build is 3.7 | **3.7** |
+| No CI: both gates only run when a human runs them; detekt does not analyse `src/androidTest` | Automation item | **4.3** |
+| Three coexisting Jackson variants (two transitive) | Revisit only if APK size matters | **4.4** |
+| `junit-jupiter`, `kotlinx-collections-immutable`, 4 unused bundles | Adopt-or-delete product decision | **4.5** |
+| `spotless` applied with no configuration (a no-op) | Configure or remove | **4.6** |
+| FLAG_SECURE on sensitive screens; private-key zeroing after signing; TC-SECTEST-001/002/003 | Security hardening pass | **4.7** |
+| PIN-based re-key of wallet material, biometric PIN recovery, change-PIN re-key | 2.0.2b chose KeyStore-only + session gate for that round | **4.7**-adjacent (unassigned) |
+| TC-REPO-001/002 (deep Web3j-mocked balance/metadata tests) | Needs a web3j-mocking approach; coverage bar owns the gap | **4.8** |
+| `ReportingExtension.file` Gradle-10 deprecation | Needs an upstream detekt plugin release | **4.9** |
+| Password-strength scale tops out at 75 of 100 | Product decision, no caller yet | **4.11** |
+| `SecureUtils` / `SecurityUtils` split (caused three 2.0.1 defects) | Public security API rename | **4.12** |
+| `@Ignore`d AndroidKeyStore round-trip test + TC-SECTEST-004 | Device-only test port | **4.13** |
+| TC-UI-001…005 instrumented UI tests + the onboarding-grid regression test (2.0.2b) | New roadmap row 4.18 | **4.18** |
+| Findings 1.2-6, 1.2-7, 1.4-4; placeholder-tab strings | String/token adoption | **4.17** |
+| Reactive root-router replacement (option C from 2.0.2b) | Out of that item's scope; revisit only if another mid-flow swap appears | unassigned |
+| `suggestWords` / mnemonic autocomplete | Dropped in 2.0.1 Q1; needs its own item if wanted | unassigned |
+| 2.0.4b's M1/M2 (funded history) and M5 (crash watch) | Owner's funding decision; M5 needs a device session. M3/M4 were closed by the 2.0.7 close (2026-09-28) | **2.0.4b** (stays `[~]`) |
+
+Also carried, unchanged in ownership: the ktlint layout-dialect reversal (owner decision reversing
+2.0.5's choice) and the 20 `TooManyFunctions` offenders (refactor only if the ceiling is hit), plus
+the paid-Etherscan-plan decision (owner) — all from the 2.0.5 / 2.0.4b handoffs.
+
+## 2.0.4b debt update — M3/M4 closed here
+
+The 2.0.6 production fix (the refresh use case swallowed its result) is what made these two rows
+observable at all. Walked on the Pixel 6a on **2026-09-28** (agent-executed at the owner's
+instruction, on `feature/2.0.7-record-and-close`; the 2.0.4b record carries the full detail):
+
+| # | Step | Observed | Verdict |
+| --- | --- | --- | --- |
+| M3 | Token detail on **BSC** (`chainid` 56) → the persistent plan notice | **"Transaction history for this chain is not covered by the current Etherscan plan."** rendered above "No transactions yet" (`/tmp/m3-20-plan-notice.png`). Required a real chain switch: Home → chain selector → BNB Smart Chain → BNB row | ✅ |
+| M4 | `ETHERSCAN_API_KEY` blanked → explicit "Not configured" | **"Transaction history is not configured. Add ETHERSCAN_API_KEY to local.properties and rebuild."** (`/tmp/m4-10-not-configured.png`). Key restored and the working build reinstalled afterwards; the real value was never printed by the app or written into any record | ✅ |
+
+**Procedure correction found by running it, now fixed in AGENTS.md:** blanking to the placeholder
+string `your_key_here` does *not* exercise the state — `ChainConfigProvider.isExplorerConfigured`
+checks `isNotBlank()`, so only an **empty** value is "not configured".
+
+M1 (mainnet history), M2 (Polygon history) and M5 (crash watch) remain owed, so 2.0.4b stays `[~]`.
+
+## Manual half — actions and confirmations (2026-09-27/28)
+
+| # | Action | Result |
+| --- | --- | --- |
+| M-A1 | Owner review of the nine 2.0.1 test-vs-implementation judgments (required for the 2.0.1 flip) | ✅ **CONFIRMED by the owner 2026-09-28** — rows 1–6, 8, 9 were stale test code; row 7 (`getWordList()` 100 → 2048 words) was the one real production bug, fixed. This is the explicit confirmation the roadmap required before 2.0.1 could leave `[~]`. |
+| M-A2 | Device observation of the BSC plan notice (M3) and the blank-key "Not configured" state (M4) | ✅ **agent-executed at the owner's instruction** ("DO these steps for me", 2026-09-28) — screenshots + UI-tree dumps; not claimed as an owner walk |
+| M-A3 | Owner acceptance of the flip table and direction to close | ✅ **ACCEPTED by the owner 2026-09-28** — "Accept and close 2.0.7"; the close (commit, `--no-ff` merge, push, branch delete, 2.0.7 → `[x]`) followed in the same pass |
+
+## Honesty notes
+
+- This item produced **no new automated coverage** — it certifies existing evidence and adds the
+  closing runs. The 299/0/0/1 and 5/5 figures are fresh re-executions (571 tasks), not cached.
+- The Phase 0 flips rest on the CR findings state **as recorded in the task files**, plus the walks;
+  they do not claim per-screen walk coverage beyond what those walks reported.
+- `doc/08`'s acceptance criteria are checked per item, not wholesale: 2.0.x items each recorded
+  their own criteria, and the roadmap carries what is still open (Phase 2.6+ rows).
+- The device's wallet was wiped by the A5 recipe (`pm clear`) and the E2E created a fresh one
+  (PIN `123456`, mnemonic generated on-screen, never logged) — same consequence as 2.0.6. The M3/M4
+  walk on 2026-09-28 created another such wallet (same PIN) because the connected-test run had
+  uninstalled the app and wiped its data; that wallet is what sits on the device now, on the BSC chain.
+- **The M4 walk surfaced one secrets-hygiene incident:** a verification grep printed the real
+  Etherscan key from a generated test `BuildConfig` file into the session transcript. It appeared in
+  no tracked file (`app/build/` is git-ignored; nothing was committed) and no record holds it; the
+  owner was told and may rotate the key.
 
 

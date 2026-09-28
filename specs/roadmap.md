@@ -52,10 +52,15 @@ without evidence.
 > TC-INT-001 creation-flow E2E included); one production defect found and fixed (the 2.0.4/2.0.4b
 > token-detail notices were dead states). Evidence:
 > `specs/features/2026-09-27-2.0.6-tc-traceability/validation.md`.
-> **The next open entry point is 2.0.7** (record and close). The Phase 2.0 remainder is proceeded
-> singly or as owner-approved grouped items (the G1–G5 grouping precedent). The outstanding
-> verification debt is now solely 2.0.4b's (M1/M2 suspended pending funding, M3–M5 owner-pending).
-> Phase 2.6+ still waits on Phase 2.0.
+> **2.0.7 (record and close) CLOSED 2026-09-28 — PHASE 2.0 IS COMPLETE (`[x]`).** The closing
+> record — fresh evidence (suite **299 / 0 / 0 / 1** from a 571-task `--rerun-tasks` run, both gates
+> exit 0, instrumented **5/5** on the Pixel, TC audit 52 = 25 ∪ 27), the Phase 0 flip table
+> (15 rows → `[x]`; 1.2 and 1.4 stay `[~]` for open 4.17/4.18 findings), the 2.0.4b M3/M4 device
+> checks and the consolidated Handoff — is
+> `specs/features/2026-09-20-2.0.0-stabilization/validation.md` §"2.0.7 — Phase 2.0 close".
+> 4.15 closed as refuted. **The next open entry point is 2.6** (Send transaction flow);
+> Phase 2.6+ is unblocked. The only remaining verification debt is 2.0.4b's (M1/M2 suspended pending
+> funding, M5 crash watch owed — M3/M4 closed by the 2.0.7 close).
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -92,10 +97,16 @@ without evidence.
 
 Tasks 1.1–2.5 were implemented by feeding `doc/prompts/01…15` to an agent, one file per
 task, with no feature spec, no verification step and **no code review**. The code they
-produced is real and mostly sound — but **every item below is `[~]`, because not one of
-them was ever verified on a device and both quality gates they claimed to satisfy are
-red.** The legacy CR gate (Phase 1.9, below) reviews them one by one; each row links to
-its CR task file.
+produced is real and mostly sound. The legacy CR gate (Phase 1.9, below) reviewed them one
+by one; each row links to its CR task file.
+
+**Re-graded 2026-09-27 by 2.0.7.** Every row sat `[~]` on two grounds — *never verified on a
+device* and *both quality gates red*. Both grounds are gone: the app has been walked since
+2026-09-25 (2.0.2b → 2.0.6, with instrumented tests since 2.0.6), and both gates are green since
+2.0.5. Rows whose CR findings are all closed now read `[x]`; **1.2 and 1.4 stay `[~]`** because
+findings 1.2-6, 1.2-7 and 1.4-4 (all string/token adoption, owned by 4.17) and 1.2-5's composable
+residue (4.18) are still open. Per-row basis: `features/2026-09-20-2.0.0-stabilization/validation.md`
+§"2.0.7 — Phase 2.0 close" (flip table).
 
 Evidence of the era's failure mode: `doc/04-IMPLEMENTATION-PLAN-PHASE1.md` ends with
 "All Phase 1 unit tests pass" and "Detekt and ktlint pass with zero issues" — both
@@ -103,20 +114,20 @@ statements are false today, and there is no record they were ever true.
 
 | Item | Deliverable | Evidence in tree | CR task | Status |
 | --- | --- | --- | --- | --- |
-| 1.1 Project scaffolding | Multi-module Gradle build, version catalog | `settings.gradle.kts` (20 modules), `gradle/libs.versions.toml` | [1.1](features/2026-09-21-legacy-code-review/tasks/1.1-project-scaffolding.md) | `[~]` |
-| 1.2 Design system & theme | `core:core-ui` | 29 source files: `theme/` 6, `components/` 16, `animation/` 3, `util/` 2, `mapper/` + `preview/` 2 | [1.2](features/2026-09-21-legacy-code-review/tasks/1.2-design-system-theme.md) | `[~]` |
-| 1.3 Security module | `core:core-security` | 10 source + 5 test files (KeyStore, Tink, BIP-39/44, biometric, PIN validation) — suite repaired by 2.0.1: **61 tests, 0 fail, 1 skipped** | [1.3](features/2026-09-21-legacy-code-review/tasks/1.3-security-module.md) | `[~]` |
-| 1.4 DataStore & preferences | `core:core-datastore` | 8 source + 4 test files; 27 tests pass | [1.4](features/2026-09-21-legacy-code-review/tasks/1.4-datastore-preferences.md) | `[~]` |
-| 1.5 Domain models & repository interfaces | `domain` | 32 source files (7 models, 5 repository interfaces, 20 use cases) + 10 test files; 63 tests pass | [1.5](features/2026-09-21-legacy-code-review/tasks/1.5-domain-models-repositories.md) | `[~]` |
-| 1.6 Data layer | `data` | 11 source files: 5 repository impls + 5 mappers + `RepositoryModule`; 27 tests pass | [1.6](features/2026-09-21-legacy-code-review/tasks/1.6-data-layer.md) | `[~]` |
-| 1.7 Onboarding (parts 1–2) | `feature:feature-onboarding` | 12 source + 5 test files; 30 tests pass | [1.7](features/2026-09-21-legacy-code-review/tasks/1.7-onboarding.md) | `[~]` |
-| 1.8 Auth / unlock | `feature:feature-auth` | 3 source + 1 test file; 14 tests pass | [1.8](features/2026-09-21-legacy-code-review/tasks/1.8-auth-unlock.md) | `[~]` |
-| 1.9 Main scaffold & navigation shell | `app` | `MainScreen` with 5 tabs — **4 render `PlaceholderTabScreen`** | [1.9](features/2026-09-21-legacy-code-review/tasks/1.9-main-scaffold-navigation.md) | `[~]` |
-| 2.1 Network module | `core:core-network` | 19 files: CoinGecko + explorer APIs, Web3j provider, interceptors, adapters — **no tests** | [2.1](features/2026-09-21-legacy-code-review/tasks/2.1-network-module.md) | `[~]` |
-| 2.2 Database module | `core:core-database` | 10 files: 4 entities, 4 DAOs, DB, DI; schema `1.json` — **no tests** | [2.2](features/2026-09-21-legacy-code-review/tasks/2.2-database-module.md) | `[~]` |
-| 2.3 Chain management | Chain switching | 3 chain use cases, `ChainUiMapper`, `ChainSelectorDropdown`, `ChainBadge`, `ChainIconMapper` — **no tests** | [2.3](features/2026-09-21-legacy-code-review/tasks/2.3-chain-management.md) | `[~]` |
-| 2.4 Home dashboard | `feature:feature-home` | 4 files: `HomeScreen`, `HomeViewModel`, `HomeUiState`, `AddTokenDialog` — **no tests** | [2.4](features/2026-09-21-legacy-code-review/tasks/2.4-home-dashboard.md) | `[~]` |
-| 2.5 Token detail | `feature:feature-tokens` | 3 files: `TokenDetailScreen`, `TokenDetailViewModel`, `TokenDetailUiState` — **no tests** | [2.5](features/2026-09-21-legacy-code-review/tasks/2.5-token-detail.md) | `[~]` |
+| 1.1 Project scaffolding | Multi-module Gradle build, version catalog | `settings.gradle.kts` (20 modules), `gradle/libs.versions.toml`; finding 1.1-3 closed 2026-09-27 (instrumented 5/5 on the device) | [1.1](features/2026-09-21-legacy-code-review/tasks/1.1-project-scaffolding.md) | `[x]` |
+| 1.2 Design system & theme | `core:core-ui` | 29 source files: `theme/` 6, `components/` 16, `animation/` 3, `util/` 2, `mapper/` + `preview/` 2 — findings 1.2-6/1.2-7 open (4.17), 1.2-5 → 4.18 | [1.2](features/2026-09-21-legacy-code-review/tasks/1.2-design-system-theme.md) | `[~]` — open findings |
+| 1.3 Security module | `core:core-security` | 10 source + 5 test files (KeyStore, Tink, BIP-39/44, biometric, PIN validation) — suite repaired by 2.0.1: **64 tests, 0 fail, 1 skipped**; flows walked | [1.3](features/2026-09-21-legacy-code-review/tasks/1.3-security-module.md) | `[x]` |
+| 1.4 DataStore & preferences | `core:core-datastore` | 8 source + 4 test files; 29 tests pass — finding 1.4-4 open (4.17) | [1.4](features/2026-09-21-legacy-code-review/tasks/1.4-datastore-preferences.md) | `[~]` — open finding |
+| 1.5 Domain models & repository interfaces | `domain` | 32 source files (7 models, 5 repository interfaces, 20 use cases) + 12 test files; 71 tests pass | [1.5](features/2026-09-21-legacy-code-review/tasks/1.5-domain-models-repositories.md) | `[x]` |
+| 1.6 Data layer | `data` | 11 source files: 5 repository impls + 5 mappers + `RepositoryModule`; 53 tests pass; 1.6-1 closed by 2.0.2b | [1.6](features/2026-09-21-legacy-code-review/tasks/1.6-data-layer.md) | `[x]` |
+| 1.7 Onboarding (parts 1–2) | `feature:feature-onboarding` | 12 source + 5 test files; 35 tests pass; device walk M1–M11 (2.0.2b) + the creation E2E | [1.7](features/2026-09-21-legacy-code-review/tasks/1.7-onboarding.md) | `[x]` |
+| 1.8 Auth / unlock | `feature:feature-auth` | 3 source + 1 test file; 15 tests pass; cold-start unlock and lockout walked | [1.8](features/2026-09-21-legacy-code-review/tasks/1.8-auth-unlock.md) | `[x]` |
+| 1.9 Main scaffold & navigation shell | `app` | `MainScreen` with 5 tabs — 4 render `PlaceholderTabScreen` (Phase 2.6–2.8 scope); shell re-walked in 2.0.3 | [1.9](features/2026-09-21-legacy-code-review/tasks/1.9-main-scaffold-navigation.md) | `[x]` |
+| 2.1 Network module | `core:core-network` | 19 files: CoinGecko + explorer APIs, Web3j provider, interceptors, adapters — **20 tests** (2.0.4/2.0.4b explorer + 2.0.6 adapters); live data walked | [2.1](features/2026-09-21-legacy-code-review/tasks/2.1-network-module.md) | `[x]` |
+| 2.2 Database module | `core:core-database` | 10 files: 4 entities, 4 DAOs, DB, DI; schema `1.json` — **3 Robolectric DAO tests** (2.0.6) | [2.2](features/2026-09-21-legacy-code-review/tasks/2.2-database-module.md) | `[x]` |
+| 2.3 Chain management | Chain switching | 3 chain use cases, `ChainUiMapper`, `ChainSelectorDropdown`, `ChainBadge`, `ChainIconMapper` — chain tests exist in `domain`/`data`; 2.3-1 fixed + verified; chain switch walked | [2.3](features/2026-09-21-legacy-code-review/tasks/2.3-chain-management.md) | `[x]` |
+| 2.4 Home dashboard | `feature:feature-home` | 4 files: `HomeScreen`, `HomeViewModel`, `HomeUiState`, `AddTokenDialog` — **2 VM tests** (TC-VM-001/002, 2.0.6); walked with live prices/chart | [2.4](features/2026-09-21-legacy-code-review/tasks/2.4-home-dashboard.md) | `[x]` |
+| 2.5 Token detail | `feature:feature-tokens` | 3 files: `TokenDetailScreen`, `TokenDetailViewModel`, `TokenDetailUiState` — **6 VM tests** (2.0.6, matrix appendix); walked | [2.5](features/2026-09-21-legacy-code-review/tasks/2.5-token-detail.md) | `[x]` |
 
 Prompt files 16–29 (Send, Receive, History, default token list, all of Phase 3, unit
 tests, UI tests, performance pass) were **never written**. That work now flows through
@@ -156,6 +167,11 @@ verified.
 on a device, the security suite compiles and passes, the dead ends are gone, and both
 quality gates are green.
 
+**Status 2026-09-27: the goal is met and the phase is closed by 2.0.7** — the app has been walked
+and instrumented-tested on a Pixel 6a since 2.0.2b, `core-security`'s suite compiles and passes
+(64 tests, 1 skipped), the dead ends are disabled with visible captions (2.0.3), and both gates are
+green (2.0.5). 2.0.1–2.0.6 are `[x]`; 2.0.4b remains `[~]` for its M1/M2/M5 verification debt only.
+
 Order within the phase is strict: 2.0.1 → 2.0.2 → **2.0.2b** → 2.0.3 → 2.0.4 → **2.0.4b** → 2.0.5 →
 2.0.6 → 2.0.7.
 2.0.2b was inserted on 2026-09-21: 2.0.2's first real run exposed a critical defect that
@@ -163,11 +179,12 @@ blocks every remaining step. 2.0.4b was inserted on 2026-09-26: 2.0.4's device w
 that the explorer still speaks the **deprecated Etherscan V1** API, so transaction history
 cannot return data (finding D2).
 
-### 2.0.1 — Repair the `core-security` test suite `[~]`
-**Automatic half DONE 2026-09-21** — 61 tests, 0 failures, 1 skipped; the suite compiles
-and runs for the first time. Stays `[~]` until the owner reviews the nine
-test-vs-implementation judgments recorded in
-`specs/features/2026-09-20-2.0.0-stabilization/validation.md`.
+### 2.0.1 — Repair the `core-security` test suite `[x]`
+**CLOSED 2026-09-27 by the Phase 2.0 close (2.0.7).** Automatic half done 2026-09-21 — the suite
+compiles and runs for the first time; **64 tests, 0 failures, 1 skipped** (61 at the repair, +3
+added by 2.0.6). The manual half for a test-repair item is the owner's sign-off on the nine
+test-vs-implementation judgments, recorded as an explicit confirmation at the close
+(`specs/features/2026-09-20-2.0.0-stabilization/validation.md` §2.0.7, M-A1).
 
 Originally: 64 tests existed and had never executed, because
 `:core:core-security:compileDebugUnitTestKotlin` did not compile:
@@ -195,8 +212,9 @@ Exit criteria: `:core:core-security:testDebugUnitTest` compiles and passes; ever
 resolved symbol is traced to a real production API in `validation.md`. ✅ met
 2026-09-21.
 
-### 2.0.2 — First run on a device `[~]`
-**IN PROGRESS 2026-09-21.** Device: **Pixel 6a, Android 16 (API 36)**, adb over Wi-Fi.
+### 2.0.2 — First run on a device `[x]`
+**CLOSED 2026-09-27 by the Phase 2.0 close (2.0.7).** Device: **Pixel 6a, now Android 17
+(API 37)** over adb; the first runs were on API 36.
 Evidence: `specs/features/2026-09-20-2.0.0-stabilization/validation.md` §2.0.2 and §2.0.2b.
 
 Done:
@@ -212,10 +230,12 @@ Done:
   Item 4.14 is closed as refuted.
 - The SDK 37 toolchain and the `compileSdk` 37.2 / `targetSdk` 37 bump.
 
-Not done: the rest of the happy path. One tap past Welcome it hits **2.0.2b**.
+Not done in this item: the rest of the happy path — one tap past Welcome it hit **2.0.2b**.
 
-Exit criteria: the main happy path has been observed on a device, with screenshots or a
-written trace, and any crash is filed as its own roadmap item.
+Exit criteria: met by the 2.0.2b walk (Welcome → mnemonic → verify → Set PIN → Home, cold-start
+unlock, both import paths; written trace M1–M11) and by every walk since, up to the instrumented
+creation-flow E2E (2.0.6). No crash was filed without an owner: the two defects the first run found
+were fixed in 2.0.2b, and the stray-ActionBar prediction was refuted and closed (4.14).
 
 ### 2.0.2b — Repair the onboarding flow `[x]`
 **CLOSED 2026-09-25 — owner-directed close after the device walk passed.** Own spec:
@@ -357,8 +377,10 @@ keyed surface (recorded in the item's `validation.md`).
 ### 2.0.4b — Migrate the explorer to Etherscan API V2 `[~]`
 **CLOSED 2026-09-26 as `[~]` — MERGED TO `main` (`--no-ff`) and pushed, NOT VERIFIED; the local
 feature branch is deleted.** Basis: reviewer verification **PASS** on `e82eba2` (`744251d`, R1–R9;
-R10 device re-walk blocked by a locked phone). The manual half is unverified: M1/M2 suspended with the
-owner's funding decision, M3–M5 owner-pending — the row moves to `[x]` only when M1/M2 pass.
+R10 device re-walk blocked by a locked phone). The manual half: **M3/M4 PASSED 2026-09-28** (the BSC
+plan notice and the blank-key "Not configured" notice both rendered on the Pixel 6a — see the 2.0.7
+close record), M1/M2 remain suspended with the owner's funding decision and **M5 is owed** — the row
+moves to `[x]` only when M1/M2 pass.
 **ADDED 2026-09-26 by owner decision on 2.0.4 finding D2.** Own spec:
 `specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/` (requirements with the owner Q/A and the
 per-screen table, plan with the task groups and the implementation decisions, validation with the
@@ -492,10 +514,27 @@ authoritative register is `traceability.md`; the close record is `validation.md`
 earlier "only instrumented test is the template stub" claim was already stale — `BackupPolicyTest`
 (3 device tests) has existed since 2.0.2.
 
-### 2.0.7 — Record and close `[ ]`
+### 2.0.7 — Record and close `[x]`
 Write `specs/features/2026-09-20-2.0.0-stabilization/validation.md` covering 2.0.1–2.0.6
 with commands, observed results, and absolute artifact paths; then flip the Phase 0 rows
 that earn it to `[x]`, and carry forward anything still deferred as a Handoff list.
+
+**CLOSED 2026-09-28 as `[x]` — owner-directed after both halves, with the Phase 0 re-grade accepted.
+Merged to `main` (`--no-ff`), pushed, branch deleted.** The umbrella section
+(`validation.md` §"2.0.7 — Phase 2.0 close") carries: the per-item summary 2.0.1 → 2.0.6; the fresh
+evidence block (suite **299 / 0 / 0 / 1** from a 571-task `--rerun-tasks` run, both gates exit 0,
+APK `/home/superguo/Projects/NexVault/app/build/outputs/apk/debug/app-debug.apk`, TC audit
+52 = 25 ∪ 27 with 25/25 adjacency, instrumented **5/5** on the Pixel 6a); the Phase 0 flip table
+(**15 rows → `[x]`** — 12 Phase 0 whose findings are all closed, plus 2.0.1, 2.0.2 and 2.9 — with
+1.2/1.4 staying `[~]` for open 4.17/4.18 findings and 2.0.4b for M1/M2/M5); the consolidated Handoff
+(union of all seven Phase 2.0 handoff lists); and the 2.0.4b **M3/M4 rows, both walked and passing on
+the device 2026-09-28** (the BSC plan notice and the blank-key "Not configured" notice — the two
+states 2.0.6's fix un-dead-coded). Manual half: M-A1 (the owner's confirmation of 2.0.1's nine
+judgments) and M-A3 (flip-table acceptance) both confirmed 2026-09-28; M-A2 was the agent-executed
+M3/M4 device walk at the owner's instruction. Records updated in the same pass: the Phase 0 table +
+header, 2.0.1/2.0.2/2.9, the current-position block, AGENTS.md (standing gate → **Phase 2.0 closed,
+next entry 2.6**; plus the corrected key-blanking note), mission.md, tech-stack, and 4.15 closed as
+refuted.
 
 ---
 
@@ -508,7 +547,7 @@ Unblocked only after Phase 2.0 closes.
 | 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[ ]` |
 | 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[ ]` |
 | 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
-| 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[~]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); verification per the Phase 2 flow |
+| 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
 
 **2.6 entry conditions (verified in code):** `GasEstimate`, `GasOption` and
 `SendTransactionParams` already exist in `domain/model/transaction/`, and
@@ -566,7 +605,7 @@ already in the version catalog for 3.5 and 3.1.
 | 4.12 | Split `SecureUtils` / `SecurityUtils` — two unrelated objects in one file, one hosting extension functions. It caused three of the six 2.0.1 test defects by making the API surface guessable-but-wrong. |
 | 4.13 | Port the `@Ignore`d AndroidKeyStore tests from 2.0.1 to `app/src/androidTest` once 2.0.2 has established a device. |
 | 4.14 | ~~Normalise the Android theme~~ **REFUTED 2026-09-21** — the Welcome screen renders with no ActionBar: `MainActivity` extends plain `FragmentActivity`, not `AppCompatActivity`, so the `MaterialComponents` theme never builds one. The prediction was wrong; nothing to fix. |
-| 4.15 | ~~Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36.~~ **PREMISE GONE 2026-09-27** — the Pixel 6a was upgraded to **Android 17 / API 37**, so the 2.0.x device walks run on the target API. Keep the item only if a dedicated `targetSdk`-behaviour pass is still wanted before 3.7; otherwise close it. |
+| 4.15 | ~~Decide whether `targetSdk 37` runtime behaviour needs verification before 3.7; the only available device is API 36.~~ **CLOSED 2026-09-27 by 2.0.7 as refuted** — the Pixel 6a was upgraded to **Android 17 / API 37**, so every 2.0.x walk since 2.0.2's toolchain bump has run on the target API; nothing separate remains to check. |
 | 4.16 | Migrate `hiltViewModel` to `androidx.hilt.lifecycle.viewmodel.compose` — the old `androidx.hilt.navigation.compose` entry point is deprecated. Surfaced by the first build on the remote host; handle alongside the next `hilt-navigation-compose` bump. |
 | 4.17 | Adopt design tokens, string resources and component previews across feature modules and `core-ui` (legacy CR findings 1.2-1 … 1.2-4; owner-approved 2026-09-21). |
 | 4.18 | Instrumented Compose UI tests for the screens that already exist — Welcome, CreateWallet, `PinInputField`, Home token list and pull-to-refresh (TC-UI-001…005 registered by 2.0.6, incl. the 2.0.2b onboarding-grid handoff and the finding 1.2-5 composable residue). Screen-level TC-UI cases for later screens land with their feature items (2.6/2.8/3.2/3.4). |
