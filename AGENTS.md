@@ -13,11 +13,12 @@ Before every write to disk, an **ask-user-question round** covering requirements
 must be answered by the user.
 
 **Standing gate:** the Phase 1.9 legacy code review gate is **closed** (2026-09-25,
-15/15 signed off). The open entry point is now the **Phase 2.0 remainder — 2.0.7** first
-(`specs/roadmap.md`); 2.0.5 (quality gates) and **2.0.6 (TC traceability) are both verified
-`[x]`** as of 2026-09-27 — every `doc/07` TC id is mapped or registered, both gates green,
-299 unit tests + 5 instrumented device tests green, reviewer-verified and owner-closed.
-Phase 2.6+ still waits on Phase 2.0.
+15/15 signed off). **Phase 2.0 is CLOSED `[x]` (2026-09-28, item 2.0.7 — record and close)**:
+2.0.1–2.0.6 verified, the Phase 0 rows re-graded (15 → `[x]`, 1.2/1.4 `[~]` for open 4.17/4.18
+findings), both gates green, the app device-walked and instrumented-tested, and every `doc/07` TC id
+mapped or registered. The open entry point is now **Phase 2.6 — Send transaction flow**
+(`specs/roadmap.md`). The only remaining verification debt is 2.0.4b's (M1/M2 suspended pending
+funding, M5 crash watch owed — M3/M4 closed 2026-09-28).
 
 ## Part B — Project Constitution (authoritative)
 
@@ -101,9 +102,10 @@ See `specs/dev-environment.md` §7.)
 - Never write "done", "complete", or "works" in a validation record without a command
   and its observed result. Baseline 2026-09-21 (kept for contrast): 223 unit tests green
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
-  gates red. Current 2026-09-27: **299** tests green (plus 5 instrumented device tests), the
-  app walked on a Pixel 6a, both gates green **and 2.0.5 + 2.0.6 verified `[x]`**, 4 of 5 tabs
-  still placeholders until Phase 2.6–2.8.
+  gates red. Current 2026-09-28: **299** tests green (plus 5 instrumented device tests), the
+  app walked on a Pixel 6a, both gates green, **Phase 2.0 closed `[x]` (2.0.1–2.0.6 verified,
+  Phase 0 re-graded, 2.0.7 closed)**; 2.0.4b `[~]` for M1/M2/M5; 4 of 5 tabs still
+  placeholders until Phase 2.6–2.8.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes
@@ -120,8 +122,10 @@ See `specs/dev-environment.md` §7.)
 - `local.properties` (git-ignored) holds `INFURA_API_KEY`, `ALCHEMY_API_KEY`,
   `COINGECKO_API_KEY`, `ETHERSCAN_API_KEY`, `WALLETCONNECT_PROJECT_ID`; they are exposed
   via BuildConfig. Never commit a real key; never log key material or mnemonics.
-- Real keys were supplied 2026-09-25 and are the supported path (2.0.4); blanking one
-  (back to `your_key_here`) remains the way to exercise the "Not configured" states.
+- Real keys were supplied 2026-09-25 and are the supported path (2.0.4); setting one to an
+  **empty** value remains the way to exercise the "Not configured" states — the placeholder string
+  `your_key_here` does **not** trip them (`ChainConfigProvider.isExplorerConfigured` checks
+  `isNotBlank()`, corrected 2026-09-28 by the 2.0.4b M4 walk).
   Network-backed screens degrading without a key is **expected**, not a bug to "fix" by
   faking data.
 

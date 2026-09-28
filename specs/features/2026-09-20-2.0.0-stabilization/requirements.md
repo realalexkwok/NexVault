@@ -101,3 +101,23 @@ unverified until it runs.
 - **`suggestWords` feature** — deliberately dropped. If mnemonic autocomplete is wanted
   for the import screen, it needs its own roadmap item and a feature spec; the deleted
   tests document the intended contract if anyone revisits it.
+
+---
+
+# Phase 2.0 close — owner decisions (item 2.0.7, planning round 2026-09-27)
+
+> The roadmap's 2.0.7 row puts the Phase 2.0 closing record in this directory, so the close's
+> decision table lives here rather than in a new dated spec dir. Evidence:
+> `validation.md` §"2.0.7 — Phase 2.0 close"; branch `feature/2.0.7-record-and-close`.
+
+| Q | Question | Decision |
+| --- | --- | --- |
+| Q1 | Which rows flip to `[x]` at the close? | **Flip what's earned.** The 12 Phase 0 rows whose CR findings are all closed (1.1, 1.3, 1.5–1.9, 2.1–2.5) plus 2.0.1, 2.0.2 and 2.9 → `[x]`, each with its own justification in the flip table. Rows **1.2** and **1.4** stay `[~]` — their open findings 1.2-6, 1.2-7 and 1.4-4 belong to 4.17, and 1.2-5's composable residue to 4.18. **2.0.4b** stays `[~]` for its M1–M5 debt. |
+| Q2 | 2.0.4b's M3/M4 became testable after 2.0.6 fixed the dead notice code — handle them how? | **Check them during the close.** M3: TokenDetail on BSC → the persistent plan-gate notice. M4: blank `ETHERSCAN_API_KEY` → explicit "Not configured" on all four chains, then restore. Recorded in the umbrella; M1/M2 (funding) and M5 (crash watch) stay pending on 2.0.4b's row. |
+| Q3 | Roadmap 4.15 (targetSdk-37 pass) is marked PREMISE GONE — close it? | **Close it as refuted**, like 4.14: the device runs Android 17 / API 37 and the 2.0.x walks already ran on the target API. |
+| Q4 | Two historical records still carry the old Wi-Fi endpoint as dated snapshots — scrub them? | **Leave them.** They are dated 2026-09-21/25 snapshots, not living docs; the "never record the endpoint" rule already applies going forward. |
+
+**Definition of done for 2.0.7:** the umbrella section carries fresh commands/results/absolute
+paths; the flip table matches the tree (no row flips with an open finding; 2.0.1's flip carries an
+explicit owner confirmation of its nine judgments); the consolidated Handoff drops nothing from the
+seven Phase 2.0 handoff lists; both halves are recorded; AGENTS.md's standing gate points at 2.6.
