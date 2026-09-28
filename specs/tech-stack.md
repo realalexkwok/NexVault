@@ -273,6 +273,7 @@ as unimplemented with named owning roadmap items — the authoritative register 
 | Detekt | 1.23.8 — **already the latest published; no upgrade exists** | `config/detekt/detekt.yml` (`build.maxIssues: 0`, `maxLineLength: 120`, `TooManyFunctions` uniform ceiling **25**, `CommentOverPrivateFunction` off, `weights.complexity: 2`) | **0 issues → PASS** (2026-09-26, 2.0.5) |
 | ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | `.editorconfig` (2.0.5: the 11 `ktlint_official` layout rules disabled, `ktlint_function_naming_ignore_when_annotated_with = Composable`, everything else on) | **0 findings → PASS** (2026-09-26, 2.0.5) |
 | Spotless | **8.10.2** (G2, was 8.3.0) | **applied with no configuration block** | no-op — never cite it as evidence |
+| SonarScanner for Gradle (`org.sonarqube`) | **7.4.0.8496** (adopted 2026-09-28 by 2.6 task 0) | applied at the **root project only** (analyses the whole build as one project); host URL and token are passed on the command line, never in the build file | milestone scans per `roadmap.md` 2.10/3.8/4.19; baseline recorded before 2.6 |
 
 **Both gates are already on their newest available releases**, which has a consequence for
 roadmap 4.9: the Gradle 10 deprecation (`ReportingExtension.file`, raised by the Detekt

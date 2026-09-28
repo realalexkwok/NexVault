@@ -46,10 +46,10 @@ Policy (owner decisions 2026-09-28):
 - **Baseline first:** one baseline scan is recorded **before 2.6 starts**, so each checkpoint gates
   on **new code only** — no new blocker/critical issues, no new security hotspots, duplication not
   increasing. Coverage is *not* part of the gate until 4.8 sets the bar.
-- **Scanner:** deliberately **deferred to the first checkpoint's planning round**. The installed
-  `@sonar/scan` (npm, v5.0.0) is JS/TS-only and cannot analyse Kotlin; the realistic options are the
-  SonarScanner for Gradle (`org.sonarqube`, a build-file change needing the normal ask/spec flow) or
-  the standalone JVM `sonar-scanner` CLI. See `dev-environment.md` §"Milestone static-analysis scan".
+- **Scanner:** **resolved 2026-09-28 by 2.6's task 0 — SonarScanner for Gradle** (`org.sonarqube`
+  **7.4.0.8496**, root-applied; host URL and token on the command line, never in the build file).
+  The installed npm `@sonar/scan` is JS/TS-only and is not used. The server token is a **project
+  analysis token scoped to `NexVault`** (never a global one). See `dev-environment.md` §6b.
 - **Findings are triaged, never silently ignored:** each checkpoint's `validation.md` records the
   scan command, the counts, what was fixed, and what was accepted as debt with a named owner.
 - The scan is **not** a replacement for the per-commit gates: `detekt` and `ktlintCheck` stay the

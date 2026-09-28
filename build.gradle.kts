@@ -10,6 +10,10 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.spotless) apply false
+    // Milestone static-analysis scan (roadmap 2.10/3.8/4.19; owner decision 2026-09-28).
+    // Applied at the root on purpose: the `sonar` task analyses the whole multi-module build
+    // as one project. Host URL and token are passed on the command line, never in this file.
+    alias(libs.plugins.sonar)
 }
 
 subprojects {
