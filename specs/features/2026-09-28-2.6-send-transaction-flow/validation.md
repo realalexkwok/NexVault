@@ -90,8 +90,8 @@ feature layer and the repository; 3/3 tests.
 `SendViewModel`/`SendUiState` (validation, debounced estimate, MAX = balance − fee, key-absent
 state, PIN-confirmed submit) — `SendViewModelTest` **6/6** (TC-VM-003/004/005 + submit + wrong PIN);
 `SendScreen` (form → review → `ConfirmationDialog`-hosted PIN → result with "View on Explorer");
-core-ui `ConfirmationDialog` (TC-UI-010 — instrumented test file written, run tomorrow with the
-device).
+core-ui `ConfirmationDialog` (TC-UI-010) — instrumented `ConfirmationDialogTest` (3 cases) written
+and compiled (`:app:compileDebugAndroidTestKotlin` green); it runs tomorrow with the device.
 
 ## Task 4 — navigation re-enable (implemented, compiled)
 
