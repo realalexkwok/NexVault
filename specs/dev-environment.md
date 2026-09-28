@@ -234,6 +234,48 @@ Before claiming any roadmap item is verified, confirm:
       exit codes, not just "no output"
 - [ ] Absolute artifact paths and raw command output are in `validation.md`
 - [ ] The owner has walked the flow on the device and reported the result
+- [ ] For a phase close (2.10 / 3.8 / 4.19): the milestone scan has run and its findings are triaged
+      — see §6b
+
+## 6b. Milestone static-analysis scan (SonarQube)
+
+Owner decision 2026-09-28: every remaining phase ends with a scan-and-close item (**2.10**, **3.8**,
+**4.19**) that scans what the phase built before the phase is recorded and closed.
+
+**Server — the owner's local SonarQube Community Build (never SonarCloud; the source never leaves
+the machine):**
+
+```bash
+sudo docker start sonarqube          # the container already exists (owner-created)
+curl -s http://localhost:9000/api/system/status   # expect {"status":"UP", ...}
+open http://localhost:9000           # UI; generate a project token for the scan
+```
+
+Verified on 2026-09-28: **26.9.0.129388**, status UP. The Docker daemon is the snap install and its
+socket is root-only, hence `sudo`; the daemon must be running (`sudo snap start docker` if the
+container start fails).
+
+**Scanner — deliberately not yet chosen** (decided in the first checkpoint's planning round):
+
+| Candidate | Notes |
+| --- | --- |
+| **SonarScanner for Gradle** (`org.sonarqube`) | Best Kotlin/Android fit, consumes compiled classes and can feed JaCoCo coverage for 4.8. Touches the version catalog + root build script, so it needs the normal ask/spec flow and a `tech-stack.md` entry. |
+| **Standalone JVM `sonar-scanner` CLI** | No build-file change; needs `sonar-project.properties`. The local `~/sonar-scanner.zip` is a **corrupt 837 KB partial download** — re-download (~90 MB) before use. |
+
+**What does NOT work here:** the installed npm scanner `@sonar/scan` v5.0.0
+(`~/.local/share/pnpm/bin/sonar-scanner-npm`) — its own package description reads "Scanner for the
+JavaScript world"; it analyzes JS/TS/CSS/HTML and cannot analyse Kotlin. It is fine for the owner's
+other, TypeScript projects, not for NexVault.
+
+**Baseline and gate policy:**
+
+1. Record one **baseline scan before 2.6 starts** (server + chosen scanner must be settled first),
+   and keep its report with the phase-2 branch.
+2. Each checkpoint gates on **new code only**: no new blocker/critical issues, no new security
+   hotspots, duplication not increasing.
+3. Coverage is **not** part of the gate until 4.8 sets the coverage bar.
+4. The checkpoint's `validation.md` records the scan command, the counts, what was fixed, and what
+   was accepted as debt with a named owner. The scan never replaces `detekt`/`ktlintCheck`.
 
 ## 7. Environment facts verified on 2026-09-20
 

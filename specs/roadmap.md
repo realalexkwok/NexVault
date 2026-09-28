@@ -30,6 +30,32 @@ without evidence.
 - Agents do not `git commit` or `git push`; changes stay in the working tree for the
   owner. Merging into `main` is an owner action.
 
+## Milestone static-analysis scan (owner decision 2026-09-28)
+
+Every remaining phase ends with a **scan-and-close item**: it runs a static-analysis scan over
+everything the phase built, reconciles the findings, and only then writes the phase's
+`validation.md` and closes it. The checkpoints are **2.10** (Phase 2), **3.8** (Phase 3) and
+**4.19** (repo close-out) — the same "record and close" shape as 2.0.7, so the strict order makes
+a phase unable to end unscanned.
+
+Policy (owner decisions 2026-09-28):
+
+- **Server:** the owner's local SonarQube Community Build, verified running on 2026-09-28 as
+  **26.9.0.129388** at `http://localhost:9000` (started with `sudo docker start sonarqube`).
+  Code never leaves the machine — no SonarCloud.
+- **Baseline first:** one baseline scan is recorded **before 2.6 starts**, so each checkpoint gates
+  on **new code only** — no new blocker/critical issues, no new security hotspots, duplication not
+  increasing. Coverage is *not* part of the gate until 4.8 sets the bar.
+- **Scanner:** deliberately **deferred to the first checkpoint's planning round**. The installed
+  `@sonar/scan` (npm, v5.0.0) is JS/TS-only and cannot analyse Kotlin; the realistic options are the
+  SonarScanner for Gradle (`org.sonarqube`, a build-file change needing the normal ask/spec flow) or
+  the standalone JVM `sonar-scanner` CLI. See `dev-environment.md` §"Milestone static-analysis scan".
+- **Findings are triaged, never silently ignored:** each checkpoint's `validation.md` records the
+  scan command, the counts, what was fixed, and what was accepted as debt with a named owner.
+- The scan is **not** a replacement for the per-commit gates: `detekt` and `ktlintCheck` stay the
+  standing quality gates (AGENTS.md); the scan adds the milestone-wide view (duplication, complexity
+  trends, security hotspots).
+
 ## Current position
 
 > **Phase 1.9 (Legacy code review) is CLOSED 2026-09-25 — all 15 pre-SDD features reviewed and
@@ -61,6 +87,11 @@ without evidence.
 > 4.15 closed as refuted. **The next open entry point is 2.6** (Send transaction flow);
 > Phase 2.6+ is unblocked. The only remaining verification debt is 2.0.4b's (M1/M2 suspended pending
 > funding, M5 crash watch owed — M3/M4 closed by the 2.0.7 close).
+>
+> **Milestone scans added 2026-09-28 (owner decision):** each remaining phase now ends with a
+> scan-and-close item — **2.10**, **3.8**, **4.19** — running the local SonarQube over what the phase
+> built, gating on new code only, with a baseline recorded before 2.6 starts. See "Milestone
+> static-analysis scan" below.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -549,6 +580,7 @@ Unblocked only after Phase 2.0 closes.
 | 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[ ]` |
 | 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
 | 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
+| **2.10 Milestone scan & Phase 2 close** | Run the static-analysis scan over everything Phase 2 built (new-code gate), triage the findings, verify the Phase 2 checklist, then record and close the phase | repo-wide (`app`, `feature:*`, `data`) | Phase 2 checklist + the scan gate | `[ ]` — see "Milestone static-analysis scan" above |
 
 **2.6 entry conditions (verified in code):** `GasEstimate`, `GasOption` and
 `SendTransactionParams` already exist in `domain/model/transaction/`, and
@@ -581,6 +613,7 @@ anything — until then `refreshTransactionHistory` cannot produce a row, whatev
 | 3.5 Background sync | WorkManager balance/pending-tx sync with constraints | `core:core-network` + `data` | `AC-3.5` | `[ ]` |
 | 3.6 Deep linking | `ethereum:` and `wc:` intent handling | `app` | `AC-3.6` | `[ ]` |
 | 3.7 Final polish | Icon, splash, edge-to-edge, i18n (EN + ZH), R8 release run | `app` | `AC-3.6`, Phase 3 checklist | `[ ]` |
+| **3.8 Milestone scan & Phase 3 close** | Static-analysis scan over Phase 3 with the new-code gate, triage, Phase 3 checklist, then record and close | repo-wide | Phase 3 checklist + the scan gate | `[ ]` — see "Milestone static-analysis scan" above |
 
 `NftEntity`/`NftDao` (2.2) and `AddressBookEntity`/`AddressBookDao` (2.2) already exist
 as storage for 3.2 and 3.4. WorkManager (2.11.1) and the WalletConnect BOM (1.35.2) are
@@ -610,6 +643,7 @@ already in the version catalog for 3.5 and 3.1.
 | 4.16 | Migrate `hiltViewModel` to `androidx.hilt.lifecycle.viewmodel.compose` — the old `androidx.hilt.navigation.compose` entry point is deprecated. Surfaced by the first build on the remote host; handle alongside the next `hilt-navigation-compose` bump. |
 | 4.17 | Adopt design tokens, string resources and component previews across feature modules and `core-ui` (legacy CR findings 1.2-1 … 1.2-4; owner-approved 2026-09-21). |
 | 4.18 | Instrumented Compose UI tests for the screens that already exist — Welcome, CreateWallet, `PinInputField`, Home token list and pull-to-refresh (TC-UI-001…005 registered by 2.0.6, incl. the 2.0.2b onboarding-grid handoff and the finding 1.2-5 composable residue). Screen-level TC-UI cases for later screens land with their feature items (2.6/2.8/3.2/3.4). |
+| **4.19 Milestone scan & repo close-out** | Final static-analysis scan over the whole repository (new-code gate plus a reprioritised look at the accepted-debt list), triage, then the repo-level record and close — see "Milestone static-analysis scan" above |
 
 ---
 

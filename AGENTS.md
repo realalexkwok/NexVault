@@ -93,6 +93,18 @@ See `specs/dev-environment.md` §7.)
   script (root scripts included); detekt covers `src/main` and `src/test` only.
 - `spotless` is applied but **has no configuration block** — it is a no-op and must not
   be cited as evidence of quality.
+- **Milestone static-analysis scan (owner decision 2026-09-28).** Each remaining phase ends with a
+  scan-and-close item — **2.10** (Phase 2), **3.8** (Phase 3), **4.19** (repo close-out) — that runs
+  a SonarQube scan over what the phase built, triages the findings, and only then records and closes
+  the phase. Server: the owner's local SonarQube Community Build at `http://localhost:9000`
+  (`sudo docker start sonarqube`; verified 26.9.0.129388 on 2026-09-28) — never SonarCloud. A
+  **baseline scan is recorded before 2.6 starts**, so the gate is **new code only**: no new
+  blocker/critical issues, no new security hotspots, duplication not increasing; coverage enters the
+  gate only at 4.8. The scanner is **not yet chosen** (the installed npm `@sonar/scan` is JS/TS-only;
+  the Gradle plugin and the JVM CLI are the candidates) — it is decided in the first checkpoint's
+  planning round. Findings are fixed or accepted as named-owner debt in the checkpoint's
+  `validation.md`; the scan never replaces `detekt`/`ktlintCheck`. Recipe:
+  `specs/dev-environment.md` §"Milestone static-analysis scan".
 - Verification reports MUST include absolute paths of built artifacts.
 
 ### Verification debt rule (this repo's core discipline)
