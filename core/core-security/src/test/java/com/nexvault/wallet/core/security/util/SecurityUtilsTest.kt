@@ -130,4 +130,20 @@ class SecurityUtilsTest {
         chars.secureWipe()
         assertTrue(chars.all { it == '\u0000' })
     }
+
+    // TC-SEC-007: the hash of a stored PIN verifies for the same PIN.
+    @Test
+    fun testPasswordHashVerifiesForCorrectPassword() {
+        val storedHash = SecurityUtils.hashPassword("123456")
+
+        assertTrue(SecurityUtils.verifyPassword("123456", storedHash))
+    }
+
+    // TC-SEC-008: the hash of a stored PIN rejects a different PIN.
+    @Test
+    fun testPasswordHashRejectsIncorrectPassword() {
+        val storedHash = SecurityUtils.hashPassword("123456")
+
+        assertFalse(SecurityUtils.verifyPassword("654321", storedHash))
+    }
 }

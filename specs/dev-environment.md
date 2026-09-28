@@ -186,6 +186,24 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 ./gradlew :domain:test                # domain is a pure-Kotlin JVM module
 ./gradlew :core:core-security:testDebugUnitTest   # 61 tests, 1 skipped (repaired by 2.0.1)
 
+# --- instrumented tests (physical device; use the first connected device, see §2) ---
+adb shell pm clear com.nexvault.wallet.debug  # REQUIRED before the 2.0.6 creation-flow E2E —
+                                          # it assumes a fresh install and will wipe any wallet
+                                          # (the debug variant installs as …wallet.debug)
+adb shell input keyevent KEYCODE_WAKEUP; adb shell wm dismiss-keyguard  # the device must be
+                                          # awake — with the screen off the activity pauses
+                                          # instantly and Compose never attaches
+# AGP 9.4.1 quirk (found by 2.0.6): a serial containing ':' (the Wi-Fi TCP endpoint) makes the
+# utp result listener record an empty device id and the task fails even when every test passes.
+# Use the colon-free mDNS transport instead (the Pixel lists both, same physical phone):
+S="$(adb devices | awk 'NR>1 && $2=="device" && $1 !~ /:/ {print $1; exit}')"
+ANDROID_SERIAL="$S" ./gradlew :app:connectedDebugAndroidTest  # BackupPolicyTest (3) +
+                                          # CreationFlowE2ETest (1) + ExampleInstrumentedTest (1)
+
+# --- Robolectric ---
+# core:core-database runs Room DAO tests on the JVM under Robolectric (2.0.6); the module's
+# testOptions add --add-opens=java.base/jdk.internal.access=ALL-UNNAMED for JDK 17.
+
 # --- quality gates ---
 ./gradlew detekt                      # config: config/detekt/detekt.yml, maxIssues 0
 ./gradlew ktlintCheck                 # .editorconfig codifies the style since 2.0.5

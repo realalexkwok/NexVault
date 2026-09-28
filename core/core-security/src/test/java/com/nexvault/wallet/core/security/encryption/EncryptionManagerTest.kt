@@ -24,6 +24,7 @@ class EncryptionManagerTest {
         encryptionManager = EncryptionManager(keyStoreManager)
     }
 
+    // TC-SEC-006: password-path encrypt→decrypt round trip returns the original plaintext.
     @Test
     fun testEncryptDecryptWithPassword() {
         val plaintext = "Hello, World!".toByteArray(Charsets.UTF_8)

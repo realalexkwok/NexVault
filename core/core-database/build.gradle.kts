@@ -39,6 +39,16 @@ android {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
+    testOptions {
+        unitTests {
+            // 2.0.6: Room DAO tests run on the JVM under Robolectric.
+            isIncludeAndroidResources = true
+            all { test ->
+                // Robolectric's FileDescriptor interceptor needs module access on JDK 17.
+                test.jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+            }
+        }
+    }
 }
 
 ksp {
@@ -64,6 +74,7 @@ dependencies {
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.kotlinx.coroutines.test)

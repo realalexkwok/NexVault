@@ -115,7 +115,9 @@ Recorded here so no reader mistakes intent for achievement. The plain lines are 
 
 - The app **compiles and packages** (`app/build/outputs/apk/debug/app-debug.apk`), and
   162 unit tests across 6 modules pass.
-  → **274 tests / 0 failures / 0 errors / 1 skipped** as of 2026-09-26 (2.0.5).
+  → **299 tests / 0 failures / 0 errors / 1 skipped** as of 2026-09-27 (2.0.6; 274 at
+    2.0.5's close) plus **5 instrumented device tests** — BackupPolicy 3, the TC-INT-001
+    creation-flow E2E, and the app-context smoke test — green on the Pixel 6a.
 - The app has **never been run on a device or emulator** — no emulator is installed and
   no AVD exists. Every "the screen works" claim in the archive is therefore unverified.
   → **refuted 2026-09-21**: a physical Pixel 6a is attached, and the app has been built,

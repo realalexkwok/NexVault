@@ -74,7 +74,7 @@ harmless if ignored, and the new `BackupPolicyTest` locks the intended posture i
 | --- | --- | --- |
 | 1.1-1 (High, backup posture) | fixed by developer; **verified by reviewer (V1–V3, V5–V8) → row deleted** | Closed |
 | 1.1-2 (Low, tech-stack §2 wording) | fixed by developer; **verified by reviewer (V4) → row deleted** | Closed |
-| 1.1-3 (Low, `ExampleInstrumentedTest` package assertion) | **Open** — recorded in the task file for the developer session's next fix round | Open |
+| 1.1-3 (Low, `ExampleInstrumentedTest` package assertion) | **Closed 2026-09-27** — fixed by 2.0.6 (`67eb1a8`: `BuildConfig.APPLICATION_ID`), verified by the reviewer's 5/5 device run | Closed |
 
 ### Manual half
 

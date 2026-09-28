@@ -31,6 +31,7 @@ class ImportFromPrivateKeyUseCaseTest {
         ),
     )
 
+    // TC-UC-004: a valid 64-hex private key reaches the repository and yields success.
     @Test
     fun testWithValid64HexCallsRepository() = runTest {
         val privateKey = "a".repeat(64)

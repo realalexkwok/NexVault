@@ -70,6 +70,7 @@ class CreateWalletViewModelTest {
         )
     }
 
+    // TC-VM-006: on init the mnemonic is loaded — exactly 12 non-empty words.
     @Test
     fun draftLoadedOnInitWithoutPersisting() = runTest {
         stubGenerateSuccess()
@@ -79,6 +80,7 @@ class CreateWalletViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(12, state.mnemonicWords.size)
+        assertTrue(state.mnemonicWords.none { it.isEmpty() })
         assertEquals("0x1234...abcd", state.address)
         assertEquals("", state.walletId)
         assertFalse(state.isLoading)
