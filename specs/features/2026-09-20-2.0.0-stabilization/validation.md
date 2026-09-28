@@ -644,7 +644,8 @@ them — that is 2.0.5, and it still needs the `.editorconfig`-vs-reformat decis
 # 2.0.7 — Phase 2.0 close
 
 > Status: **CLOSED 2026-09-28 — owner-directed, both halves recorded (M-A1 and M-A3 confirmed, M-A2
-> walked).** Owner decisions for this item: `requirements.md` §"Phase 2.0 close — owner decisions
+> walked), and reviewer-verified PASS (`bb141fb`, V1–V7 on `main`; owner confirmation the same day).**
+> Owner decisions for this item: `requirements.md` §"Phase 2.0 close — owner decisions
 > (item 2.0.7)". Branch: `feature/2.0.7-record-and-close` (committed, merged to `main` with
 > `--no-ff`, pushed, branch deleted). **This item changed records only** — no production, test or
 > build-script file is touched (diff is `specs/` + `AGENTS.md`).

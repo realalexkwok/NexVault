@@ -519,7 +519,8 @@ Write `specs/features/2026-09-20-2.0.0-stabilization/validation.md` covering 2.0
 with commands, observed results, and absolute artifact paths; then flip the Phase 0 rows
 that earn it to `[x]`, and carry forward anything still deferred as a Handoff list.
 
-**CLOSED 2026-09-28 as `[x]` — owner-directed after both halves, with the Phase 0 re-grade accepted.
+**CLOSED 2026-09-28 as `[x]` — owner-directed after both halves, with the Phase 0 re-grade accepted,
+and reviewer-verified PASS (`bb141fb`, V1–V7 executed on `main`; owner confirmation the same day).
 Merged to `main` (`--no-ff`), pushed, branch deleted.** The umbrella section
 (`validation.md` §"2.0.7 — Phase 2.0 close") carries: the per-item summary 2.0.1 → 2.0.6; the fresh
 evidence block (suite **299 / 0 / 0 / 1** from a 571-task `--rerun-tasks` run, both gates exit 0,
