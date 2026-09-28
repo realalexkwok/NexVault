@@ -789,4 +789,25 @@ M1 (mainnet history), M2 (Polygon history) and M5 (crash watch) remain owed, so 
   no tracked file (`app/build/` is git-ignored; nothing was committed) and no record holds it; the
   owner was told and may rotate the key.
 
+## Reviewer handoff — requested 2026-09-28 (developer note, not a verdict)
+
+The owner opened a code-reviewer session for the 2.0.7 close. The item is already merged and pushed
+(`main` == `origin/main` == `6fc9d0b`, the `--no-ff` merge of `ddc2e25`), so the reviewer works
+against `main` rather than a branch. What it is asked to verify — nothing below is claimed as
+verified by the reviewer:
+
+| # | Claim to check | How |
+| --- | --- | --- |
+| V1 | The fresh runs really are green | `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck --rerun-tasks --continue; echo $?` -> exit 0, no failed tasks, **299 / 0 / 0 / 1** summed from `<module>/build/test-results/.../TEST-*.xml` |
+| V2 | The TC audit still holds | re-extract `doc/07` ids vs `// TC-` markers in `src/test` + `src/androidTest`; expect 52 = 25 ∪ 27, 0 orphans, 25/25 markers directly above a `@Test` |
+| V3 | The flip table matches the tree | `grep -c '\*\*Open\*\*' specs/features/2026-09-21-legacy-code-review/tasks/*.md` -> only 1.2 (x2) and 1.4 (x1) non-zero; i.e. every row flipped to `[x]` has no open finding, and the rows left `[~]` are exactly the ones with open findings (plus 2.0.4b's M1/M2/M5 debt) |
+| V4 | The consolidated Handoff drops nothing | check its rows against the seven source lists: `2026-09-20-2.0.0-stabilization/validation.md` (its four handoffs), `2026-09-25-2.0.2b...`, `2026-09-25-2.0.3...`, `2026-09-25-2.0.4...`, `2026-09-26-2.0.4b...`, `2026-09-26-2.0.5...`, `2026-09-27-2.0.6...` |
+| V5 | Records are consistent | roadmap: Phase 0 header + 15 rows `[x]`, 1.2/1.4 `[~]`, 2.0.1/2.0.2/2.9/2.0.7 `[x]`, 4.15 refuted, current position -> next entry **2.6**; `AGENTS.md` standing gate matches; `mission.md` reality counters; `tech-stack.md` section 5 |
+| V6 | Diff scope is records-only | `git diff --name-only 780bcdb..6fc9d0b` -> `AGENTS.md` + `specs/**` only; no production, test or build-script file |
+| V7 | The device evidence | M3/M4 screenshots (`/tmp/m3-20-plan-notice.png`, `/tmp/m4-10-not-configured.png`) and the instrumented XML `app/build/outputs/androidTest-results/connected/debug/TEST-Pixel 6a - 17.xml` (5/5); reproducible with the `specs/dev-environment.md` section 5 recipe (wake -> `pm clear com.nexvault.wallet.debug` -> `ANDROID_SERIAL=<colon-free mDNS serial> :app:connectedDebugAndroidTest`) |
+
+Known limits the reviewer should not treat as findings: the M3/M4 walk wiped and recreated a device
+wallet (documented consequence), M1/M2/M5 of 2.0.4b remain owed, and the secrets incident above is
+already recorded.
+
 
