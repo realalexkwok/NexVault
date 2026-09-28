@@ -811,3 +811,37 @@ wallet (documented consequence), M1/M2/M5 of 2.0.4b remain owed, and the secrets
 already recorded.
 
 
+
+---
+
+## Reviewer verification — 2.0.7 close (ddc2e25, merged as 6fc9d0b) — 2026-09-28
+
+> Code-reviewer session (read-only on production code; record files only). The item was already
+> merged and pushed, so this review ran against `main` (`c1d6549`). The prior reviewer's V1–V7
+> handoff was executed point by point; every check below was re-run, nothing taken on trust.
+
+| # | Claim | Reviewer's check | Verdict |
+| --- | --- | --- | --- |
+| V1 | Fresh runs green | `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck --continue --rerun-tasks` → **BUILD SUCCESSFUL, exit 0, 571 tasks executed, 0 failed tasks**; XML sums: **299 tests, 0 failures, 0 errors, 1 skipped** | ✅ |
+| V2 | TC audit holds | re-extracted: `doc/07` ids **52**, markers **25**, orphans **0**, marker adjacency **25/25** | ✅ |
+| V3 | Flip table matches the tree | open-finding grep over the CR task files: only `1.2-design-system-theme.md` (2) and `1.4-datastore-preferences.md` (1) non-zero — exactly the rows the table leaves `[~]` (plus 2.0.4b for M1/M2/M5) | ✅ |
+| V4 | Consolidated Handoff drops nothing | spot-compared all seven source lists against the consolidated table: 2.0.2b (UI tests → 4.18, settings delete → 3.4, re-key → 4.7-adjacent), 2.0.3 (re-enable callbacks, See All, placeholder strings → 4.17), 2.0.4 (Alchemy → 2.6/2.7, WalletConnect → 3.1, future key-absent screens), 2.0.4b (pagination/status/banner → 2.8, write paths → 2.6, paid plan → owner), 2.0.5 (ktlint reversal, TooManyFunctions, spotless → 4.6), 2.0.6 (all registered TCs + 4.18), and the stabilization file's own four (4.3–4.13, unassigned rows) — every row present with its owner | ✅ |
+| V5 | Records consistent | roadmap: 1.1/1.3/1.5–1.9/2.1–2.5/2.0.1/2.0.2/2.9 `[x]`, 1.2 and 1.4 `[~] — open findings`, 2.0.7 closed, 4.15 refuted, current position → **next open entry point 2.6**; mission.md reality counters (299 tests, Phase 2.0 closed); AGENTS.md standing gate matches | ✅ |
+| V6 | Diff scope records-only | `git diff --name-only 780bcdb..6fc9d0b` → `AGENTS.md` + `specs/**` only; no production, test or build-script file | ✅ |
+| V7 | Device evidence artifacts | `/tmp/m3-20-plan-notice.png` (136,497 B) and `/tmp/m4-10-not-configured.png` (143,902 B) exist; `app/build/outputs/androidTest-results/connected/debug/` carries the 5/5 `TEST-Pixel 6a - 17.xml` from the reviewer's own 2026-09-27 rerun | ✅ |
+
+### Reviewer notes (not findings)
+
+1. The 2.0.7 record correctly leaves **2.0.4b `[~]`** for M1/M2 (suspended pending funding) and M5
+   (crash watch) — the only remaining verification debt, and AGENTS.md states it.
+2. The M3/M4 close relied on the 2.0.6 dead-code fix I verified in the previous round; the two
+   screenshots plus the passing notice-path unit tests are consistent evidence.
+3. 1.2/1.4 staying `[~]` for open 4.17/4.18 findings is the disciplined call: verified-as-far-as-
+   reviewable without over-claiming.
+
+### Verdict
+
+**PASS — the 2.0.7 close is verified.** The Phase 2.0 closure record is truthful: the fresh
+evidence reproduces exactly (299/0/0/1, gates exit 0, TC audit 52 = 25 ∪ 27), the Phase 0 re-grade
+matches the findings ledger row by row, the consolidated Handoff drops nothing, and the change set
+is records-only. The next open entry point is correctly **Phase 2.6 (Send transaction flow)**.
