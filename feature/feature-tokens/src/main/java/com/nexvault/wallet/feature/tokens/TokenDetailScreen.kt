@@ -70,6 +70,7 @@ import com.nexvault.wallet.feature.tokens.R
 @Composable
 fun TokenDetailScreen(
     onNavigateBack: () -> Unit,
+    onSendClicked: (contractAddress: String) -> Unit = {},
     viewModel: TokenDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -133,7 +134,9 @@ fun TokenDetailScreen(
                             TokenPriceStats(token = token)
                         }
                         item(key = "actions") {
-                            TokenActionButtons()
+                            TokenActionButtons(
+                                onSendClicked = { onSendClicked(token.contractAddress) },
+                            )
                         }
                         if (!uiState.isHistoryConfigured) {
                             // Roadmap 2.0.4: say why the history is empty instead of showing nothing.
@@ -413,7 +416,9 @@ private fun TokenStatRow(
 }
 
 @Composable
-private fun TokenActionButtons() {
+private fun TokenActionButtons(
+    onSendClicked: () -> Unit,
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -421,9 +426,10 @@ private fun TokenActionButtons() {
                 .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
             horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacing12),
         ) {
+            // Roadmap 2.6: Send now navigates; Receive (2.7) stays disabled.
             Button(
-                onClick = { },
-                enabled = false,
+                onClick = onSendClicked,
+                enabled = true,
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(

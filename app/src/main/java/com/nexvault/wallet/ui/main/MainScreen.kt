@@ -32,6 +32,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import com.nexvault.wallet.feature.home.HomeScreen
+import com.nexvault.wallet.feature.send.SendScreen
 import com.nexvault.wallet.feature.tokens.TokenDetailScreen
 import com.nexvault.wallet.navigation.MainTab
 
@@ -131,6 +132,8 @@ fun MainScreen(
                         onNavigateToTokenDetail = { contractAddress, chainId ->
                             tabNavController.navigate("token_detail/$contractAddress/$chainId")
                         },
+                        // Roadmap 2.6: Send now has a destination; Receive and Swap follow 2.7/3.3.
+                        onSendClicked = { tabNavController.navigate("send") },
                     )
                 }
                 composable(
@@ -142,7 +145,23 @@ fun MainScreen(
                 ) {
                     TokenDetailScreen(
                         onNavigateBack = { tabNavController.popBackStack() },
+                        onSendClicked = { contractAddress ->
+                            tabNavController.navigate("send?tokenAddress=$contractAddress")
+                        },
                     )
+                }
+                composable(
+                    route = "send?tokenAddress={tokenAddress}",
+                    arguments =
+                        listOf(
+                            navArgument("tokenAddress") {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            },
+                        ),
+                ) {
+                    SendScreen(onNavigateBack = { tabNavController.popBackStack() })
                 }
             }
 

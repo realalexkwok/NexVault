@@ -68,6 +68,7 @@ import com.nexvault.wallet.feature.home.R
 @Composable
 fun HomeScreen(
     onNavigateToTokenDetail: (contractAddress: String, chainId: Int) -> Unit,
+    onSendClicked: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -131,7 +132,7 @@ fun HomeScreen(
                     )
                 }
                 item(key = "actions") {
-                    QuickActionsRow()
+                    QuickActionsRow(onSendClicked = onSendClicked)
                 }
                 if (uiState.isRpcNotConfigured) {
                     // Roadmap 2.0.4: key-absent is a persistent state, not a transient snackbar.
@@ -336,7 +337,9 @@ private fun PortfolioChartSection(
 }
 
 @Composable
-private fun QuickActionsRow() {
+private fun QuickActionsRow(
+    onSendClicked: () -> Unit,
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -344,21 +347,28 @@ private fun QuickActionsRow() {
                 .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
+            // Roadmap 2.6: Send now navigates; Receive (2.7) and Swap (3.3) stay disabled.
             QuickActionButton(
                 icon = Icons.Default.ArrowUpward,
                 label = stringResource(R.string.home_action_send),
+                enabled = true,
+                onClick = onSendClicked,
             )
             QuickActionButton(
                 icon = Icons.Default.ArrowDownward,
                 label = stringResource(R.string.home_action_receive),
+                enabled = false,
+                onClick = { },
             )
             QuickActionButton(
                 icon = Icons.Default.SwapHoriz,
                 label = stringResource(R.string.home_action_swap),
+                enabled = false,
+                onClick = { },
             )
         }
-        // Roadmap 2.0.3: these actions have no destination yet (Send 2.6, Receive 2.7,
-        // Swap 3.3), so the buttons are disabled and the reason is stated right under them.
+        // Roadmap 2.0.3: Receive and Swap have no destination yet, so their buttons are
+        // disabled and the reason is stated right under them.
         Text(
             text = stringResource(R.string.home_actions_coming_soon),
             style = MaterialTheme.typography.bodySmall,
@@ -373,13 +383,15 @@ private fun QuickActionsRow() {
 private fun QuickActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         FilledTonalIconButton(
-            onClick = { },
-            enabled = false,
+            onClick = onClick,
+            enabled = enabled,
             modifier = Modifier.size(NexVaultDimens.actionButtonSize),
         ) {
             Icon(imageVector = icon, contentDescription = label)
@@ -388,7 +400,7 @@ private fun QuickActionButton(
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else 0.5f),
         )
     }
 }
