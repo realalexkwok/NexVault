@@ -9,6 +9,9 @@ import com.nexvault.wallet.core.network.api.CoinGeckoApi
 import com.nexvault.wallet.core.network.config.ChainConfigProvider
 import com.nexvault.wallet.core.network.interceptor.CacheControlInterceptor
 import com.nexvault.wallet.core.network.interceptor.CoinGeckoApiKeyInterceptor
+import com.nexvault.wallet.core.network.rpc.ChainRpcClient
+import com.nexvault.wallet.core.network.rpc.Web3jChainRpcClient
+import com.nexvault.wallet.core.network.web3.Web3jProvider
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -195,5 +198,15 @@ object NetworkModule {
             moshi = moshi,
             chainConfigProvider = chainConfigProvider,
         )
+    }
+
+    /**
+     * Roadmap 2.6: the RPC seam `data` talks to for the send paths. Bound here as the interface so
+     * the repository can be unit-tested against a mock.
+     */
+    @Provides
+    @Singleton
+    fun provideChainRpcClient(web3jProvider: Web3jProvider): ChainRpcClient {
+        return Web3jChainRpcClient(web3jProvider)
     }
 }

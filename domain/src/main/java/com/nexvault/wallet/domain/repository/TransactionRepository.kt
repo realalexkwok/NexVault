@@ -5,21 +5,28 @@ import com.nexvault.wallet.domain.model.transaction.GasEstimate
 import com.nexvault.wallet.domain.model.transaction.SendTransactionParams
 import com.nexvault.wallet.domain.model.transaction.Transaction
 import kotlinx.coroutines.flow.Flow
-import java.math.BigInteger
+import java.math.BigDecimal
 
 /**
  * Repository for transaction operations (send, history, status).
  */
 interface TransactionRepository {
     /**
-     * Estimate gas for a transaction.
-     * Returns slow, normal, and fast options.
+     * Estimate the gas options for a prospective send (roadmap 2.6).
+     *
+     * The repository resolves the token's decimals and encodes the transfer calldata itself, so
+     * callers never touch ABI encoding.
+     *
+     * @param fromAddress sender address
+     * @param toAddress recipient address
+     * @param amount transfer amount in display units (native coin or token)
+     * @param tokenAddress contract address of the token, or null for a native-coin send
      */
-    suspend fun estimateGas(
+    suspend fun estimateSendGas(
         fromAddress: String,
         toAddress: String,
-        value: BigInteger,
-        data: String?,
+        amount: BigDecimal,
+        tokenAddress: String?,
         chainId: Int,
     ): DataResult<GasEstimate>
 

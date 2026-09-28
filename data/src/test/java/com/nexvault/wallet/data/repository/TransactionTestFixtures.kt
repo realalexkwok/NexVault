@@ -1,10 +1,12 @@
 package com.nexvault.wallet.data.repository
 
+import com.nexvault.wallet.core.database.entity.TokenEntity
 import com.nexvault.wallet.core.network.dto.TokenTransferDto
 import com.nexvault.wallet.core.network.dto.TransactionDto
 
 /**
- * Minimal explorer rows for the transaction repository tests (roadmap 2.0.4b).
+ * Minimal explorer rows and Room entities for the transaction repository tests
+ * (roadmap 2.0.4b; token entity added by 2.6).
  *
  * Kept out of the test class so its function count stays under the detekt threshold.
  */
@@ -46,4 +48,26 @@ internal object TransactionTestFixtures {
             nonce = "0",
             confirmations = "10",
         )
+
+    fun tokenEntity(
+        contract: String,
+        decimals: Int,
+        symbol: String,
+        fiatPrice: Double? = null,
+    ) = TokenEntity(
+        contractAddress = contract,
+        chainId = 1,
+        symbol = symbol,
+        name = symbol,
+        decimals = decimals,
+        logoUrl = null,
+        balance = "0",
+        fiatPrice = fiatPrice,
+        fiatValue = null,
+        priceChange24h = null,
+        isCustom = false,
+        coinGeckoId = null,
+        sortOrder = 0,
+        lastUpdated = 0L,
+    )
 }
