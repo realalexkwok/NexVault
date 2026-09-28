@@ -88,12 +88,23 @@ fun UnlockScreen(
             when (event) {
                 UnlockViewModel.BiometricEvent.ShowBiometricPrompt -> {
                     activity?.let { fragActivity ->
-                        showBiometricPrompt(
-                            activity = fragActivity,
-                            promptInfo = promptInfo,
-                            onSuccess = { viewModel.onBiometricSuccess() },
-                            onError = { errorMsg -> viewModel.onBiometricError(errorMsg) },
-                        )
+                        // Roadmap 2.6 scan fix (kotlin:S6293): the prompt must be crypto-bound,
+                        // so a successful system authentication is what unlocks the session — a
+                        // prompt without a CryptoObject would be spoofable by the UI layer.
+                        val cipher = biometricHelper.getBiometricGateCipher()
+                        if (cipher == null) {
+                            viewModel.onBiometricError(
+                                context.getString(R.string.unlock_biometric_unavailable),
+                            )
+                        } else {
+                            showBiometricPrompt(
+                                activity = fragActivity,
+                                promptInfo = promptInfo,
+                                cryptoObject = biometricHelper.createCryptoObject(cipher),
+                                onSuccess = { viewModel.onBiometricSuccess() },
+                                onError = { errorMsg -> viewModel.onBiometricError(errorMsg) },
+                            )
+                        }
                     }
                 }
             }
@@ -112,6 +123,7 @@ fun UnlockScreen(
 private fun showBiometricPrompt(
     activity: FragmentActivity,
     promptInfo: BiometricPrompt.PromptInfo,
+    cryptoObject: BiometricPrompt.CryptoObject,
     onSuccess: () -> Unit,
     onError: (String?) -> Unit,
 ) {
@@ -137,7 +149,7 @@ private fun showBiometricPrompt(
     }
 
     val biometricPrompt = BiometricPrompt(activity, executor, callback)
-    biometricPrompt.authenticate(promptInfo)
+    biometricPrompt.authenticate(promptInfo, cryptoObject)
 }
 
 @Composable

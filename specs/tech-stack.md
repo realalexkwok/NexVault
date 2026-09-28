@@ -274,6 +274,7 @@ as unimplemented with named owning roadmap items — the authoritative register 
 | ktlint | 14.2.0 (plugin) — **already the latest published; no upgrade exists** | `.editorconfig` (2.0.5: the 11 `ktlint_official` layout rules disabled, `ktlint_function_naming_ignore_when_annotated_with = Composable`, everything else on) | **0 findings → PASS** (2026-09-26, 2.0.5) |
 | Spotless | **8.10.2** (G2, was 8.3.0) | **applied with no configuration block** | no-op — never cite it as evidence |
 | SonarScanner for Gradle (`org.sonarqube`) | **7.4.0.8496** (adopted 2026-09-28 by 2.6 task 0) | applied at the **root project only** (analyses the whole build as one project); host URL and token are passed on the command line, never in the build file | milestone scans per `roadmap.md` 2.10/3.8/4.19; baseline recorded before 2.6 |
+| Gradle dependency verification | enabled 2026-09-28 (2.6 scan fix `kotlin:S6474`) | `gradle/verification-metadata.xml` (SHA-256) — every build verifies dependency checksums | **active** — a dependency change requires `./gradlew --write-verification-metadata sha256 <tasks>` first |
 
 **Both gates are already on their newest available releases**, which has a consequence for
 roadmap 4.9: the Gradle 10 deprecation (`ReportingExtension.file`, raised by the Detekt

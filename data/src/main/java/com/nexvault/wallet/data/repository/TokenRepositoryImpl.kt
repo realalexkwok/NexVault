@@ -83,7 +83,7 @@ class TokenRepositoryImpl @Inject constructor(
                 val wei = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
                     .send()
                     .balance
-                val nativeDecimals = nativeDecimalsForChain(chainId)
+                val nativeDecimals = NATIVE_DECIMALS
                 val nativeBalance = BigDecimal(wei)
                     .divide(BigDecimal.TEN.pow(nativeDecimals), nativeDecimals, RoundingMode.DOWN)
 
@@ -330,10 +330,6 @@ class TokenRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun nativeDecimalsForChain(chainId: Int): Int = when (chainId) {
-        else -> 18
-    }
-
     private fun daysToCoinGeckoDays(days: Int): String = when {
         days >= 365 -> "max"
         else -> days.coerceAtLeast(1).toString()
@@ -499,5 +495,8 @@ class TokenRepositoryImpl @Inject constructor(
 
     companion object {
         private const val ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
+        /** Every supported chain's native coin uses 18 decimals (roadmap 2.6 scan fix, kotlin:S3923). */
+        private const val NATIVE_DECIMALS = 18
     }
 }
