@@ -275,6 +275,7 @@ as unimplemented with named owning roadmap items — the authoritative register 
 | Spotless | **8.10.2** (G2, was 8.3.0) | **applied with no configuration block** | no-op — never cite it as evidence |
 | SonarScanner for Gradle (`org.sonarqube`) | **7.4.0.8496** (adopted 2026-09-28 by 2.6 task 0) | applied at the **root project only** (analyses the whole build as one project); host URL and token are passed on the command line, never in the build file | milestone scans per `roadmap.md` 2.10/3.8/4.19; baseline recorded before 2.6 |
 | Gradle dependency verification | enabled 2026-09-28 (2.6 scan fix `kotlin:S6474`) | `gradle/verification-metadata.xml` (SHA-256) — every build verifies dependency checksums | **active** — a dependency change requires `./gradlew --write-verification-metadata sha256 <tasks>` first |
+| JaCoCo (unit-test coverage) | agent **0.8.13** via AGP 9.4.1 (JVM modules: Gradle-bundled 0.8.14) — wired 2026-09-29 (2.6 task 0c) | per-module `jacocoTestReport` (XML) configured from the root build script; fed to Sonar via `sonar.coverage.jacoco.xmlReportPaths` | **server-wide 9.6%** (11 tested modules aggregate 28%; the no-tests modules pull the average down) — the **4.8** gate sets the bar from this |
 
 **Both gates are already on their newest available releases**, which has a consequence for
 roadmap 4.9: the Gradle 10 deprecation (`ReportingExtension.file`, raised by the Detekt

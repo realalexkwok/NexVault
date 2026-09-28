@@ -45,7 +45,8 @@ Policy (owner decisions 2026-09-28):
   Code never leaves the machine — no SonarCloud.
 - **Baseline first:** one baseline scan is recorded **before 2.6 starts**, so each checkpoint gates
   on **new code only** — no new blocker/critical issues, no new security hotspots, duplication not
-  increasing. Coverage is *not* part of the gate until 4.8 sets the bar.
+  increasing. Coverage is *not* part of the gate until 4.8 sets the bar; it has been **measured
+  since 2026-09-29** (2.6 task 0c, JaCoCo): server-wide **9.6%** — 4.8 sets its bar from that.
 - **Scanner:** **resolved 2026-09-28 by 2.6's task 0 — SonarScanner for Gradle** (`org.sonarqube`
   **7.4.0.8496**, root-applied; host URL and token on the command line, never in the build file).
   The installed npm `@sonar/scan` is JS/TS-only and is not used. The server token is a **project

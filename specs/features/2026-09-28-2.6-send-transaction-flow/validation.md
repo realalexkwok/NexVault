@@ -68,6 +68,29 @@ break the in-app PIN flow — a redesign, not a flag flip. It is the subject of 
 hardening item (TC-SECTEST-002/003). Server-side issue keys (accept in the UI if desired):
 `3a18f518-87bc-43da-921e-3104c7ec1ce7`, `47b4a362-0949-4b32-8b1a-4d8c98d59a12` — the API accept
 transition needs issue-admin rights the project analysis token does not have (403, expected).
+**The owner accepted both in the UI (2026-09-29): the next scan reports vulnerabilities 0.**
+
+### Task 0c — coverage wiring (2026-09-29, owner-directed: "scan for coverage")
+
+Coverage was 0.0 because JaCoCo was never wired. It is now measured:
+
+- Root `build.gradle.kts`: applies the **bundled Gradle `jacoco` plugin** to every Android library
+  and JVM module (no new dependency — the agent comes from AGP 9.4.1's `jacocoVersion 0.8.13`),
+  configures one `jacocoTestReport` (XML-only) per module over `testDebugUnitTest` / `test`
+  (`data/build/jacoco/testDebugUnitTest.exec` etc.), excludes generated code (R/BuildConfig/DI
+  factories/tests), and feeds `sonar.coverage.jacoco.xmlReportPaths` via a `sonar.*` project
+  property; the `sonar` task depends on all reports.
+- Dependency verification caught and then recorded the jacoco artifacts (asm 9.8/9.9,
+  agents 0.8.13/0.8.14) — expected friction of the S6474 fix.
+- Modules **with** unit tests (11): database, datastore, network, security, data, auth, home,
+  onboarding, send, tokens, domain — aggregate **2344/8299 lines = 28%** locally.
+- Modules **without** unit tests (app, core-common, core-ui, feature-receive/settings/swap)
+  contribute 0% — so the **server-wide coverage measure is 9.6%**, which is the honest number the
+  4.8 gate will set its bar from (alongside a per-module floor for the tested 11).
+
+Post-wiring scan (BUILD SUCCESSFUL): coverage **0.0 → 9.6**, bugs 0, vulnerabilities **0** (the
+two S6288s accepted server-side), hotspots 0, code smells 83, duplication 0.3 — all recorded for
+the 2.10 gate comparison.
 
 ## Task 1 — data layer (implemented, automatic half green)
 
