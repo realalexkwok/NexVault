@@ -1,9 +1,9 @@
 # 2.0.6 — TC traceability (validation record)
 
-> Status: **implemented on `feature/2.0.6-tc-traceability`; automatic half GREEN; the TC-INT-001
-> E2E passed on the owner's Pixel 6a; the manual half (owner confirmation) is pending**, so the
-> roadmap row is `[~]` until the owner-directed close. Every command below is reproduced with its
-> observed result; nothing is claimed from memory.
+> Status: **CLOSED 2026-09-27 as `[x]`** — reviewer PASS (`e7b0c5f` + `1efe2e8`) confirmed by the
+> owner, who directed the close. Merged to `main` (`--no-ff`), pushed, the local feature branch
+> deleted. Every command below is reproduced with its observed result; nothing is claimed from
+> memory.
 
 ## Automatic half — commands and observed results
 
@@ -159,11 +159,16 @@ below is claimed as verified by the reviewer:
 | V7 | Diff scope: exactly one production file changed (`RefreshTransactionHistoryUseCase.kt`); everything else is tests, three build scripts, specs | `git diff --name-only main...HEAD` |
 | V8 | Records match the tree: roadmap 2.0.6 row + 4.18, tech-stack §5 counts, the 5 CR task rows, the 2.0.2b handoff replan | read each file cited in §A7 |
 
-## Close / sign-off — pending the owner
+## Close / sign-off — DONE 2026-09-27, owner-directed
 
-Automatic half: done and green (A1–A7). Manual half: owner confirmation pending. On the owner's
-word this item closes as `[x]`: roadmap row flip, AGENTS.md standing gate → 2.0.7, mission.md
-reality counters, `--no-ff` merge, push, branch delete — the 2.0.5 procedure.
+The reviewer's verdict (above, `e7b0c5f` + its device rerun `1efe2e8`) is **PASS (automatic +
+diff + device)**, V1–V8 all ✅, and the owner confirmed it and directed the close on 2026-09-27.
+Both halves are satisfied for this tests-only item: the automatic half by the fresh `--rerun-tasks`
+runs (suite 299/0/0/1, gates exit 0, build) and the manual half by the device execution of the
+creation-flow E2E — re-driven by the reviewer **and** accepted by the owner, whose close direction
+is the confirmation recorded here. The roadmap row is flipped to `[x]` in the same pass; AGENTS.md
+standing gate moves to 2.0.7; mission.md counters updated. This close commit is the last on the
+branch before the `--no-ff` merge.
 
 ---
 

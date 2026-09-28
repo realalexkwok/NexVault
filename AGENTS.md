@@ -13,9 +13,11 @@ Before every write to disk, an **ask-user-question round** covering requirements
 must be answered by the user.
 
 **Standing gate:** the Phase 1.9 legacy code review gate is **closed** (2026-09-25,
-15/15 signed off). The open entry point is now the **Phase 2.0 remainder — 2.0.6** first
-(`specs/roadmap.md`); 2.0.5 (quality gates) is **verified `[x]`** as of 2026-09-27 — both
-gates green and the owner's device walk reported. Phase 2.6+ still waits on Phase 2.0.
+15/15 signed off). The open entry point is now the **Phase 2.0 remainder — 2.0.7** first
+(`specs/roadmap.md`); 2.0.5 (quality gates) and **2.0.6 (TC traceability) are both verified
+`[x]`** as of 2026-09-27 — every `doc/07` TC id is mapped or registered, both gates green,
+299 unit tests + 5 instrumented device tests green, reviewer-verified and owner-closed.
+Phase 2.6+ still waits on Phase 2.0.
 
 ## Part B — Project Constitution (authoritative)
 
@@ -99,8 +101,9 @@ See `specs/dev-environment.md` §7.)
 - Never write "done", "complete", or "works" in a validation record without a command
   and its observed result. Baseline 2026-09-21 (kept for contrast): 223 unit tests green
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
-  gates red. Current 2026-09-27: 274 tests green, the app walked on a Pixel 6a, both gates
-  green **and 2.0.5 verified `[x]`**, 4 of 5 tabs still placeholders until Phase 2.6–2.8.
+  gates red. Current 2026-09-27: **299** tests green (plus 5 instrumented device tests), the
+  app walked on a Pixel 6a, both gates green **and 2.0.5 + 2.0.6 verified `[x]`**, 4 of 5 tabs
+  still placeholders until Phase 2.6–2.8.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes

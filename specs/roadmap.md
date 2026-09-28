@@ -44,17 +44,18 @@ without evidence.
 > zero findings). **Manual:** the owner walked the app on the Pixel 6a on 2026-09-27 and reported it
 > satisfied, which the device corroborates — Home rendered with live prices and a drawn chart on
 > this build, 0 crashes across the whole session.
-> **2.0.6 (TC traceability) implemented 2026-09-27 on `feature/2.0.6-tc-traceability` — automatic
-> half green, TC-INT-001 E2E passed on the Pixel 6a, closing pending the owner's confirmation**
-> (roadmap row `[~]`). All 52 `doc/07` ids now traced — 25 mapped to test methods carrying
+> **2.0.6 (TC traceability) CLOSED 2026-09-27 as `[x]`** — reviewer PASS (automatic + diff +
+> device, V1–V8) confirmed by the owner, merged to `main` (`--no-ff`), pushed, the local feature
+> branch deleted. All 52 `doc/07` ids now traced — 25 mapped to test methods carrying
 > `// TC-XXX-NNN` markers (audit-proven, zero orphans), 27 registered to named owners; suite
-> **274 → 299 tests / 0 failures**; both gates green; one production defect found and fixed
-> (the 2.0.4/2.0.4b token-detail notices were dead states). Evidence:
+> **274 → 299 tests / 0 failures**; both gates green; instrumented 5/5 on the Pixel 6a (the
+> TC-INT-001 creation-flow E2E included); one production defect found and fixed (the 2.0.4/2.0.4b
+> token-detail notices were dead states). Evidence:
 > `specs/features/2026-09-27-2.0.6-tc-traceability/validation.md`.
-> **After 2.0.6 closes, the next open entry point is 2.0.7** (record and close). The Phase 2.0
-> remainder is proceeded singly or as owner-approved grouped items (the G1–G5 grouping precedent).
-> The outstanding verification debt is now solely 2.0.4b's (M1/M2 suspended pending funding,
-> M3–M5 owner-pending). Phase 2.6+ still waits on Phase 2.0.
+> **The next open entry point is 2.0.7** (record and close). The Phase 2.0 remainder is proceeded
+> singly or as owner-approved grouped items (the G1–G5 grouping precedent). The outstanding
+> verification debt is now solely 2.0.4b's (M1/M2 suspended pending funding, M3–M5 owner-pending).
+> Phase 2.6+ still waits on Phase 2.0.
 
 > **Blocked at 2.0.2b (2026-09-21).** The first run on a real device found that
 > onboarding creates the wallet without ever showing the mnemonic, leaving the app
@@ -464,7 +465,7 @@ Close record: `validation.md` §"Close / sign-off" (reviewer PASS `729d663`, sev
 `b0dfb92…0eb34f4` plus this verification update, `--no-ff` merge `0985563`, branch deleted, the
 manual half and the honesty notes).
 
-### 2.0.6 — Build the TC traceability `[~]`
+### 2.0.6 — Build the TC traceability `[x]`
 `doc/07-TEST-CASES.md` specifies 52 cases (TC-SEC 8, TC-SECTEST 5, TC-UC 4, TC-REPO 5,
 TC-NET 3, TC-DB 3, TC-VM 10, TC-UI 10, TC-INT 4). No test method references a TC id, so
 nobody can tell which specified behaviours are actually covered.
@@ -473,16 +474,22 @@ Exit criteria: each TC id is mapped to a test method, or registered as an unimpl
 roadmap item. The 10 TC-UI cases have no home at all today — the only instrumented test
 is the `ExampleInstrumentedTest` template stub.
 
-**Implemented 2026-09-27 on `feature/2.0.6-tc-traceability` (verification pending — see the
-item's `requirements.md` Q1–Q5 and `traceability.md`):** 25 of 52 ids are mapped to test methods
-with `// TC-XXX-NNN` markers (8 new test files/classes incl. the Robolectric `NexVaultDaoTest` and
-the TC-INT-001 instrumented creation-flow E2E; 3 existing tests strengthened, 1 misleadingly named
-test renamed), and 27 are registered as unimplemented with named owners (2.6 ×8, 2.8 ×2, 3.1/3.2/3.3
-×1 each, 3.4 ×3, 4.7 ×3, 4.8 ×2, 4.13 ×1, 4.18 ×5). The legacy CR findings 1.2-5/2.1-1/2.2-1/2.4-1/
-2.5-1 are closed or replanned by it, and it fixes one production defect found by its own new tests:
-`RefreshTransactionHistoryUseCase` swallowed the repository's `DataResult`, so the 2.0.4/2.0.4b
-token-detail notices (missing key, plan gate) were dead states. The roadmap row's earlier
-"only instrumented test is the template stub" claim was already stale — `BackupPolicyTest`
+**VERIFIED 2026-09-27, reviewer PASS, owner-directed close → `[x]`.** 25 of 52 ids are mapped to
+test methods with `// TC-XXX-NNN` markers (audit-proven: 52 = 25 ∪ 27, zero orphans, 25/25 markers
+adjacent to their `@Test`), and 27 are registered as unimplemented with named owners (2.6 ×8,
+2.8 ×2, 3.1/3.2/3.3 ×1 each, 3.4 ×3, 4.7 ×3, 4.8 ×2, 4.13 ×1, 4.18 ×5 — the new row below).
+The suite grew **274 → 299 tests / 0 failures / 0 errors / 1 skipped** (+25 attributed:
+TC-NET ×6, TC-DB ×3, TC-VM-001/002, TokenDetail VM ×6, TC-UC-001, refresh-use-case ×3,
+TC-VM-009, TC-SEC-003/007/008), including the repo's first Robolectric suite (`NexVaultDaoTest`)
+and the TC-INT-001 instrumented creation-flow E2E — **5/5 instrumented tests passed on the Pixel
+6a, re-driven by the reviewer**. Both gates exit 0. The legacy CR findings 1.2-5/2.1-1/2.2-1/2.4-1/
+2.5-1 are closed or replanned by it, finding 1.1-3 (the `ExampleInstrumentedTest` stub) is fixed,
+and the item fixed one production defect found by its own new tests: `RefreshTransactionHistoryUseCase`
+swallowed the repository's `DataResult`, so the 2.0.4/2.0.4b token-detail notices (missing key,
+plan gate) were dead states. Evidence: `specs/features/2026-09-27-2.0.6-tc-traceability/` (the
+authoritative register is `traceability.md`; the close record is `validation.md` §"Close / sign-off"
+— reviewer commits `e7b0c5f` + `1efe2e8`, `--no-ff` merge, branch deleted). The roadmap row's
+earlier "only instrumented test is the template stub" claim was already stale — `BackupPolicyTest`
 (3 device tests) has existed since 2.0.2.
 
 ### 2.0.7 — Record and close `[ ]`
