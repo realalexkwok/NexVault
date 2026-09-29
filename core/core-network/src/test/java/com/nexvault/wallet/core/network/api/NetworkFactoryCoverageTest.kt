@@ -10,7 +10,6 @@ import okhttp3.OkHttpClient
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
-import org.web3j.protocol.Web3j
 
 /**
  * Roadmap 2.6 coverage: the per-chain caching factories.
@@ -25,7 +24,12 @@ class NetworkFactoryCoverageTest {
         chainConfigProvider = mockk()
         web3jProvider = Web3jProvider(chainConfigProvider)
         blockExplorerApiFactory = BlockExplorerApiFactory(OkHttpClient(), mockk(), chainConfigProvider)
-        every { chainConfigProvider.getConfig(1) } returns config("https://rpc.example.com", "https://api.example.com", "key-1")
+        every { chainConfigProvider.getConfig(1) } returns
+            config(
+                rpcUrl = "https://rpc.example.com",
+                apiUrl = "https://api.example.com",
+                apiKey = "key-1",
+            )
     }
 
     @Test
