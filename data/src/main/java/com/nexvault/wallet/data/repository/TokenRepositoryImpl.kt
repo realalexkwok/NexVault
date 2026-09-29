@@ -4,8 +4,10 @@ import com.nexvault.wallet.core.database.dao.TokenDao
 import com.nexvault.wallet.core.database.entity.TokenEntity
 import com.nexvault.wallet.core.network.api.CoinGeckoApi
 import com.nexvault.wallet.core.network.config.ChainConfigProvider
+import com.nexvault.wallet.core.network.dto.TokenPriceResponse
 import com.nexvault.wallet.core.network.web3.Web3jProvider
 import com.nexvault.wallet.data.mapper.toDomain
+import com.nexvault.wallet.domain.model.chain.Chain
 import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.model.token.PricePoint
@@ -62,105 +64,25 @@ class TokenRepositoryImpl @Inject constructor(
         if (!refreshMutex.tryLock()) return DataResult.Success(Unit)
         return try {
             withContext(Dispatchers.IO) {
-                val chain = chainRepository.getChainById(chainId)
-                    ?: return@withContext DataResult.Error(
-                        IllegalArgumentException("Unknown chain"),
-                        "Unknown chain: $chainId",
-                    )
-                chainConfigProvider.getConfig(chainId)
-                    ?: return@withContext DataResult.Error(
-                        IllegalArgumentException("No network config"),
-                        "Unsupported chain: $chainId",
-                    )
-                // Roadmap 2.0.4: fail explicitly instead of calling an RPC endpoint that has no key.
-                if (!chainConfigProvider.isRpcConfigured(chainId)) {
-                    return@withContext DataResult.Error(
-                        ApiKeyNotConfiguredException("Ethereum RPC is not configured"),
-                    )
-                }
-
-                val web3j = web3jProvider.getWeb3j(chainId)
-                val wei = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
-                    .send()
-                    .balance
-                val nativeDecimals = NATIVE_DECIMALS
-                val nativeBalance = BigDecimal(wei)
-                    .divide(BigDecimal.TEN.pow(nativeDecimals), nativeDecimals, RoundingMode.DOWN)
-
+                val context = resolveRefreshContext(chainId, address)
                 val tracked = tokenDao.getTokensByChainOnce(chainId)
-                val erc20Balances = linkedMapOf<String, BigDecimal>()
-                for (token in tracked) {
-                    if (token.contractAddress == Token.NATIVE_TOKEN_ADDRESS) continue
-                    try {
-                        val raw = callBalanceOf(web3j, token.contractAddress, address)
-                        val bal = BigDecimal(raw).divide(
-                            BigDecimal.TEN.pow(token.decimals),
-                            token.decimals,
-                            RoundingMode.DOWN,
-                        )
-                        erc20Balances[token.contractAddress] = bal
-                    } catch (_: Exception) {
-                        // keep cached balance on failure
-                    }
-                }
-
-                val idSet = linkedSetOf<String>()
-                idSet.add(chain.nativeCoinCoinGeckoId)
-                tracked.mapNotNull { it.coinGeckoId }.forEach { idSet.add(it) }
-
-                val priceMap = try {
-                    val ids = idSet.joinToString(",")
-                    coinGeckoApi.getTokenPrices(
-                        ids = ids,
-                        vsCurrencies = "usd",
-                        include24hChange = true,
-                    )
-                } catch (_: Exception) {
-                    emptyMap()
-                }
+                val erc20Balances = fetchErc20Balances(context.web3j, tracked, address)
+                val priceMap = fetchPrices(context.chain.nativeCoinCoinGeckoId, tracked)
 
                 val now = System.currentTimeMillis()
                 val updated = mutableListOf<TokenEntity>()
-
-                val nativePriceData = priceMap[chain.nativeCoinCoinGeckoId]
-                val nativePrice = nativePriceData?.usd
-                val nativeFiat = nativePrice?.let { p -> nativeBalance.toDouble() * p }
-
                 updated.add(
-                    TokenEntity(
-                        contractAddress = Token.NATIVE_TOKEN_ADDRESS,
+                    buildNativeTokenEntity(
                         chainId = chainId,
-                        symbol = chain.symbol,
-                        name = chain.nativeCoinName,
-                        decimals = nativeDecimals,
-                        logoUrl = null,
-                        balance = nativeBalance.stripTrailingZeros().toPlainString(),
-                        fiatPrice = nativePrice,
-                        fiatValue = nativeFiat,
-                        priceChange24h = nativePriceData?.usd24hChange,
-                        isCustom = false,
-                        coinGeckoId = chain.nativeCoinCoinGeckoId,
-                        sortOrder = 0,
-                        lastUpdated = now,
+                        chain = context.chain,
+                        nativeBalance = context.nativeBalance,
+                        priceData = priceMap[context.chain.nativeCoinCoinGeckoId],
+                        now = now,
                     ),
                 )
-
                 for (token in tracked) {
                     if (token.contractAddress == Token.NATIVE_TOKEN_ADDRESS) continue
-                    val balance = erc20Balances[token.contractAddress]
-                        ?: BigDecimal(token.balance)
-                    val pd = token.coinGeckoId?.let { priceMap[it] }
-                    val price = pd?.usd ?: token.fiatPrice
-                    val fiat = price?.let { balance.toDouble() * it } ?: token.fiatValue
-                    updated.add(
-                        token.copy(
-                            balance = balance.stripTrailingZeros().toPlainString(),
-                            fiatPrice = price,
-                            fiatValue = fiat,
-                            priceChange24h = pd?.usd24hChange ?: token.priceChange24h,
-                            lastUpdated = now,
-                        ),
-                    )
+                    updated.add(applyPriceData(token, erc20Balances, priceMap, now))
                 }
 
                 tokenDao.upsertTokens(updated)
@@ -172,6 +94,123 @@ class TokenRepositoryImpl @Inject constructor(
             refreshMutex.unlock()
         }
     }
+
+    /**
+     * Validates the chain, config and RPC key, then reads the native balance.
+     * Throws instead of returning errors — the enclosing [refreshBalances] catch maps the
+     * exception (and its message) to the same `DataResult.Error` the callers already see.
+     */
+    private suspend fun resolveRefreshContext(chainId: Int, address: String): RefreshContext {
+        val chain = chainRepository.getChainById(chainId)
+            ?: throw IllegalArgumentException("Unknown chain: $chainId")
+        chainConfigProvider.getConfig(chainId)
+            ?: throw IllegalArgumentException("Unsupported chain: $chainId")
+        // Roadmap 2.0.4: fail explicitly instead of calling an RPC endpoint that has no key.
+        if (!chainConfigProvider.isRpcConfigured(chainId)) {
+            throw ApiKeyNotConfiguredException("Ethereum RPC is not configured")
+        }
+        val web3j = web3jProvider.getWeb3j(chainId)
+        val wei = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
+            .send()
+            .balance
+        val nativeBalance = BigDecimal(wei)
+            .divide(BigDecimal.TEN.pow(NATIVE_DECIMALS), NATIVE_DECIMALS, RoundingMode.DOWN)
+        return RefreshContext(chain, web3j, nativeBalance)
+    }
+
+    private fun fetchErc20Balances(
+        web3j: org.web3j.protocol.Web3j,
+        tracked: List<TokenEntity>,
+        address: String,
+    ): Map<String, BigDecimal> {
+        val balances = linkedMapOf<String, BigDecimal>()
+        for (token in tracked) {
+            if (token.contractAddress == Token.NATIVE_TOKEN_ADDRESS) continue
+            try {
+                val raw = callBalanceOf(web3j, token.contractAddress, address)
+                val bal = BigDecimal(raw).divide(
+                    BigDecimal.TEN.pow(token.decimals),
+                    token.decimals,
+                    RoundingMode.DOWN,
+                )
+                balances[token.contractAddress] = bal
+            } catch (_: Exception) {
+                // keep cached balance on failure
+            }
+        }
+        return balances
+    }
+
+    private suspend fun fetchPrices(
+        nativeCoinGeckoId: String,
+        tracked: List<TokenEntity>,
+    ): Map<String, TokenPriceResponse> {
+        val idSet = linkedSetOf<String>()
+        idSet.add(nativeCoinGeckoId)
+        tracked.mapNotNull { it.coinGeckoId }.forEach { idSet.add(it) }
+        return try {
+            coinGeckoApi.getTokenPrices(
+                ids = idSet.joinToString(","),
+                vsCurrencies = "usd",
+                include24hChange = true,
+            )
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
+
+    private fun buildNativeTokenEntity(
+        chainId: Int,
+        chain: Chain,
+        nativeBalance: BigDecimal,
+        priceData: TokenPriceResponse?,
+        now: Long,
+    ): TokenEntity {
+        val nativePrice = priceData?.usd
+        val nativeFiat = nativePrice?.let { p -> nativeBalance.toDouble() * p }
+        return TokenEntity(
+            contractAddress = Token.NATIVE_TOKEN_ADDRESS,
+            chainId = chainId,
+            symbol = chain.symbol,
+            name = chain.nativeCoinName,
+            decimals = NATIVE_DECIMALS,
+            logoUrl = null,
+            balance = nativeBalance.stripTrailingZeros().toPlainString(),
+            fiatPrice = nativePrice,
+            fiatValue = nativeFiat,
+            priceChange24h = priceData?.usd24hChange,
+            isCustom = false,
+            coinGeckoId = chain.nativeCoinCoinGeckoId,
+            sortOrder = 0,
+            lastUpdated = now,
+        )
+    }
+
+    private fun applyPriceData(
+        token: TokenEntity,
+        erc20Balances: Map<String, BigDecimal>,
+        priceMap: Map<String, TokenPriceResponse>,
+        now: Long,
+    ): TokenEntity {
+        val balance = erc20Balances[token.contractAddress]
+            ?: BigDecimal(token.balance)
+        val priceData = token.coinGeckoId?.let { priceMap[it] }
+        val price = priceData?.usd ?: token.fiatPrice
+        val fiat = price?.let { balance.toDouble() * it } ?: token.fiatValue
+        return token.copy(
+            balance = balance.stripTrailingZeros().toPlainString(),
+            fiatPrice = price,
+            fiatValue = fiat,
+            priceChange24h = priceData?.usd24hChange ?: token.priceChange24h,
+            lastUpdated = now,
+        )
+    }
+
+    private data class RefreshContext(
+        val chain: Chain,
+        val web3j: org.web3j.protocol.Web3j,
+        val nativeBalance: BigDecimal,
+    )
 
     override suspend fun addCustomToken(
         chainId: Int,
@@ -275,8 +314,8 @@ class TokenRepositoryImpl @Inject constructor(
         try {
             val entity = tokenDao.getToken(contractAddress, chainId)
                 ?: return@withContext DataResult.Error(
-                    IllegalArgumentException("Token not found"),
-                    "Token not found",
+                    IllegalArgumentException(TOKEN_NOT_FOUND_MESSAGE),
+                    TOKEN_NOT_FOUND_MESSAGE,
                 )
             DataResult.Success(entity.toDomain())
         } catch (e: Exception) {
@@ -292,8 +331,8 @@ class TokenRepositoryImpl @Inject constructor(
         try {
             val entity = tokenDao.getToken(contractAddress, chainId)
                 ?: return@withContext DataResult.Error(
-                    IllegalArgumentException("Token not found"),
-                    "Token not found",
+                    IllegalArgumentException(TOKEN_NOT_FOUND_MESSAGE),
+                    TOKEN_NOT_FOUND_MESSAGE,
                 )
             val coinId = entity.coinGeckoId
                 ?: chainRepository.getChainById(chainId)?.nativeCoinCoinGeckoId
@@ -498,5 +537,6 @@ class TokenRepositoryImpl @Inject constructor(
 
         /** Every supported chain's native coin uses 18 decimals (roadmap 2.6 scan fix, kotlin:S3923). */
         private const val NATIVE_DECIMALS = 18
+        const val TOKEN_NOT_FOUND_MESSAGE = "Token not found"
     }
 }

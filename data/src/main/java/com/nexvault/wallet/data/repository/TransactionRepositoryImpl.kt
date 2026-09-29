@@ -2,6 +2,7 @@ package com.nexvault.wallet.data.repository
 
 import com.nexvault.wallet.core.database.dao.TokenDao
 import com.nexvault.wallet.core.database.dao.TransactionDao
+import com.nexvault.wallet.core.database.entity.TokenEntity
 import com.nexvault.wallet.core.database.entity.TransactionEntity
 import com.nexvault.wallet.core.network.api.BlockExplorerApiFactory
 import com.nexvault.wallet.core.network.config.ChainConfigProvider
@@ -140,111 +141,23 @@ class TransactionRepositoryImpl @Inject constructor(
         tokenContractAddress: String?,
     ): DataResult<String> = withContext(Dispatchers.IO) {
         try {
-            if (!chainConfigProvider.isRpcConfigured(params.chainId)) {
-                return@withContext DataResult.Error(
-                    ApiKeyNotConfiguredException("Ethereum RPC is not configured"),
-                )
-            }
-            if (!isValidAddress(params.toAddress)) {
-                return@withContext DataResult.Error(InvalidAddressException())
-            }
+            val inputError = validateSendInputs(params, tokenContractAddress)
+            if (inputError != null) return@withContext inputError
+
             val wallet = walletRepository.getWallets().first().firstOrNull { it.id == walletId }
                 ?: return@withContext DataResult.Error(WalletNotFoundException())
             val account = wallet.accounts.getOrNull(accountIndex)
                 ?: return@withContext DataResult.Error(
                     IllegalArgumentException("Unknown account index: $accountIndex"),
                 )
-            val token = tokenContractAddress?.let { address ->
-                tokenDao.getToken(address, params.chainId)
-                    ?: return@withContext DataResult.Error(
-                        IllegalArgumentException("Token not found on this chain"),
-                    )
-            }
-            val decimals = token?.decimals ?: NATIVE_DECIMALS
-            val valueWei = params.amount.movePointRight(decimals).toBigInteger()
+            val token = tokenContractAddress?.let { tokenDao.getToken(it, params.chainId) }
 
-            val data = token?.let { encodeTransfer(params.toAddress, valueWei) }
-            val gasPrice = params.gasOption.gasPrice
-            val gasLimit =
-                rpcClient.estimateGas(
-                    from = account.address,
-                    to = token?.contractAddress ?: params.toAddress,
-                    value = if (token == null) valueWei else BigInteger.ZERO,
-                    data = data,
-                    chainId = params.chainId,
-                )
+            val payload = buildSendPayload(params, account.address, token)
+            val balanceError = validateSendBalances(params, account.address, token, payload)
+            if (balanceError != null) return@withContext balanceError
 
-            // Roadmap 2.6 / TC-REPO-004: validate the balance before building the transaction.
-            val balance =
-                if (token == null) {
-                    rpcClient.getBalance(account.address, params.chainId)
-                } else {
-                    rpcClient.getTokenBalance(token.contractAddress, account.address, params.chainId)
-                }
-            val required = if (token == null) valueWei.add(gasLimit.multiply(gasPrice)) else valueWei
-            if (balance < required) {
-                return@withContext DataResult.Error(
-                    InsufficientBalanceException(
-                        available = balance.toString(),
-                        required = required.toString(),
-                    ),
-                )
-            }
-            // The fee is always paid in the native coin — for ERC-20 sends the native balance
-            // must cover it separately.
-            if (token != null && rpcClient.getBalance(account.address, params.chainId) < gasLimit.multiply(gasPrice)) {
-                return@withContext DataResult.Error(
-                    InsufficientBalanceException(
-                        available = "native fee check failed",
-                        required = gasLimit.multiply(gasPrice).toString(),
-                    ),
-                )
-            }
-
-            val nonce = rpcClient.getTransactionCount(account.address, params.chainId)
-            val credentials = signingCredentials(wallet, account)
-            val rawTransaction =
-                if (token == null) {
-                    RawTransaction.createEtherTransaction(
-                        nonce,
-                        gasPrice,
-                        gasLimit,
-                        params.toAddress,
-                        valueWei,
-                    )
-                } else {
-                    RawTransaction.createTransaction(
-                        nonce,
-                        gasPrice,
-                        gasLimit,
-                        token.contractAddress,
-                        BigInteger.ZERO,
-                        data,
-                    )
-                }
-            val signed = TransactionEncoder.signMessage(rawTransaction, params.chainId.toLong(), credentials)
-            val hash = rpcClient.sendRawTransaction(Numeric.toHexString(signed), params.chainId)
-
-            transactionDao.upsertTransactions(
-                listOf(
-                    TransactionEntity(
-                        txHash = hash,
-                        chainId = params.chainId,
-                        fromAddress = account.address,
-                        toAddress = params.toAddress,
-                        value = params.amount.toPlainString(),
-                        gasUsed = null,
-                        gasPrice = gasPrice.toString(),
-                        tokenSymbol = token?.symbol,
-                        tokenContractAddress = token?.contractAddress,
-                        tokenDecimals = token?.decimals,
-                        blockNumber = 0L,
-                        timestamp = System.currentTimeMillis() / 1000,
-                        status = 0,
-                        type = "send",
-                    ),
-                ),
-            )
+            val hash = submitSignedTransaction(params, wallet, account, token, payload)
+            persistPendingTransaction(params, account.address, token, payload, hash)
             DataResult.Success(hash)
         } catch (e: AuthenticationException) {
             DataResult.Error(e, e.message)
@@ -252,6 +165,136 @@ class TransactionRepositoryImpl @Inject constructor(
             DataResult.Error(e, e.message ?: "Send failed")
         }
     }
+
+    private suspend fun validateSendInputs(
+        params: SendTransactionParams,
+        tokenContractAddress: String?,
+    ): DataResult<String>? {
+        if (!chainConfigProvider.isRpcConfigured(params.chainId)) {
+            return DataResult.Error(ApiKeyNotConfiguredException("Ethereum RPC is not configured"))
+        }
+        if (!isValidAddress(params.toAddress)) {
+            return DataResult.Error(InvalidAddressException())
+        }
+        if (tokenContractAddress != null && tokenDao.getToken(tokenContractAddress, params.chainId) == null) {
+            return DataResult.Error(IllegalArgumentException("Token not found on this chain"))
+        }
+        return null
+    }
+
+    private suspend fun buildSendPayload(
+        params: SendTransactionParams,
+        fromAddress: String,
+        token: TokenEntity?,
+    ): SendPayload {
+        val decimals = token?.decimals ?: NATIVE_DECIMALS
+        val valueWei = params.amount.movePointRight(decimals).toBigInteger()
+        val data = token?.let { encodeTransfer(params.toAddress, valueWei) }
+        val gasPrice = params.gasOption.gasPrice
+        val gasLimit =
+            rpcClient.estimateGas(
+                from = fromAddress,
+                to = token?.contractAddress ?: params.toAddress,
+                value = if (token == null) valueWei else BigInteger.ZERO,
+                data = data,
+                chainId = params.chainId,
+            )
+        return SendPayload(valueWei, data, gasPrice, gasLimit)
+    }
+
+    private suspend fun validateSendBalances(
+        params: SendTransactionParams,
+        fromAddress: String,
+        token: TokenEntity?,
+        payload: SendPayload,
+    ): DataResult<String>? {
+        // Roadmap 2.6 / TC-REPO-004: validate the balance before building the transaction.
+        val balance =
+            if (token == null) {
+                rpcClient.getBalance(fromAddress, params.chainId)
+            } else {
+                rpcClient.getTokenBalance(token.contractAddress, fromAddress, params.chainId)
+            }
+        val fee = payload.gasLimit.multiply(payload.gasPrice)
+        val required = if (token == null) payload.valueWei.add(fee) else payload.valueWei
+        if (balance < required) {
+            return DataResult.Error(InsufficientBalanceException(balance.toString(), required.toString()))
+        }
+        // The fee is always paid in the native coin — for ERC-20 sends the native balance must
+        // cover it separately.
+        if (token != null && rpcClient.getBalance(fromAddress, params.chainId) < fee) {
+            return DataResult.Error(InsufficientBalanceException("native fee check failed", fee.toString()))
+        }
+        return null
+    }
+
+    private suspend fun submitSignedTransaction(
+        params: SendTransactionParams,
+        wallet: Wallet,
+        account: Account,
+        token: TokenEntity?,
+        payload: SendPayload,
+    ): String {
+        val nonce = rpcClient.getTransactionCount(account.address, params.chainId)
+        val credentials = signingCredentials(wallet, account)
+        val rawTransaction =
+            if (token == null) {
+                RawTransaction.createEtherTransaction(
+                    nonce,
+                    payload.gasPrice,
+                    payload.gasLimit,
+                    params.toAddress,
+                    payload.valueWei,
+                )
+            } else {
+                RawTransaction.createTransaction(
+                    nonce,
+                    payload.gasPrice,
+                    payload.gasLimit,
+                    token.contractAddress,
+                    BigInteger.ZERO,
+                    payload.data,
+                )
+            }
+        val signed = TransactionEncoder.signMessage(rawTransaction, params.chainId.toLong(), credentials)
+        return rpcClient.sendRawTransaction(Numeric.toHexString(signed), params.chainId)
+    }
+
+    private suspend fun persistPendingTransaction(
+        params: SendTransactionParams,
+        fromAddress: String,
+        token: TokenEntity?,
+        payload: SendPayload,
+        hash: String,
+    ) {
+        transactionDao.upsertTransactions(
+            listOf(
+                TransactionEntity(
+                    txHash = hash,
+                    chainId = params.chainId,
+                    fromAddress = fromAddress,
+                    toAddress = params.toAddress,
+                    value = params.amount.toPlainString(),
+                    gasUsed = null,
+                    gasPrice = payload.gasPrice.toString(),
+                    tokenSymbol = token?.symbol,
+                    tokenContractAddress = token?.contractAddress,
+                    tokenDecimals = token?.decimals,
+                    blockNumber = 0L,
+                    timestamp = System.currentTimeMillis() / 1000,
+                    status = 0,
+                    type = "send",
+                ),
+            ),
+        )
+    }
+
+    private data class SendPayload(
+        val valueWei: BigInteger,
+        val data: String?,
+        val gasPrice: BigInteger,
+        val gasLimit: BigInteger,
+    )
 
     private suspend fun signingCredentials(wallet: Wallet, account: Account): Credentials {
         val keyPair =
@@ -386,13 +429,13 @@ class TransactionRepositoryImpl @Inject constructor(
         try {
             val address = walletRepository.getActiveAddress().first()
                 ?: return@withContext DataResult.Error(
-                    IllegalStateException("No active wallet"),
-                    "No active wallet",
+                    IllegalStateException(NO_ACTIVE_WALLET_MESSAGE),
+                    NO_ACTIVE_WALLET_MESSAGE,
                 )
             val entity = transactionDao.getTransaction(txHash, chainId)
                 ?: return@withContext DataResult.Error(
-                    IllegalArgumentException("Transaction not found"),
-                    "Transaction not found",
+                    IllegalArgumentException(TRANSACTION_NOT_FOUND_MESSAGE),
+                    TRANSACTION_NOT_FOUND_MESSAGE,
                 )
             DataResult.Success(entity.toDomain(address))
         } catch (e: Exception) {
@@ -413,13 +456,13 @@ class TransactionRepositoryImpl @Inject constructor(
         try {
             val address = walletRepository.getActiveAddress().first()
                 ?: return@withContext DataResult.Error(
-                    IllegalStateException("No active wallet"),
-                    "No active wallet",
+                    IllegalStateException(NO_ACTIVE_WALLET_MESSAGE),
+                    NO_ACTIVE_WALLET_MESSAGE,
                 )
             val entity = transactionDao.getTransaction(txHash, chainId)
                 ?: return@withContext DataResult.Error(
-                    IllegalArgumentException("Transaction not found"),
-                    "Transaction not found",
+                    IllegalArgumentException(TRANSACTION_NOT_FOUND_MESSAGE),
+                    TRANSACTION_NOT_FOUND_MESSAGE,
                 )
             DataResult.Success(entity.toDomain(address))
         } catch (e: Exception) {
@@ -429,5 +472,7 @@ class TransactionRepositoryImpl @Inject constructor(
 
     private companion object {
         const val NATIVE_DECIMALS = 18
+        const val NO_ACTIVE_WALLET_MESSAGE = "No active wallet"
+        const val TRANSACTION_NOT_FOUND_MESSAGE = "Transaction not found"
     }
 }

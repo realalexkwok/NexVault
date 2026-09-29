@@ -106,101 +106,116 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = NexVaultDimens.spacingMd),
+            HomeListContent(
+                uiState = uiState,
+                onNavigateToTokenDetail = onNavigateToTokenDetail,
+                onSendClicked = onSendClicked,
+                viewModel = viewModel,
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeListContent(
+    uiState: HomeUiState,
+    onNavigateToTokenDetail: (contractAddress: String, chainId: Int) -> Unit,
+    onSendClicked: () -> Unit,
+    viewModel: HomeViewModel,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = NexVaultDimens.spacingMd),
+    ) {
+        item(key = "chain_selector") {
+            ChainSelectorHeader(
+                selectedChain = uiState.selectedChain,
+                supportedChains = uiState.supportedChains,
+                onChainSelected = { viewModel.onChainSelected(it) },
+            )
+        }
+        item(key = "balance") {
+            PortfolioBalanceSection(
+                totalFiatValue = uiState.totalFiatValue,
+                change24hPercent = uiState.change24hPercent,
+                isLoading = uiState.isLoading,
+            )
+        }
+        item(key = "chart") {
+            PortfolioChartSection(
+                chartData = uiState.chartData,
+                selectedDays = uiState.selectedChartDays,
+                onRangeSelected = { viewModel.onChartRangeSelected(it) },
+            )
+        }
+        item(key = "actions") {
+            QuickActionsRow(onSendClicked = onSendClicked)
+        }
+        if (uiState.isRpcNotConfigured) {
+            // Roadmap 2.0.4: key-absent is a persistent state, not a transient snackbar.
+            item(key = "not_configured") {
+                Text(
+                    text = stringResource(R.string.home_error_not_configured),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        item(key = "tokens_header") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                item(key = "chain_selector") {
-                    ChainSelectorHeader(
-                        selectedChain = uiState.selectedChain,
-                        supportedChains = uiState.supportedChains,
-                        onChainSelected = { viewModel.onChainSelected(it) },
+                Text(
+                    text = stringResource(R.string.home_tokens_header),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                TextButton(onClick = { viewModel.onShowAddTokenDialog() }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.home_add_token_icon_description),
+                        modifier = Modifier.size(NexVaultDimens.iconSizeXs),
                     )
+                    Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
+                    Text(stringResource(R.string.home_add_token))
                 }
-                item(key = "balance") {
-                    PortfolioBalanceSection(
-                        totalFiatValue = uiState.totalFiatValue,
-                        change24hPercent = uiState.change24hPercent,
-                        isLoading = uiState.isLoading,
+            }
+        }
+        if (uiState.isLoading && uiState.tokens.isEmpty()) {
+            items(5, key = { "shimmer_$it" }) {
+                TokenRowShimmer()
+            }
+        }
+        items(
+            items = uiState.tokens,
+            key = { "${it.contractAddress}-${it.chainId}" },
+        ) { token ->
+            TokenRow(
+                token = token,
+                onClick = {
+                    onNavigateToTokenDetail(token.contractAddress, token.chainId)
+                },
+            )
+        }
+        if (!uiState.isLoading && uiState.tokens.isEmpty()) {
+            item(key = "empty") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(NexVaultDimens.spacingXl),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_empty_tokens),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                }
-                item(key = "chart") {
-                    PortfolioChartSection(
-                        chartData = uiState.chartData,
-                        selectedDays = uiState.selectedChartDays,
-                        onRangeSelected = { viewModel.onChartRangeSelected(it) },
-                    )
-                }
-                item(key = "actions") {
-                    QuickActionsRow(onSendClicked = onSendClicked)
-                }
-                if (uiState.isRpcNotConfigured) {
-                    // Roadmap 2.0.4: key-absent is a persistent state, not a transient snackbar.
-                    item(key = "not_configured") {
-                        Text(
-                            text = stringResource(R.string.home_error_not_configured),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
-                item(key = "tokens_header") {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacingSm),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.home_tokens_header),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        TextButton(onClick = { viewModel.onShowAddTokenDialog() }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(R.string.home_add_token_icon_description),
-                                modifier = Modifier.size(NexVaultDimens.iconSizeXs),
-                            )
-                            Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
-                            Text(stringResource(R.string.home_add_token))
-                        }
-                    }
-                }
-                if (uiState.isLoading && uiState.tokens.isEmpty()) {
-                    items(5, key = { "shimmer_$it" }) {
-                        TokenRowShimmer()
-                    }
-                }
-                items(
-                    items = uiState.tokens,
-                    key = { "${it.contractAddress}-${it.chainId}" },
-                ) { token ->
-                    TokenRow(
-                        token = token,
-                        onClick = {
-                            onNavigateToTokenDetail(token.contractAddress, token.chainId)
-                        },
-                    )
-                }
-                if (!uiState.isLoading && uiState.tokens.isEmpty()) {
-                    item(key = "empty") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(NexVaultDimens.spacingXl),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.home_empty_tokens),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
                 }
             }
         }

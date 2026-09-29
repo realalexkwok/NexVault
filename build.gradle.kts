@@ -70,7 +70,18 @@ subprojects {
                 fileTree("$buildDirFile/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
                     exclude(coverageExcludes)
                 }
-            classDirectories.setFrom(kotlinClasses)
+            // Robolectric-based tests record the exec against the classes the test runtime
+            // actually loads (the ASM-transformed and runtime-library copies), so the report
+            // analyzes those too; duplicate names resolve to the first match.
+            val asmTransformedClasses =
+                fileTree("$buildDirFile/intermediates/classes/debug/transformDebugClassesWithAsm/dirs") {
+                    exclude(coverageExcludes)
+                }
+            val runtimeLibraryClasses =
+                fileTree("$buildDirFile/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug") {
+                    exclude(coverageExcludes)
+                }
+            classDirectories.setFrom(kotlinClasses, asmTransformedClasses, runtimeLibraryClasses)
             sourceDirectories.setFrom(files(listOf("src/main/java", "src/main/kotlin")))
             executionData.setFrom(files("$buildDirFile/jacoco/testDebugUnitTest.exec"))
         }

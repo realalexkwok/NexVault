@@ -105,146 +105,167 @@ fun TokenDetailScreen(
                 .padding(paddingValues),
         ) {
             when {
-                uiState.isLoading && token == null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
+                uiState.isLoading && token == null -> TokenDetailLoading()
+                token != null -> TokenDetailContent(
+                    token = token,
+                    uiState = uiState,
+                    onSendClicked = onSendClicked,
+                    viewModel = viewModel,
+                )
+                else -> TokenDetailError(uiState)
+            }
+        }
+    }
+}
 
-                token != null -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = NexVaultDimens.spacingLg),
-                    ) {
-                        item(key = "header") {
-                            TokenDetailHeader(token = token)
-                        }
-                        item(key = "chart") {
-                            TokenPriceChartSection(
-                                chartData = uiState.chartData,
-                                selectedDays = uiState.selectedChartDays,
-                                isLoading = uiState.isChartLoading,
-                                onRangeSelected = { viewModel.onChartRangeSelected(it) },
-                            )
-                        }
-                        item(key = "stats") {
-                            TokenPriceStats(token = token)
-                        }
-                        item(key = "actions") {
-                            TokenActionButtons(
-                                onSendClicked = { onSendClicked(token.contractAddress) },
-                            )
-                        }
-                        if (!uiState.isHistoryConfigured) {
-                            // Roadmap 2.0.4: say why the history is empty instead of showing nothing.
-                            item(key = "history_not_configured") {
-                                Text(
-                                    text = stringResource(R.string.token_detail_history_not_configured),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        }
-                        if (uiState.isHistoryPlanGated) {
-                            // Roadmap 2.0.4b: the key works, the plan does not cover this chain
-                            // (BSC on the free Etherscan plan) — a standing notice, not a snackbar.
-                            item(key = "history_plan_gated") {
-                                Text(
-                                    text = stringResource(R.string.token_detail_history_plan_gated),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        }
-                        if (uiState.recentTransactions.isNotEmpty()) {
-                            item(key = "tx_header") {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = NexVaultDimens.spacingMd)
-                                        .padding(vertical = NexVaultDimens.spacingSm),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.token_detail_recent_transactions),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                    TextButton(
-                                        onClick = { },
-                                        enabled = false,
-                                    ) {
-                                        Text(stringResource(R.string.token_detail_see_all))
-                                        Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowForward,
-                                            contentDescription =
-                                                stringResource(R.string.token_detail_see_all_transactions),
-                                            modifier = Modifier.size(NexVaultDimens.spacingMd),
-                                        )
-                                    }
-                                }
-                            }
-                            items(
-                                items = uiState.recentTransactions,
-                                key = { "${it.txHash}-${it.chainId}" },
-                            ) { transaction ->
-                                TransactionRow(
-                                    transaction = transaction,
-                                    tokenSymbol = token.symbol,
-                                    tokenDecimals = token.decimals,
-                                )
-                            }
-                        }
-                        if (uiState.recentTransactions.isEmpty() && !uiState.isLoading) {
-                            item(key = "no_tx") {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(NexVaultDimens.spacingXl),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.token_detail_no_transactions),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+@Composable
+private fun TokenDetailLoading() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
 
-                else -> {
-                    val errorText =
-                        uiState.errorMessage
-                            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
-                            ?: uiState.errorPluralsRes?.let {
-                                pluralStringResource(it, uiState.errorQuantity, *uiState.errorArgs.toTypedArray())
-                            }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(NexVaultDimens.spacingLg),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = errorText ?: stringResource(R.string.token_detail_unable_to_load_token),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
+@Composable
+private fun TokenDetailContent(
+    token: Token,
+    uiState: TokenDetailUiState,
+    onSendClicked: (contractAddress: String) -> Unit,
+    viewModel: TokenDetailViewModel,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = NexVaultDimens.spacingLg),
+    ) {
+        item(key = "header") {
+            TokenDetailHeader(token = token)
+        }
+        item(key = "chart") {
+            TokenPriceChartSection(
+                chartData = uiState.chartData,
+                selectedDays = uiState.selectedChartDays,
+                isLoading = uiState.isChartLoading,
+                onRangeSelected = { viewModel.onChartRangeSelected(it) },
+            )
+        }
+        item(key = "stats") {
+            TokenPriceStats(token = token)
+        }
+        item(key = "actions") {
+            TokenActionButtons(
+                onSendClicked = { onSendClicked(token.contractAddress) },
+            )
+        }
+        if (!uiState.isHistoryConfigured) {
+            // Roadmap 2.0.4: say why the history is empty instead of showing nothing.
+            item(key = "history_not_configured") {
+                HistoryNotice(text = stringResource(R.string.token_detail_history_not_configured))
+            }
+        }
+        if (uiState.isHistoryPlanGated) {
+            // Roadmap 2.0.4b: the key works, the plan does not cover this chain
+            // (BSC on the free Etherscan plan) — a standing notice, not a snackbar.
+            item(key = "history_plan_gated") {
+                HistoryNotice(text = stringResource(R.string.token_detail_history_plan_gated))
+            }
+        }
+        if (uiState.recentTransactions.isNotEmpty()) {
+            item(key = "tx_header") {
+                RecentTransactionsHeader()
+            }
+            items(
+                items = uiState.recentTransactions,
+                key = { "${it.txHash}-${it.chainId}" },
+            ) { transaction ->
+                TransactionRow(
+                    transaction = transaction,
+                    tokenSymbol = token.symbol,
+                    tokenDecimals = token.decimals,
+                )
+            }
+        }
+        if (uiState.recentTransactions.isEmpty() && !uiState.isLoading) {
+            item(key = "no_tx") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(NexVaultDimens.spacingXl),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.token_detail_no_transactions),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun HistoryNotice(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier.fillMaxWidth().padding(NexVaultDimens.spacingMd),
+        textAlign = TextAlign.Center,
+    )
+}
+
+@Composable
+private fun RecentTransactionsHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = NexVaultDimens.spacingMd)
+            .padding(vertical = NexVaultDimens.spacingSm),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.token_detail_recent_transactions),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        TextButton(
+            onClick = { },
+            enabled = false,
+        ) {
+            Text(stringResource(R.string.token_detail_see_all))
+            Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription =
+                    stringResource(R.string.token_detail_see_all_transactions),
+                modifier = Modifier.size(NexVaultDimens.spacingMd),
+            )
+        }
+    }
+}
+
+@Composable
+private fun TokenDetailError(uiState: TokenDetailUiState) {
+    val errorText =
+        uiState.errorMessage
+            ?: uiState.errorRes?.let { stringResource(it, *uiState.errorArgs.toTypedArray()) }
+            ?: uiState.errorPluralsRes?.let {
+                pluralStringResource(it, uiState.errorQuantity, *uiState.errorArgs.toTypedArray())
+            }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(NexVaultDimens.spacingLg),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = errorText ?: stringResource(R.string.token_detail_unable_to_load_token),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
+        )
     }
 }
 

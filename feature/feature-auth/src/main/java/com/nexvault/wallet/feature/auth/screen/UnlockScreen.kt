@@ -3,6 +3,7 @@ package com.nexvault.wallet.feature.auth.screen
 import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -168,22 +169,11 @@ private fun UnlockScreenContent(
             ?: uiState.errorPluralsRes?.let { pluralStringResource(it, uiState.errorQuantity, *errorArgs) }
     val hasError = uiState.errorMessage != null || uiState.errorRes != null || uiState.errorPluralsRes != null
 
-    LaunchedEffect(uiState.isShakeError) {
-        if (uiState.isShakeError) {
-            repeat(3) {
-                shakeOffset.animateTo(
-                    targetValue = 12f,
-                    animationSpec = tween(durationMillis = 50),
-                )
-                shakeOffset.animateTo(
-                    targetValue = -12f,
-                    animationSpec = tween(durationMillis = 50),
-                )
-            }
-            shakeOffset.animateTo(0f, animationSpec = tween(durationMillis = 50))
-            onShakeAnimationComplete()
-        }
-    }
+    ShakeEffect(
+        isShakeError = uiState.isShakeError,
+        shakeOffset = shakeOffset,
+        onComplete = onShakeAnimationComplete,
+    )
 
     Scaffold { innerPadding ->
         Column(
@@ -194,44 +184,7 @@ private fun UnlockScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(NexVaultDimens.spacing64))
-
-            // App icon placeholder
-            Surface(
-                modifier = Modifier.size(NexVaultDimens.logoSizeSmall),
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "N",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
-
-            Text(
-                text = stringResource(R.string.unlock_brand_name),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-            )
-
-            Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
-
-            Text(
-                text = if (uiState.isLockedOut) {
-                    stringResource(R.string.unlock_locked_out)
-                } else {
-                    stringResource(R.string.unlock_enter_pin)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-
+            UnlockHeader(isLockedOut = uiState.isLockedOut)
             Spacer(modifier = Modifier.height(NexVaultDimens.spacingLg))
 
             // Error message
@@ -249,110 +202,211 @@ private fun UnlockScreenContent(
                 )
             }
 
-            // Lockout countdown
-            AnimatedVisibility(
+            LockoutCountdown(
                 visible = uiState.isLockedOut,
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(R.string.unlock_try_again_in),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
-                    Text(
-                        text = "${uiState.lockoutRemainingSeconds}s",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
-                }
-            }
+                remainingSeconds = uiState.lockoutRemainingSeconds,
+            )
 
-            if (!uiState.isLockedOut) {
-                key(uiState.failedAttempts) {
-                    Box(
-                        modifier = Modifier,
-                    ) {
-                        PinInputField(
-                            onDigitClick = onDigitPressed,
-                            onBackspaceClick = onBackspacePressed,
-                            filledCount = uiState.pin.length,
-                            isError = uiState.isShakeError,
-                        )
-                    }
-                }
-            } else {
-                // During lockout, show disabled PIN dots without keypad
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = NexVaultDimens.spacingXl),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingMd)) {
-                        repeat(PIN_LENGTH) {
-                            Box(
-                                modifier = Modifier
-                                    .size(NexVaultDimens.spacingMd)
-                                    .clip(CircleShape)
-                                    .border(
-                                        width = NexVaultDimens.borderWidthEmphasis,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        shape = CircleShape,
-                                    )
-                                    .background(Color.Transparent),
-                            )
-                        }
-                    }
-                }
-            }
+            PinEntrySection(
+                isLockedOut = uiState.isLockedOut,
+                pinLength = uiState.pin.length,
+                isError = uiState.isShakeError,
+                failedAttempts = uiState.failedAttempts,
+                onDigitPressed = onDigitPressed,
+                onBackspacePressed = onBackspacePressed,
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Biometric button
-            if (uiState.isBiometricEnabled && !uiState.isLockedOut) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = NexVaultDimens.spacingMd),
-                ) {
-                    IconButton(onClick = onBiometricRequested) {
-                        Icon(
-                            imageVector = Icons.Default.Fingerprint,
-                            contentDescription = stringResource(R.string.unlock_use_biometric),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(NexVaultDimens.spacingXl),
-                        )
-                    }
-                    TextButton(onClick = onBiometricRequested) {
-                        Text(
-                            text = stringResource(R.string.unlock_use_biometric),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
-            }
+            BiometricSection(
+                enabled = uiState.isBiometricEnabled && !uiState.isLockedOut,
+                onRequested = onBiometricRequested,
+            )
 
             Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
         }
 
-        // Verification overlay
-        if (uiState.isVerifying) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.15f),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(NexVaultDimens.iconSizeXl),
-                    )
-                }
+        VerificationOverlay(visible = uiState.isVerifying)
+    }
+}
+
+@Composable
+private fun ShakeEffect(
+    isShakeError: Boolean,
+    shakeOffset: Animatable<Float, AnimationVector1D>,
+    onComplete: () -> Unit,
+) {
+    LaunchedEffect(isShakeError) {
+        if (isShakeError) {
+            repeat(3) {
+                shakeOffset.animateTo(12f, animationSpec = tween(durationMillis = 50))
+                shakeOffset.animateTo(-12f, animationSpec = tween(durationMillis = 50))
             }
+            shakeOffset.animateTo(0f, animationSpec = tween(durationMillis = 50))
+            onComplete()
+        }
+    }
+}
+
+@Composable
+private fun UnlockHeader(isLockedOut: Boolean) {
+    Surface(
+        modifier = Modifier.size(NexVaultDimens.logoSizeSmall),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = "N",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
+
+    Text(
+        text = stringResource(R.string.unlock_brand_name),
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+    )
+
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
+
+    Text(
+        text = if (isLockedOut) {
+            stringResource(R.string.unlock_locked_out)
+        } else {
+            stringResource(R.string.unlock_enter_pin)
+        },
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+    )
+}
+
+@Composable
+private fun LockoutCountdown(
+    visible: Boolean,
+    remainingSeconds: Int,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = stringResource(R.string.unlock_try_again_in),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingXs))
+            Text(
+                text = "${remainingSeconds}s",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
+        }
+    }
+}
+
+@Composable
+private fun PinEntrySection(
+    isLockedOut: Boolean,
+    pinLength: Int,
+    isError: Boolean,
+    failedAttempts: Int,
+    onDigitPressed: (Int) -> Unit,
+    onBackspacePressed: () -> Unit,
+) {
+    if (isLockedOut) {
+        // During lockout, show disabled PIN dots without keypad
+        LockedOutPinDots()
+    } else {
+        key(failedAttempts) {
+            Box(modifier = Modifier) {
+                PinInputField(
+                    onDigitClick = onDigitPressed,
+                    onBackspaceClick = onBackspacePressed,
+                    filledCount = pinLength,
+                    isError = isError,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LockedOutPinDots() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = NexVaultDimens.spacingXl),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacingMd)) {
+            repeat(PIN_LENGTH) {
+                Box(
+                    modifier = Modifier
+                        .size(NexVaultDimens.spacingMd)
+                        .clip(CircleShape)
+                        .border(
+                            width = NexVaultDimens.borderWidthEmphasis,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = CircleShape,
+                        )
+                        .background(Color.Transparent),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BiometricSection(
+    enabled: Boolean,
+    onRequested: () -> Unit,
+) {
+    if (!enabled) return
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(bottom = NexVaultDimens.spacingMd),
+    ) {
+        IconButton(onClick = onRequested) {
+            Icon(
+                imageVector = Icons.Default.Fingerprint,
+                contentDescription = stringResource(R.string.unlock_use_biometric),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(NexVaultDimens.spacingXl),
+            )
+        }
+        TextButton(onClick = onRequested) {
+            Text(
+                text = stringResource(R.string.unlock_use_biometric),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun VerificationOverlay(visible: Boolean) {
+    if (!visible) return
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.15f),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(NexVaultDimens.iconSizeXl),
+            )
         }
     }
 }
