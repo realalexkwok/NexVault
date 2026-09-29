@@ -92,6 +92,22 @@ Post-wiring scan (BUILD SUCCESSFUL): coverage **0.0 → 9.6**, bugs 0, vulnerabi
 two S6288s accepted server-side), hotspots 0, code smells 83, duplication 0.3 — all recorded for
 the 2.10 gate comparison.
 
+### Task 0d — coverage campaign (2026-09-29, owner-directed: "at least 50%")
+
+- **Fixed first:** all 8 CRITICAL `kotlin:S3776` cognitive-complexity findings (incl. the cited
+  `TransactionRepositoryImpl.sendTransaction` 23→~5) plus the 3 `kotlin:S1192` literal duplications
+  the split surfaced — commit `e60510f`; the re-scan reports **zero critical/blocker issues**.
+- **Test-writing campaign:** core-ui component tests (Robolectric Compose, 11 cases) + formatting
+  utils, database entity/DI tests, and a per-module ViewModel/repository test round across
+  onboarding/auth/home/tokens/data/domain/network/datastore (parallel agents, same session).
+- **Known limitation, recorded honestly:** Robolectric's sandbox classloader defines app classes
+  itself, bypassing the JaCoCo agent — under Gradle 9.6's UTP neither `instrumentedPackages` nor
+  offline instrumentation (0.8.13's `instr` package; the analyzer rejects instrumented class files
+  by design, and the sandbox ignores the instrumented runtime dir) produced sandbox-class coverage.
+  Consequence: **core-ui and core-database lines that only run under Robolectric still report 0**
+  even where tests exist. The plain-JVM tests in those modules DO count. Revisit at **4.8**
+  (options: Robolectric 4.18+/UTP updates, instrumented-device coverage, or a Kover migration).
+
 ## Task 1 — data layer (implemented, automatic half green)
 
 - `ChainRpcClient` + `Web3jChainRpcClient` (core-network) — the mockable seam over web3j's final
