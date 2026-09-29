@@ -160,8 +160,6 @@ class WalletStore @Inject constructor(
      */
     private fun wipeAllFiles() {
         val failed = walletDir.listFiles()?.filter { !it.delete() }.orEmpty()
-        if (failed.isNotEmpty()) {
-            throw IllegalStateException("Failed to delete wallet data: ${failed.joinToString { it.name }}")
-        }
+        check(failed.isEmpty()) { "Failed to delete wallet data: ${failed.joinToString { it.name }}" }
     }
 }

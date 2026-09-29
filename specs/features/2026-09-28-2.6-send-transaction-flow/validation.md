@@ -115,6 +115,38 @@ the 2.10 gate comparison.
   modules DO count. Revisit at **4.8** with the device-based instrumented coverage (available from
   2026-09-30) or a Kover migration (has known AGP-9 report-task breakage, kotlinx-kover #785).
 
+### Task 0e — Kover migration: Robolectric coverage unlocked (2026-09-30, owner-approved)
+
+JaCoCo could not see Robolectric-sandboxed classes; after the owner approved the migration, the
+measurement now runs on **Kover 0.9.11** (`org.jetbrains.kotlinx.kover`, applied per reporting
+module from the root build script, Kover XML at `build/reports/kover/report.xml`, same
+`sonar.coverage.jacoco.xmlReportPaths` property, generated-code/test filters replacing the old
+excludes, Kover artifacts recorded in `gradle/verification-metadata.xml`).
+
+- **Go/no-go gate passed:** `:core:core-ui:koverXmlReport` reports **774/1297 lines covered (60%)**
+  for the Compose components — JaCoCo measured **20/1334 (1.5%)** for the same tests.
+- Robolectric enabled in the five feature modules, with screen tests added: `OnboardingScreensTest`
+  (Welcome/Create/Verify), `UnlockScreenCoverageTest`, `HomeScreenCoverageTest`,
+  `TokenDetailScreenCoverageTest`, `SendScreenCoverageTest`.
+- **Suite: 410 → 417 tests, 0 failures.** Gates green. `:app:assembleDebug` green.
+- Local aggregate: 2,575/9,744 (26%) under JaCoCo → **4,547/9,187 (49%)** under Kover.
+- **Server measure: 27.4% → 53.4% (4,059/7,035).** One trap worth recording: stale JaCoCo XMLs left
+  on disk kept being imported (the first post-migration scan read 28.0% with the old
+  `lines_to_cover=7727`); deleting `build/reports/jacoco` and re-scanning imported the Kover XMLs —
+  19 modules importing, coverage 53.4%.
+
+Known follow-ups from the post-migration scan (2.6 code):
+- `xml:S5332` / `xml:S6358` in `app/src/debug/AndroidManifest.xml` — **fixed** (the debug manifest
+  now repeats the main manifest's `allowBackup`/`dataExtractionRules`/`usesCleartextTraffic`).
+- `kotlin:S6532` in `WalletStore.wipeAllFiles` — **fixed** (`check(...)` idiom).
+- `kotlin:S6310` ("avoid hardcoded dispatchers", across `WalletStore` and the new
+  `Web3jChainRpcClient`) — **accepted debt**: `Dispatchers.IO` at the repository boundary is this
+  codebase's established pattern; injecting dispatcher qualifiers is a repo-wide refactor, not a
+  2.6 change. Owned by **4.8**.
+- `kotlin:S6288` x2 (master key user-auth binding) — previously accepted in the UI; the fresh
+  analysis re-created the issue instances (fingerprint change), so they are OPEN again and need the
+  owner's acceptance once more (the analysis token cannot transition issues, HTTP 403).
+
 ## Task 1 — data layer (implemented, automatic half green)
 
 - `ChainRpcClient` + `Web3jChainRpcClient` (core-network) — the mockable seam over web3j's final

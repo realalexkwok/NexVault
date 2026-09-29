@@ -39,6 +39,9 @@ leakcanary = "2.14"
 detekt = "1.23.8"
 ktlint = "14.2.0"
 spotless = "8.10.2"
+# Coverage (roadmap 2.6 -> Kover migration): Kover measures classes loaded by Robolectric's
+# sandbox classloader, which the JaCoCo agent cannot see under Gradle 9.6 / AGP 9.4.
+kover = "0.9.11"
 kotlinx-serialization = "1.11.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-collections-immutable = "0.4.0"
@@ -212,3 +215,4 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

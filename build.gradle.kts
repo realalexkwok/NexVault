@@ -1,6 +1,4 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-import com.android.build.api.dsl.LibraryExtension
-import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -18,6 +16,7 @@ plugins {
     // project) and per subproject (so each module can declare its own coverage report path).
     // Host URL and token are passed on the command line, never in this file.
     alias(libs.plugins.sonar) apply false
+    alias(libs.plugins.kover) apply false
 }
 
 apply(plugin = "org.sonarqube")
@@ -34,155 +33,81 @@ subprojects {
 apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
 // ============================================================================
-// Unit-test coverage for the SonarQube milestone scans (roadmap 2.6, 2026-09-28).
-// The coverage gate itself is 4.8; this wires the measurement. JaCoCo ships with the
-// Android Gradle Plugin, so no new dependency enters the stack (tech-stack section 6).
+// Unit-test coverage for the SonarQube milestone scans (roadmap 2.6).
+// Kover instruments the classes that sit on the test runtime classpath, so the classes
+// Robolectric's sandbox classloader defines are measured too — the exact blind spot that
+// the JaCoCo wiring could not see (core-ui, core-database, the feature screens).
+// Kover emits a JaCoCo-format XML, so the scanner property name is unchanged.
+// The coverage gate itself is 4.8.
 // ============================================================================
 
-// Files that never deserve coverage: generated R/BuildConfig, DI factories, tests.
-val coverageExcludes =
-    listOf(
-        "**/R.class",
-        "**/R\$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*",
-        "**/*_Factory*.*",
-        "**/*_MembersInjector*.*",
-        "**/di/**",
-        "**/Dagger*.*",
-        "**/hilt_aggregated_deps/**",
-    )
+/** Kover's XML report for a module, at its default location. */
+fun Project.koverXmlFile(): File = layout.buildDirectory.file("reports/kover/report.xml").get().asFile
+
+/** Generated code and tests never deserve coverage — same intent as the old JaCoCo excludes. */
+fun Project.configureKoverFilters() {
+    extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
+        reports {
+            filters {
+                excludes {
+                    classes(
+                        "*.R",
+                        "*.R\$*",
+                        "*BuildConfig",
+                        "*BuildConfig.*",
+                        "*_Factory",
+                        "*_Factory*",
+                        "*_MembersInjector",
+                        "*_MembersInjector*",
+                        "*Dagger*",
+                        "*hilt_aggregated_deps*",
+                        "*Manifest*",
+                        "*Test",
+                        "*Test\$*",
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Every module with unit tests declares its own Kover XML on its own Sonar extension. */
+fun Project.pointSonarAtKoverReport() {
+    extensions.configure<org.sonarqube.gradle.SonarExtension> {
+        properties {
+            property("sonar.coverage.jacoco.xmlReportPaths", koverXmlFile())
+        }
+    }
+}
 
 subprojects {
     plugins.withId("com.android.application") {
-        apply(plugin = "jacoco")
-        apply(plugin = "org.sonarqube")
-        extensions.configure<org.sonarqube.gradle.SonarExtension> {
-            properties {
-                property(
-                    "sonar.coverage.jacoco.xmlReportPaths",
-                    layout.buildDirectory.file("reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml").get().asFile,
-                )
-            }
-        }
-        extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
-            testCoverage {
-                jacocoVersion = "0.8.13"
-            }
-        }
-        // Roadmap 2.6 coverage: the instrumented (device) run covers the app and every library
-        // module's classes it loads, so this report analyzes the whole build's class trees and
-        // merges with the per-module unit reports server-side.
-        tasks.register<JacocoReport>("jacocoAndroidTestReport") {
-            dependsOn("connectedDebugAndroidTest")
-            reports {
-                xml.required.set(true)
-                xml.outputLocation.set(
-                    layout.buildDirectory.file("reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml"),
-                )
-                html.required.set(false)
-            }
-            val buildDirFile = layout.buildDirectory.get().asFile
-            val classTrees = mutableListOf(
-                fileTree("$buildDirFile/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
-                    exclude(coverageExcludes)
-                },
-            )
-            val sourceRoots = mutableListOf<java.io.File>()
-            rootProject.subprojects.forEach { lib ->
-                if (lib.path == path) return@forEach
-                val classesDir =
-                    java.io.File(lib.layout.buildDirectory.get().asFile, "intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
-                if (classesDir.exists()) {
-                    classTrees += fileTree(classesDir) { exclude(coverageExcludes) }
-                }
-                listOf("src/main/java", "src/main/kotlin").forEach { src ->
-                    val dir = java.io.File(lib.projectDir, src)
-                    if (dir.exists()) sourceRoots += dir
-                }
-            }
-            classDirectories.setFrom(classTrees)
-            sourceDirectories.setFrom(
-                files(
-                    listOf(
-                        java.io.File(projectDir, "src/main/java"),
-                        java.io.File(projectDir, "src/main/kotlin"),
-                    ) + sourceRoots,
-                ),
-            )
-            executionData.setFrom(fileTree("$buildDirFile/outputs") { include("**/*.ec") })
-        }
+        // The app module has no unit tests; its coverage would come from instrumented runs,
+        // which AGP 9.4 cannot report (documented in 2.6's validation.md).
     }
     plugins.withId("com.android.library") {
-        apply(plugin = "jacoco")
-        // The scanner only auto-integrates JaCoCo for JVM projects; Android modules must
-        // declare their own report path on their own Sonar extension.
+        apply(plugin = "org.jetbrains.kotlinx.kover")
         apply(plugin = "org.sonarqube")
-        extensions.configure<org.sonarqube.gradle.SonarExtension> {
-            properties {
-                property(
-                    "sonar.coverage.jacoco.xmlReportPaths",
-                    layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml").get().asFile,
-                )
-            }
-        }
-        extensions.configure<LibraryExtension> {
-            testCoverage {
-                jacocoVersion = "0.8.13"
-            }
-        }
-        tasks.register<JacocoReport>("jacocoTestReport") {
-            dependsOn("testDebugUnitTest")
-            reports {
-                xml.required.set(true)
-                html.required.set(false)
-            }
-            val buildDirFile = layout.buildDirectory.get().asFile
-            val kotlinClasses =
-                fileTree("$buildDirFile/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
-                    exclude(coverageExcludes)
-                }
-            // Robolectric-based tests record the exec against the classes the test runtime
-            // actually loads (the ASM-transformed and runtime-library copies), so the report
-            // analyzes those too; duplicate names resolve to the first match. The runtime
-            // copies go first because the offline instrumenter rewrites them in place.
-            val asmTransformedClasses =
-                fileTree("$buildDirFile/intermediates/classes/debug/transformDebugClassesWithAsm/dirs") {
-                    exclude(coverageExcludes)
-                }
-            val runtimeLibraryClasses =
-                fileTree("$buildDirFile/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug") {
-                    exclude(coverageExcludes)
-                }
-            classDirectories.setFrom(kotlinClasses, asmTransformedClasses)
-            sourceDirectories.setFrom(files(listOf("src/main/java", "src/main/kotlin")))
-            executionData.setFrom(files("$buildDirFile/jacoco/testDebugUnitTest.exec"))
-        }
+        configureKoverFilters()
+        pointSonarAtKoverReport()
     }
     plugins.withId("org.jetbrains.kotlin.jvm") {
-        apply(plugin = "jacoco")
-        tasks.named<JacocoReport>("jacocoTestReport") {
-            dependsOn("test")
-            reports {
-                xml.required.set(true)
-                xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
-                html.required.set(false)
-            }
-            val buildDirFile = layout.buildDirectory.get().asFile
-            val kotlinClasses = fileTree("$buildDirFile/classes/kotlin/main") { exclude(coverageExcludes) }
-            classDirectories.setFrom(kotlinClasses)
-            sourceDirectories.setFrom(files(listOf("src/main/java", "src/main/kotlin")))
-            executionData.setFrom(files("$buildDirFile/jacoco/test.exec"))
-        }
+        apply(plugin = "org.jetbrains.kotlinx.kover")
+        apply(plugin = "org.sonarqube")
+        configureKoverFilters()
+        pointSonarAtKoverReport()
     }
 }
 
 gradle.projectsEvaluated {
     tasks.named("sonar") {
-        // Only the JVM unit reports run as part of a scan; the device report
-        // (jacocoAndroidTestReport) is run explicitly beforehand when the device is available,
-        // because it wipes the on-device wallet via the E2E test's documented precondition.
-        dependsOn(allprojects.mapNotNull { it.tasks.findByName("jacocoTestReport") })
+        // Kover's report tasks carry no test dependencies on AGP 9 (kotlinx-kover #785), so the
+        // scan drives tests explicitly, then the reports.
+        val unitTestTasks =
+            allprojects.mapNotNull { project ->
+                project.tasks.findByName("testDebugUnitTest") ?: project.tasks.findByName("test")
+            }
+        val reportTasks = allprojects.mapNotNull { it.tasks.findByName("koverXmlReport") }
+        dependsOn(unitTestTasks + reportTasks)
     }
 }

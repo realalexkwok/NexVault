@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Debug-only host for Compose tests that set their own content (roadmap 2.6). -->
-    <application>
+    <!-- Debug-only host for Compose tests that set their own content (roadmap 2.6).
+         The hardening attributes repeat the main manifest so the merged debug manifest keeps
+         the same posture (scanner findings xml:S5332 / xml:S6358, 2026-09-30). -->
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:usesCleartextTraffic="false"
+        tools:ignore="MissingApplicationIcon">
         <activity
             android:name=".DialogTestHostActivity"
             android:exported="false"

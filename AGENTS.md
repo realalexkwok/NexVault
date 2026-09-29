@@ -100,7 +100,9 @@ See `specs/dev-environment.md` §7.)
   (`sudo docker start sonarqube`; verified 26.9.0.129388 on 2026-09-28) — never SonarCloud. A
   **baseline scan is recorded before 2.6 starts**, so the gate is **new code only**: no new
   blocker/critical issues, no new security hotspots, duplication not increasing; coverage enters the
-  gate only at 4.8. **Scanner (resolved 2026-09-28, 2.6 task 0):** SonarScanner for Gradle
+  gate only at 4.8 (**Kover 0.9.11** since 2026-09-30 — the owner-approved migration off JaCoCo,
+  because Kover measures Robolectric-sandboxed classes; the 2.6-era baseline is **53.4%**
+  server-wide). **Scanner (resolved 2026-09-28, 2.6 task 0):** SonarScanner for Gradle
   `org.sonarqube` **7.4.0.8496**, root-applied; the server token is a **project analysis token scoped
   to `NexVault`** (never global); the npm `@sonar/scan` is JS/TS-only and unusable here. Findings are
   fixed or accepted as named-owner debt in the checkpoint's
