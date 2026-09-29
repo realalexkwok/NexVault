@@ -2,7 +2,7 @@ package com.nexvault.wallet
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,11 +19,14 @@ import org.junit.runner.RunWith
  * actions, and the disabled confirm state used by the send flow's PIN step (the screen embeds
  * its [androidx.compose.material3.Text]-based body and drives the button states; the dialog
  * itself stays screen-agnostic).
+ *
+ * Hosted on the debug-only [DialogTestHostActivity]: MainActivity already sets its own content,
+ * and the rule's default empty activity resolves to the wrong process under this app's manifest.
  */
 @RunWith(AndroidJUnit4::class)
 class ConfirmationDialogTest {
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<DialogTestHostActivity>()
 
     // TC-UI-010: the dialog renders its title, body, and both actions.
     @Test

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Debug-only host for Compose tests that set their own content (roadmap 2.6). -->
+    <application>
+        <activity
+            android:name=".DialogTestHostActivity"
+            android:exported="false"
+            android:label="NexVault Test Host" />
+    </application>
+</manifest>

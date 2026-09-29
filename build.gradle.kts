@@ -55,6 +55,65 @@ val coverageExcludes =
     )
 
 subprojects {
+    plugins.withId("com.android.application") {
+        apply(plugin = "jacoco")
+        apply(plugin = "org.sonarqube")
+        extensions.configure<org.sonarqube.gradle.SonarExtension> {
+            properties {
+                property(
+                    "sonar.coverage.jacoco.xmlReportPaths",
+                    layout.buildDirectory.file("reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml").get().asFile,
+                )
+            }
+        }
+        extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
+            testCoverage {
+                jacocoVersion = "0.8.13"
+            }
+        }
+        // Roadmap 2.6 coverage: the instrumented (device) run covers the app and every library
+        // module's classes it loads, so this report analyzes the whole build's class trees and
+        // merges with the per-module unit reports server-side.
+        tasks.register<JacocoReport>("jacocoAndroidTestReport") {
+            dependsOn("connectedDebugAndroidTest")
+            reports {
+                xml.required.set(true)
+                xml.outputLocation.set(
+                    layout.buildDirectory.file("reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml"),
+                )
+                html.required.set(false)
+            }
+            val buildDirFile = layout.buildDirectory.get().asFile
+            val classTrees = mutableListOf(
+                fileTree("$buildDirFile/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
+                    exclude(coverageExcludes)
+                },
+            )
+            val sourceRoots = mutableListOf<java.io.File>()
+            rootProject.subprojects.forEach { lib ->
+                if (lib.path == path) return@forEach
+                val classesDir =
+                    java.io.File(lib.layout.buildDirectory.get().asFile, "intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
+                if (classesDir.exists()) {
+                    classTrees += fileTree(classesDir) { exclude(coverageExcludes) }
+                }
+                listOf("src/main/java", "src/main/kotlin").forEach { src ->
+                    val dir = java.io.File(lib.projectDir, src)
+                    if (dir.exists()) sourceRoots += dir
+                }
+            }
+            classDirectories.setFrom(classTrees)
+            sourceDirectories.setFrom(
+                files(
+                    listOf(
+                        java.io.File(projectDir, "src/main/java"),
+                        java.io.File(projectDir, "src/main/kotlin"),
+                    ) + sourceRoots,
+                ),
+            )
+            executionData.setFrom(fileTree("$buildDirFile/outputs") { include("**/*.ec") })
+        }
+    }
     plugins.withId("com.android.library") {
         apply(plugin = "jacoco")
         // The scanner only auto-integrates JaCoCo for JVM projects; Android modules must
@@ -121,6 +180,9 @@ subprojects {
 
 gradle.projectsEvaluated {
     tasks.named("sonar") {
+        // Only the JVM unit reports run as part of a scan; the device report
+        // (jacocoAndroidTestReport) is run explicitly beforehand when the device is available,
+        // because it wipes the on-device wallet via the E2E test's documented precondition.
         dependsOn(allprojects.mapNotNull { it.tasks.findByName("jacocoTestReport") })
     }
 }
