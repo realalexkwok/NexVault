@@ -72,7 +72,8 @@ subprojects {
                 }
             // Robolectric-based tests record the exec against the classes the test runtime
             // actually loads (the ASM-transformed and runtime-library copies), so the report
-            // analyzes those too; duplicate names resolve to the first match.
+            // analyzes those too; duplicate names resolve to the first match. The runtime
+            // copies go first because the offline instrumenter rewrites them in place.
             val asmTransformedClasses =
                 fileTree("$buildDirFile/intermediates/classes/debug/transformDebugClassesWithAsm/dirs") {
                     exclude(coverageExcludes)
@@ -81,7 +82,7 @@ subprojects {
                 fileTree("$buildDirFile/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug") {
                     exclude(coverageExcludes)
                 }
-            classDirectories.setFrom(kotlinClasses, asmTransformedClasses, runtimeLibraryClasses)
+            classDirectories.setFrom(kotlinClasses, asmTransformedClasses)
             sourceDirectories.setFrom(files(listOf("src/main/java", "src/main/kotlin")))
             executionData.setFrom(files("$buildDirFile/jacoco/testDebugUnitTest.exec"))
         }
