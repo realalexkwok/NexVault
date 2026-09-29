@@ -4,15 +4,14 @@ import com.google.common.truth.Truth.assertThat
 import com.nexvault.wallet.domain.model.chain.Chain
 import com.nexvault.wallet.domain.model.chain.SupportedChains
 import com.nexvault.wallet.domain.model.common.DataResult
-import com.nexvault.wallet.domain.model.token.Portfolio
 import com.nexvault.wallet.domain.model.token.PricePoint
 import com.nexvault.wallet.domain.model.token.Token
 import com.nexvault.wallet.domain.model.wallet.Account
 import com.nexvault.wallet.domain.model.wallet.Wallet
 import com.nexvault.wallet.domain.model.wallet.WalletType
 import com.nexvault.wallet.domain.repository.ChainRepository
-import com.nexvault.wallet.domain.repository.TransactionRepository
 import com.nexvault.wallet.domain.repository.TokenRepository
+import com.nexvault.wallet.domain.repository.TransactionRepository
 import com.nexvault.wallet.domain.repository.WalletRepository
 import com.nexvault.wallet.domain.usecase.chain.GetSelectedChainUseCase
 import com.nexvault.wallet.domain.usecase.token.GetPortfolioUseCase
@@ -24,7 +23,6 @@ import com.nexvault.wallet.domain.usecase.wallet.GetMnemonicForBackupUseCase
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.math.BigDecimal
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -32,6 +30,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.math.BigDecimal
 
 /**
  * Roadmap 2.6 coverage: the thin use cases that lacked a dedicated test.

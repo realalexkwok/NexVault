@@ -5,14 +5,14 @@ import com.nexvault.wallet.core.database.entity.TokenEntity
 import com.nexvault.wallet.core.datastore.model.AccountMetadata
 import com.nexvault.wallet.core.datastore.model.NetworkType
 import com.nexvault.wallet.core.datastore.model.WalletMetadata
-import com.nexvault.wallet.core.datastore.security.AuthMethod as DataStoreAuthMethod
-import com.nexvault.wallet.core.datastore.model.WalletType as DataStoreWalletType
-import com.nexvault.wallet.core.network.dto.TransactionDto
 import com.nexvault.wallet.core.network.dto.TokenTransferDto
+import com.nexvault.wallet.core.network.dto.TransactionDto
+import org.junit.Test
+import java.math.BigDecimal
+import com.nexvault.wallet.core.datastore.model.WalletType as DataStoreWalletType
+import com.nexvault.wallet.core.datastore.security.AuthMethod as DataStoreAuthMethod
 import com.nexvault.wallet.domain.model.auth.AuthMethod as DomainAuthMethod
 import com.nexvault.wallet.domain.model.wallet.WalletType as DomainWalletType
-import java.math.BigDecimal
-import org.junit.Test
 
 /**
  * Roadmap 2.6 coverage: the data-layer mapping functions, both directions and edge inputs.

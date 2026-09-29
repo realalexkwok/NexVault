@@ -2,16 +2,14 @@ package com.nexvault.wallet.core.ui.components
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import com.nexvault.wallet.domain.model.transaction.Transaction
 import com.nexvault.wallet.domain.model.transaction.TransactionStatus
 import com.nexvault.wallet.domain.model.transaction.TransactionType
-import java.math.BigDecimal
-import java.math.BigInteger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -19,6 +17,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * Roadmap 2.6 coverage: the core-ui components render and interact under Robolectric Compose.

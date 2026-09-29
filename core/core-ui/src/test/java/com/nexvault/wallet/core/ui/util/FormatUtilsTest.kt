@@ -2,8 +2,8 @@ package com.nexvault.wallet.core.ui.util
 
 import com.google.common.truth.Truth.assertThat
 import com.nexvault.wallet.core.ui.R
-import java.math.BigDecimal
 import org.junit.Test
+import java.math.BigDecimal
 
 /**
  * Roadmap 2.6 coverage: the formatting helpers the transaction and portfolio UI lean on.

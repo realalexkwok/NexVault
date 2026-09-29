@@ -1,21 +1,19 @@
 package com.nexvault.wallet.core.network.adapter
 
 import com.google.common.truth.Truth.assertThat
-import com.nexvault.wallet.core.network.dto.EtherscanTransactionListResponse
 import com.nexvault.wallet.core.network.dto.EtherscanTokenTransferListResponse
+import com.nexvault.wallet.core.network.dto.EtherscanTransactionListResponse
 import com.nexvault.wallet.core.network.interceptor.CacheControlInterceptor
 import com.nexvault.wallet.core.network.interceptor.CoinGeckoApiKeyInterceptor
 import com.squareup.moshi.Moshi
-import java.math.BigInteger
+import io.mockk.every
+import io.mockk.mockk
 import okhttp3.Interceptor
 import okhttp3.Request
-import io.mockk.every
-import io.mockk.mockk
 import okhttp3.Response
-import io.mockk.every
-import io.mockk.mockk
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Test
+import java.math.BigInteger
 
 /**
  * Roadmap 2.6 coverage: the BigInteger adapter, the envelope factory's lenient parsing, and the
@@ -62,10 +60,12 @@ class EtherscanEnvelopeAdapterFactoryTest {
     fun successEnvelope_parsesTheRowList() {
         val adapter = moshi.adapter(EtherscanTransactionListResponse::class.java)
 
-        val parsed =
-            adapter.fromJson(
-                """{"status":"1","message":"OK","result":[{"hash":"0x1","from":"0xa","to":"0xb","value":"1","gas":"21000","gasPrice":"5","gasUsed":"21000","blockNumber":"1","timeStamp":"1700000000","nonce":"0","isError":"0","txreceipt_status":"1","input":"0x","confirmations":"10"}]}""",
-            )
+        val successBody =
+            """{"status":"1","message":"OK","result":[""" +
+                """{"hash":"0x1","from":"0xa","to":"0xb","value":"1","gas":"21000",""" +
+                """"gasPrice":"5","gasUsed":"21000","blockNumber":"1","timeStamp":"1700000000",""" +
+                """"nonce":"0","isError":"0","txreceipt_status":"1","input":"0x","confirmations":"10"}]}"""
+        val parsed = adapter.fromJson(successBody)
 
         assertThat(parsed).isNotNull()
         assertThat(parsed!!.isSuccess).isTrue()
