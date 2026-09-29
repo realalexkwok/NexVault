@@ -97,16 +97,23 @@ the 2.10 gate comparison.
 - **Fixed first:** all 8 CRITICAL `kotlin:S3776` cognitive-complexity findings (incl. the cited
   `TransactionRepositoryImpl.sendTransaction` 23→~5) plus the 3 `kotlin:S1192` literal duplications
   the split surfaced — commit `e60510f`; the re-scan reports **zero critical/blocker issues**.
-- **Test-writing campaign:** core-ui component tests (Robolectric Compose, 11 cases) + formatting
-  utils, database entity/DI tests, and a per-module ViewModel/repository test round across
-  onboarding/auth/home/tokens/data/domain/network/datastore (parallel agents, same session).
+- **Test-writing campaign:** suite grew **299 → 410 tests** (0 failures): core-ui component tests
+  (Robolectric Compose, 11 cases) + formatting utils, database entity/DI tests, data mappers,
+  token/transaction repository paths, network adapters/envelope/interceptors/factories, 15 thin
+  domain use cases, Home (11) / TokenDetail (12) / Send (14) ViewModel paths.
+- **Measurement plumbing fixed:** the scanner only auto-integrates JaCoCo for JVM projects, so all
+  eleven Android modules' reports were silently ignored (server showed one module: 12.0%). Each
+  Android module now applies the Sonar plugin and declares its own report path — commit `1de3e93`;
+  the same scan jumped to **26.5%**, then **27.4%** after the remaining use-case tests.
 - **Known limitation, recorded honestly:** Robolectric's sandbox classloader defines app classes
-  itself, bypassing the JaCoCo agent — under Gradle 9.6's UTP neither `instrumentedPackages` nor
-  offline instrumentation (0.8.13's `instr` package; the analyzer rejects instrumented class files
-  by design, and the sandbox ignores the instrumented runtime dir) produced sandbox-class coverage.
-  Consequence: **core-ui and core-database lines that only run under Robolectric still report 0**
-  even where tests exist. The plain-JVM tests in those modules DO count. Revisit at **4.8**
-  (options: Robolectric 4.18+/UTP updates, instrumented-device coverage, or a Kover migration).
+  itself, bypassing the JaCoCo agent. Three standard remedies were tried and exhausted under
+  Gradle 9.6 UTP + AGP 9.4: (1) `@Config(instrumentedPackages=…)` — the sandbox does not route the
+  agent transformer; (2) offline instrumentation of the runtime-library dir — the sandbox does not
+  read it; (3) offline instrumentation of the ASM-transformed dir — same, and JaCoCo 0.8.13+'s
+  analyzer refuses instrumented class files by design. Consequence: the ~4,300 executable lines of
+  core-ui, core-database and the five feature screens stay 0-covered. The plain-JVM tests in those
+  modules DO count. Revisit at **4.8** with the device-based instrumented coverage (available from
+  2026-09-30) or a Kover migration (has known AGP-9 report-task breakage, kotlinx-kover #785).
 
 ## Task 1 — data layer (implemented, automatic half green)
 
