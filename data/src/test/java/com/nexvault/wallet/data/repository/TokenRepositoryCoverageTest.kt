@@ -2,13 +2,12 @@ package com.nexvault.wallet.data.repository
 
 import com.google.common.truth.Truth.assertThat
 import com.nexvault.wallet.core.database.dao.TokenDao
-import com.nexvault.wallet.core.database.entity.TokenEntity
 import com.nexvault.wallet.core.network.api.CoinGeckoApi
 import com.nexvault.wallet.core.network.config.ChainConfigProvider
 import com.nexvault.wallet.core.network.dto.PriceHistoryResponse
 import com.nexvault.wallet.core.network.web3.Web3jProvider
-import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.chain.SupportedChains
+import com.nexvault.wallet.domain.model.common.ApiKeyNotConfiguredException
 import com.nexvault.wallet.domain.model.common.DataResult
 import com.nexvault.wallet.domain.repository.ChainRepository
 import io.mockk.coEvery
