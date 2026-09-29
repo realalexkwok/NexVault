@@ -144,12 +144,26 @@ and compiled (`:app:compileDebugAndroidTestKotlin` green); it runs tomorrow with
 `send?tokenAddress=` route in the main graph; Home and TokenDetail Send buttons re-enabled with the
 2.0.3 wiring restored; Receive/Swap captions updated.
 
-## Task 5 — verification (pending the device)
+## Task 5 — verification (device half in progress)
 
-Full unit suite after the scan fixes: **314 tests, 0 failures, 0 errors, 1 skipped**; `detekt` and
-`ktlintCheck` exit 0; `:app:assembleDebug` green; both Sonar scans recorded above. Still owed:
-the instrumented run (TC-UI-010 + regression), the **Sepolia faucet walk** (TC-INT-002, incl. the
-new crypto-bound biometric path on the unlock screen), then reviewer handoff and owner close.
+Full unit suite after the scan fixes: **410 tests, 0 failures, 0 errors, 1 skipped**; `detekt` and
+`ktlintCheck` exit 0; `:app:assembleDebug` green; Sonar scans recorded above (27.4% coverage,
+zero criticals/blocks, bugs 0, vulnerabilities 0).
+
+**Instrumented suite, device half DONE (2026-09-30, Pixel 6a over mDNS):**
+`ANDROID_SERIAL=adb-26111jEGR13989-MJzh3R._adb-tls-connect._tcp :app:connectedDebugAndroidTest`
+→ **BUILD SUCCESSFUL, 8/8**: BackupPolicyTest 3/3, **ConfirmationDialogTest 3/3 (TC-UI-010)**,
+**CreationFlowE2ETest 1/1 (TC-INT-001)**, ExampleInstrumentedTest 1/1. The dialog test needed a
+debug-only `DialogTestHostActivity` (MainActivity already sets content; the rule's default empty
+activity resolves to the wrong process under this manifest).
+
+**Device-side coverage, attempted and blocked (recorded for 4.8):** AGP 9.4 has no
+`createDebugAndroidTestCoverageReport` task; `DeviceTest.codeCoverageEnabled` is read-only at
+configuration time; the runner's `coverage=true` argument breaks every Compose test ("No compose
+hierologies found"). The exec-collection path needs either a future AGP fix or a Kover migration.
+
+Still owed for the 2.6 close: the **Sepolia faucet walk** (TC-INT-002, incl. the new crypto-bound
+biometric path on the unlock screen), then reviewer handoff and owner close.
 
 ## Handoff (what 2.6 deliberately leaves behind)
 
