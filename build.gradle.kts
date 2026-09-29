@@ -14,10 +14,13 @@ plugins {
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.spotless) apply false
     // Milestone static-analysis scan (roadmap 2.10/3.8/4.19; owner decision 2026-09-28).
-    // Applied at the root on purpose: the `sonar` task analyses the whole multi-module build
-    // as one project. Host URL and token are passed on the command line, never in this file.
-    alias(libs.plugins.sonar)
+    // Applied at the root (the `sonar` task analyses the whole multi-module build as one
+    // project) and per subproject (so each module can declare its own coverage report path).
+    // Host URL and token are passed on the command line, never in this file.
+    alias(libs.plugins.sonar) apply false
 }
+
+apply(plugin = "org.sonarqube")
 
 subprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
@@ -54,6 +57,17 @@ val coverageExcludes =
 subprojects {
     plugins.withId("com.android.library") {
         apply(plugin = "jacoco")
+        // The scanner only auto-integrates JaCoCo for JVM projects; Android modules must
+        // declare their own report path on their own Sonar extension.
+        apply(plugin = "org.sonarqube")
+        extensions.configure<org.sonarqube.gradle.SonarExtension> {
+            properties {
+                property(
+                    "sonar.coverage.jacoco.xmlReportPaths",
+                    layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml").get().asFile,
+                )
+            }
+        }
         extensions.configure<LibraryExtension> {
             testCoverage {
                 jacocoVersion = "0.8.13"
@@ -106,15 +120,6 @@ subprojects {
 }
 
 gradle.projectsEvaluated {
-    val reportPaths =
-        allprojects.mapNotNull { project ->
-            project.tasks.findByName("jacocoTestReport")?.let {
-                "${project.layout.buildDirectory.get().asFile}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-            }
-        }
-    // The scanner reads `sonar.*` gradle project properties; extra properties are the way to feed
-    // them without the plugin's extension object.
-    extensions.extraProperties["sonar.coverage.jacoco.xmlReportPaths"] = reportPaths.joinToString(",")
     tasks.named("sonar") {
         dependsOn(allprojects.mapNotNull { it.tasks.findByName("jacocoTestReport") })
     }
