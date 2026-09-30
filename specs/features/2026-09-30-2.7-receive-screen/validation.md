@@ -89,16 +89,19 @@ vulnerabilities, 0 blocker/critical, 66 code smells (from 73), duplication 0.3%*
 | R9 | Instrumented | Pixel 6a, wake + `pm clear` + pinned serial → `:app:connectedDebugAndroidTest` | **11/11 pass** (BackupPolicy 3, ConfirmationDialog 3, CreationFlow 1, Example 1, SendFlowE2E **3** incl. the scanner test) — first attempt hit a Gradle-daemon crash (environment, no test ran); the clean rerun passed |
 | R10 | Coverage input | `./gradlew koverXmlReport` + my own parse of the Kover XML | new-file line coverage confirms the direction (my local basis: ReceiveScreen 97%, QrCodeImage 100%, QrScannerScreen 45% — the scanner's camera-binding block is Robolectric-hostile, which is why it trails); the server-side 53.9% and the "0 open issues" re-scan numbers are **token-gated** (SonarQube API returns 401 anonymously) and remain developer-recorded | ⚠️ server numbers developer-recorded |
 
-### Reviewer notes (Low, not blocking)
+### Findings (reviewer, filed 2026-09-30 — all Low, none blocking)
 
-1. **tech-stack §4d rows are now stale** (4.4-era defects table): "zxing is an orphan version alias"
-   is resolved (the `zxing-core` library entry exists since this item) and "4 unused bundles"
-   no longer includes `camerax` (feature-send references it). The defect table needs its rows
-   updated or cleared — worth a one-line follow-up in the next planning round.
-2. `NO_ACTIVE_WALLET_MESSAGE` in `ReceiveViewModel` is a hardcoded user-facing string; the
-   module's other copy lives in `values/strings.xml`. 4.17's sweep should adopt it.
-3. `QrCodeImage` computes `sizePx` only as a `remember` key while the bitmap is always 512px —
-   harmless, but the key could just be `content`.
+| ID | Severity | Location | Finding | Owner |
+| --- | --- | --- | --- | --- |
+| F-2.7-1 | Low (user-facing) | `HomeScreen.kt:394-401` + `home_actions_coming_soon` | The caption **"Send and receive arrive in Phase 2; swap in Phase 3."** renders unconditionally directly under the now-**live** Send and Receive buttons (enabled since 2.6/2.7) — stale, self-contradictory copy (the 2.0.3 comment above it is stale too). Reword to cover only Swap ("Swap arrives in Phase 3.") or remove. | next feature round (copy fix) |
+| F-2.7-2 | Low (robustness) | `ReceiveViewModel.observeWalletAndChain` | No error handling around the combined flow: an upstream failure (e.g. wallet/chain flow error) leaves `isLoading = true` forever → the screen's content area stays blank with no error state and no retry. | next receive-screen touch |
+| F-2.7-3 | Low (discipline) | `ReceiveViewModel` `NO_ACTIVE_WALLET_MESSAGE` | Hardcoded user-facing string; the module's other copy lives in `values/strings.xml` (string-adoption discipline). | **4.17** |
+| F-2.7-4 | Low (records) | `specs/tech-stack.md` §4d defect table | Two rows are now stale: "zxing is an orphan version alias" (resolved — the `zxing-core` library entry exists since this item) and "4 unused bundles" (no longer includes `camerax` — feature-send references it). Update or clear the rows. | next planning round |
+
+### Reviewer nit (not a finding)
+
+`QrCodeImage` computes `sizePx` only as a `remember` key while the bitmap is always 512px —
+harmless, but the key could just be `content`.
 
 ### Verdict
 
@@ -108,5 +111,6 @@ Robolectric tests, the scanner is a CameraX+zxing implementation with a sound pe
 TC-UI-006 test is mapped and green on the device (11/11), the suite is 437/0/0/1 from a fresh
 776-task run, both gates exit 0, and all seven SonarQube new-code findings are fixed in the tree.
 The SonarQube server-side percentages (53.9%, 0 open issues) are developer-recorded — the API is
-token-gated. Remaining for closure: the owner's close walk (including the second-phone QR scan) and
+token-gated. **Four Low findings filed** (F-2.7-1 … F-2.7-4, table above) — none blocking; each has
+an owner. Remaining for closure: the owner's close walk (including the second-phone QR scan) and
 the owner merge of `feature/2.7-receive-screen` to `main`.
