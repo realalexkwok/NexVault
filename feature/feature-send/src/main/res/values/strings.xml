@@ -31,4 +31,8 @@
     <string name="send_result_view_on_explorer">View on Explorer</string>
     <string name="send_result_done">Done</string>
     <string name="send_back">Back</string>
+    <string name="send_scan_qr">Scan QR code</string>
+    <string name="send_scan_title">Scan QR code</string>
+    <string name="send_scan_permission_denied">Camera access is needed to scan a QR code.</string>
+    <string name="send_scan_grant_permission">Allow camera</string>
 </resources>
