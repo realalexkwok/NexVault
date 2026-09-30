@@ -177,6 +177,30 @@ outside their clickable icon buttons.
 Etherscan V2 API — is deferred to the **2.10 Phase 2 walk** (the faucet is captcha-walled;
 the address to fund is `0x97B633905380C70B1a4c18DDCd56676589bcE147`, PIN 123456, Sepolia).
 
+## Close record — 2026-09-30, owner-directed close ("close 2.6")
+
+Fresh evidence at the close: branch `feature/2.6-send-transaction-flow`, 29 commits ahead of
+`main` (0847735..HEAD, `main` not advanced since), clean tree.
+
+- Unit suite **417 tests / 0 failures** (`testDebugUnitTest` + `:domain:test`); instrumented suite
+  **10/10** on the Pixel 6a (incl. the new `SendFlowE2ETest`); `detekt` + `ktlintCheck` exit 0;
+  `:app:assembleDebug` green; artifact `app/build/outputs/apk/debug/app-debug.apk`.
+- SonarQube (local, project `NexVault`): **coverage 53.4%** (4,059/7,035, Kover), **0 criticals,
+  0 bugs, 0 security hotspots**, duplication 0.3%; the two open xml vulnerabilities are fixed in
+  the tree and clear on the next scan; `kotlin:S6310` x26 accepted as 4.8 debt (Task 0e).
+
+AC-2.6 matrix (doc/08): recipient entry (manual) ✓; address-book pick — replanned to 3.4
+(Q1); QR scan — replanned to 2.7 (Q1, TC-UI-006); amount-vs-balance validation ✓ (on-device
+evidence); MAX ✓; gas Slow/Normal/Fast with time + fiat ✓; review screen ✓; PIN-or-biometric
+confirmation ✓ (PIN on-device; crypto-bound biometric path implemented, the walk device has no
+enrolled biometrics); hash + "View on Explorer" ✓ (unit-tested; the funded on-chain submit is
+deferred to the 2.10 walk); pending → confirmed history row ✓ (persisted + status refresh
+tested; history UI is 2.8); ERC-20 send ✓ (repository path + tests).
+
+**Handoff:** (1) funded Sepolia send + 2.0.4b M1/M2/P4 — the "Funding-suspended verification"
+register in `specs/roadmap.md`; 2.10 consumes it. (2) `kotlin:S6310` dispatcher-injection refactor
+— 4.8. (3) TC-UI-006 (QR scan) — 2.7.
+
 ## Task 1 — data layer (implemented, automatic half green)
 
 - `ChainRpcClient` + `Web3jChainRpcClient` (core-network) — the mockable seam over web3j's final

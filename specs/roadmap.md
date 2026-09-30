@@ -596,7 +596,7 @@ Unblocked only after Phase 2.0 closes.
 
 | Item | Scope | Landing module | Acceptance | Status |
 | --- | --- | --- | --- | --- |
-| 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[ ]` |
+| 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[x]` — **closed 2026-09-30 (owner close)**: 29 commits; 417 unit tests + 10/10 instrumented; gates green; coverage 53.4% (Kover migration); 0 criticals; TC-INT-002 mapped (funded submit deferred to 2.10); evidence in `specs/features/2026-09-28-2.6-send-transaction-flow/validation.md` close record |
 | 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[ ]` |
 | 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
 | 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
@@ -687,3 +687,12 @@ Commands run from the repository root; `JAVA_HOME` set to the Android Studio JBR
 
 These numbers are the reference point for every claim in this roadmap. Re-run them before
 asserting that anything has changed.
+> **2.6 (Send transaction flow) CLOSED 2026-09-30 as `[x]` — owner-directed close ("close 2.6"),
+> merged to `main` (`--no-ff`), pushed, the local feature branch deleted.** The send flow
+> (form → review → gas slow/normal/fast → PIN-signed submit → result hash + explorer link,
+> native + ERC-20) is implemented and verified: 417 unit tests / 0 failures, instrumented **10/10**
+> on the Pixel 6a (TC-INT-002 walk automated as `SendFlowE2ETest`), both gates green, SonarQube
+> **coverage 53.4%** with **0 criticals** (Kover 0.9.11 migration, owner-approved 2026-09-30).
+> Deferred: the funded on-chain submit → 2.10's walk (funding register), QR scan → 2.7,
+> address book → 3.4, dispatcher injection → 4.8. **The next open entry point is 2.7**
+> (Receive screen — QR + copy + share).
