@@ -16,9 +16,12 @@ must be answered by the user.
 15/15 signed off). **Phase 2.0 is CLOSED `[x]` (2026-09-28, item 2.0.7 — record and close)**:
 2.0.1–2.0.6 verified, the Phase 0 rows re-graded (15 → `[x]`, 1.2/1.4 `[~]` for open 4.17/4.18
 findings), both gates green, the app device-walked and instrumented-tested, and every `doc/07` TC id
-mapped or registered. The open entry point is now **Phase 2.6 — Send transaction flow**
-(`specs/roadmap.md`). The only remaining verification debt is 2.0.4b's (M1/M2 suspended pending
-funding, M5 crash watch owed — M3/M4 closed 2026-09-28).
+mapped or registered. **2.6 (Send transaction flow) is CLOSED `[x]` (2026-09-30, owner close)**:
+29 commits, 417 unit tests / 0 failures, instrumented 10/10 on the Pixel 6a, gates green, SonarQube
+coverage 53.4% with 0 criticals. The open entry point is now **Phase 2.7 — Receive screen**
+(QR + copy + share; TC-UI-006 replanned there). Remaining verification debt: 2.0.4b's M1/M2
+(suspended pending funding — see the wake-up register), M5 crash watch owed, and the funded
+TC-INT-002 submit deferred to the 2.10 walk.
 
 ## Part B — Project Constitution (authoritative)
 
@@ -100,9 +103,12 @@ See `specs/dev-environment.md` §7.)
   (`sudo docker start sonarqube`; verified 26.9.0.129388 on 2026-09-28) — never SonarCloud. A
   **baseline scan is recorded before 2.6 starts**, so the gate is **new code only**: no new
   blocker/critical issues, no new security hotspots, duplication not increasing; coverage enters the
-  gate only at 4.8. The scanner is **not yet chosen** (the installed npm `@sonar/scan` is JS/TS-only;
-  the Gradle plugin and the JVM CLI are the candidates) — it is decided in the first checkpoint's
-  planning round. Findings are fixed or accepted as named-owner debt in the checkpoint's
+  gate only at 4.8 (**Kover 0.9.11** since 2026-09-30 — the owner-approved migration off JaCoCo,
+  because Kover measures Robolectric-sandboxed classes; the 2.6-era baseline is **53.4%**
+  server-wide). **Scanner (resolved 2026-09-28, 2.6 task 0):** SonarScanner for Gradle
+  `org.sonarqube` **7.4.0.8496**, root-applied; the server token is a **project analysis token scoped
+  to `NexVault`** (never global); the npm `@sonar/scan` is JS/TS-only and unusable here. Findings are
+  fixed or accepted as named-owner debt in the checkpoint's
   `validation.md`; the scan never replaces `detekt`/`ktlintCheck`. Recipe:
   `specs/dev-environment.md` §"Milestone static-analysis scan".
 - Verification reports MUST include absolute paths of built artifacts.
@@ -114,10 +120,16 @@ See `specs/dev-environment.md` §7.)
 - Never write "done", "complete", or "works" in a validation record without a command
   and its observed result. Baseline 2026-09-21 (kept for contrast): 223 unit tests green
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
-  gates red. Current 2026-09-28: **299** tests green (plus 5 instrumented device tests), the
-  app walked on a Pixel 6a, both gates green, **Phase 2.0 closed `[x]` (2.0.1–2.0.6 verified,
-  Phase 0 re-graded, 2.0.7 closed)**; 2.0.4b `[~]` for M1/M2/M5; 4 of 5 tabs still
-  placeholders until Phase 2.6–2.8.
+  gates red. Current 2026-09-30: **417** unit tests green (plus **10 instrumented device tests**),
+  the app walked on a Pixel 6a, both gates green, coverage **53.4%** (Kover), **Phase 2.0 closed
+  `[x]`** and **2.6 closed `[x]`** (2026-09-30); 2.0.4b `[~]` for M1/M2/M5; 4 of 5 tabs still
+  placeholders until Phase 2.7–2.8.
+- **Funding-suspended verification (owner's rule 2026-09-30):** a test case that needs a
+  funded wallet is **suspended**, never failed and never silently dropped. The single register
+  of suspended cases is `specs/roadmap.md` §"Funding-suspended verification (wake-up
+  register)" — every row states what funding it needs and what to run. When the owner signals
+  funding in any wording ("funded", "funds ready", ...), re-read that section and resume the
+  funded rows in one pass; the 2.10 Phase 2 walk consumes whatever is funded by then.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes

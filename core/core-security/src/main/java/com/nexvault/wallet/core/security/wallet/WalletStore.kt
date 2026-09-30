@@ -146,11 +146,20 @@ class WalletStore @Inject constructor(
     }
 
     suspend fun wipeAll() = withContext(Dispatchers.IO) {
-        walletDir.listFiles()?.forEach { it.delete() }
+        wipeAllFiles()
     }
 
     suspend fun wipeWalletData(walletId: String) = withContext(Dispatchers.IO) {
         // For single-file design, wipe all (only one wallet supported at a time)
-        walletDir.listFiles()?.forEach { it.delete() }
+        wipeAllFiles()
+    }
+
+    /**
+     * Deletes every wallet file and fails loudly if any file survives — silently leaving key
+     * material behind would be the worse failure (roadmap 2.6 scan fix, kotlin:S899).
+     */
+    private fun wipeAllFiles() {
+        val failed = walletDir.listFiles()?.filter { !it.delete() }.orEmpty()
+        check(failed.isEmpty()) { "Failed to delete wallet data: ${failed.joinToString { it.name }}" }
     }
 }

@@ -1,6 +1,7 @@
 package com.nexvault.wallet.feature.onboarding.screen
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -99,22 +100,11 @@ private fun SetPinScreenContent(
 ) {
     val shakeOffset = remember { Animatable(0f) }
 
-    LaunchedEffect(uiState.isShakeError) {
-        if (uiState.isShakeError) {
-            repeat(3) {
-                shakeOffset.animateTo(
-                    targetValue = 12f,
-                    animationSpec = tween(durationMillis = 50),
-                )
-                shakeOffset.animateTo(
-                    targetValue = -12f,
-                    animationSpec = tween(durationMillis = 50),
-                )
-            }
-            shakeOffset.animateTo(0f, animationSpec = tween(durationMillis = 50))
-            onShakeAnimationComplete()
-        }
-    }
+    SetPinShakeEffect(
+        isShakeError = uiState.isShakeError,
+        shakeOffset = shakeOffset,
+        onComplete = onShakeAnimationComplete,
+    )
 
     val errorText =
         uiState.errorMessage
@@ -146,42 +136,9 @@ private fun SetPinScreenContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
-
-                Text(
-                    text = when (uiState.phase) {
-                        SetPinViewModel.PinPhase.SET -> stringResource(R.string.set_pin_title_set)
-                        SetPinViewModel.PinPhase.CONFIRM -> stringResource(R.string.set_pin_title_confirm)
-                    },
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                )
-
-                Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
-
-                Text(
-                    text = when (uiState.phase) {
-                        SetPinViewModel.PinPhase.SET ->
-                            stringResource(R.string.set_pin_subtitle_set)
-                        SetPinViewModel.PinPhase.CONFIRM ->
-                            stringResource(R.string.set_pin_subtitle_confirm)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-
+                PinPhaseTexts(phase = uiState.phase)
                 Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
-
-                if (errorText != null) {
-                    Text(
-                        text = errorText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = NexVaultDimens.spacingMd),
-                    )
-                }
+                ErrorLine(errorText)
 
                 Box(
                     modifier = Modifier.graphicsLayer {
@@ -200,47 +157,120 @@ private fun SetPinScreenContent(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (uiState.isBiometricAvailable && uiState.phase == SetPinViewModel.PinPhase.SET) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = NexVaultDimens.spacingMd),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.set_pin_enable_biometric),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Switch(
-                            checked = uiState.isBiometricEnabled,
-                            onCheckedChange = onBiometricToggled,
-                        )
-                    }
-                }
+                BiometricToggleRow(
+                    visible = uiState.isBiometricAvailable && uiState.phase == SetPinViewModel.PinPhase.SET,
+                    checked = uiState.isBiometricEnabled,
+                    onToggle = onBiometricToggled,
+                )
 
                 Spacer(modifier = Modifier.height(NexVaultDimens.spacingXl))
             }
 
-            if (uiState.isLoading) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f),
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
-                            Text(
-                                text = stringResource(R.string.set_pin_securing),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-                }
+            LoadingOverlay(visible = uiState.isLoading)
+        }
+    }
+}
+
+@Composable
+private fun SetPinShakeEffect(
+    isShakeError: Boolean,
+    shakeOffset: Animatable<Float, AnimationVector1D>,
+    onComplete: () -> Unit,
+) {
+    LaunchedEffect(isShakeError) {
+        if (isShakeError) {
+            repeat(3) {
+                shakeOffset.animateTo(12f, animationSpec = tween(durationMillis = 50))
+                shakeOffset.animateTo(-12f, animationSpec = tween(durationMillis = 50))
+            }
+            shakeOffset.animateTo(0f, animationSpec = tween(durationMillis = 50))
+            onComplete()
+        }
+    }
+}
+
+@Composable
+private fun PinPhaseTexts(phase: SetPinViewModel.PinPhase) {
+    Text(
+        text = when (phase) {
+            SetPinViewModel.PinPhase.SET -> stringResource(R.string.set_pin_title_set)
+            SetPinViewModel.PinPhase.CONFIRM -> stringResource(R.string.set_pin_title_confirm)
+        },
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+    )
+
+    Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))
+
+    Text(
+        text = when (phase) {
+            SetPinViewModel.PinPhase.SET ->
+                stringResource(R.string.set_pin_subtitle_set)
+            SetPinViewModel.PinPhase.CONFIRM ->
+                stringResource(R.string.set_pin_subtitle_confirm)
+        },
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+    )
+}
+
+@Composable
+private fun ErrorLine(errorText: String?) {
+    if (errorText == null) return
+    Text(
+        text = errorText,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.error,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(bottom = NexVaultDimens.spacingMd),
+    )
+}
+
+@Composable
+private fun BiometricToggleRow(
+    visible: Boolean,
+    checked: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    if (!visible) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = NexVaultDimens.spacingMd),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(R.string.set_pin_enable_biometric),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = onToggle,
+        )
+    }
+}
+
+@Composable
+private fun LoadingOverlay(visible: Boolean) {
+    if (!visible) return
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
+                Text(
+                    text = stringResource(R.string.set_pin_securing),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
     }

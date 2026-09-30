@@ -55,25 +55,8 @@ fun TransactionRow(
     val isSwap = transaction.type == TransactionType.SWAP
     val isFailed = transaction.status == TransactionStatus.FAILED
     val isPending = transaction.status == TransactionStatus.PENDING
-
-    val icon: ImageVector = when {
-        isSwap -> Icons.Default.SwapHoriz
-        isSend -> Icons.Default.ArrowUpward
-        else -> Icons.Default.ArrowDownward
-    }
-
-    val iconTint: Color = when {
-        isFailed -> MaterialTheme.colorScheme.onSurfaceVariant
-        isSwap -> NexVaultTheme.colors.info
-        isSend -> MaterialTheme.colorScheme.error
-        else -> NexVaultTheme.colors.positive
-    }
-
-    val amountPrefix = when {
-        isSend -> "-"
-        isSwap -> ""
-        else -> "+"
-    }
+    val icon = transactionIcon(isSwap, isSend)
+    val iconTint = transactionTint(isFailed, isSwap, isSend)
 
     Row(
         modifier = modifier
@@ -100,21 +83,12 @@ fun TransactionRow(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = when {
-                    isFailed -> "Failed"
-                    isSwap -> "Swap"
-                    isSend -> "Sent"
-                    else -> "Received"
-                },
+                text = transactionTitle(isFailed, isSwap, isSend),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                text = if (isSend) {
-                    "To: ${truncateAddress(transaction.toAddress)}"
-                } else {
-                    "From: ${truncateAddress(transaction.fromAddress)}"
-                },
+                text = counterpartyLine(transaction, isSend),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -126,22 +100,59 @@ fun TransactionRow(
                 maxFractionDigits = tokenDecimals.coerceIn(2, 8),
             )
             Text(
-                text = "$amountPrefix$displayValue $tokenSymbol",
+                text = "${amountPrefix(isSend, isSwap)}$displayValue $tokenSymbol",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = if (isFailed) MaterialTheme.colorScheme.onSurfaceVariant else iconTint,
             )
             Text(
-                text = when {
-                    isPending -> "Pending"
-                    isFailed -> "Failed"
-                    else -> formatTimestamp(transaction.timestamp)
-                },
+                text = timestampLine(transaction, isPending, isFailed),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
+}
+
+private fun transactionIcon(isSwap: Boolean, isSend: Boolean): ImageVector = when {
+    isSwap -> Icons.Default.SwapHoriz
+    isSend -> Icons.Default.ArrowUpward
+    else -> Icons.Default.ArrowDownward
+}
+
+@Composable
+private fun transactionTint(isFailed: Boolean, isSwap: Boolean, isSend: Boolean): Color = when {
+    isFailed -> MaterialTheme.colorScheme.onSurfaceVariant
+    isSwap -> NexVaultTheme.colors.info
+    isSend -> MaterialTheme.colorScheme.error
+    else -> NexVaultTheme.colors.positive
+}
+
+private fun transactionTitle(isFailed: Boolean, isSwap: Boolean, isSend: Boolean): String = when {
+    isFailed -> "Failed"
+    isSwap -> "Swap"
+    isSend -> "Sent"
+    else -> "Received"
+}
+
+private fun counterpartyLine(transaction: Transaction, isSend: Boolean): String {
+    return if (isSend) {
+        "To: ${truncateAddress(transaction.toAddress)}"
+    } else {
+        "From: ${truncateAddress(transaction.fromAddress)}"
+    }
+}
+
+private fun amountPrefix(isSend: Boolean, isSwap: Boolean): String = when {
+    isSend -> "-"
+    isSwap -> ""
+    else -> "+"
+}
+
+private fun timestampLine(transaction: Transaction, isPending: Boolean, isFailed: Boolean): String = when {
+    isPending -> "Pending"
+    isFailed -> "Failed"
+    else -> formatTimestamp(transaction.timestamp)
 }
 
 @Preview(showBackground = true)

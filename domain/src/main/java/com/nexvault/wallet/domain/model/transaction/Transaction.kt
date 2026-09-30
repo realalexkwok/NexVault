@@ -44,6 +44,8 @@ data class GasEstimate(
     val slow: GasOption,
     val normal: GasOption,
     val fast: GasOption,
+    /** The estimated gas limit shared by all three tiers (roadmap 2.6). */
+    val gasLimit: BigInteger,
 )
 
 data class GasOption(

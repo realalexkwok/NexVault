@@ -45,11 +45,14 @@ Policy (owner decisions 2026-09-28):
   Code never leaves the machine — no SonarCloud.
 - **Baseline first:** one baseline scan is recorded **before 2.6 starts**, so each checkpoint gates
   on **new code only** — no new blocker/critical issues, no new security hotspots, duplication not
-  increasing. Coverage is *not* part of the gate until 4.8 sets the bar.
-- **Scanner:** deliberately **deferred to the first checkpoint's planning round**. The installed
-  `@sonar/scan` (npm, v5.0.0) is JS/TS-only and cannot analyse Kotlin; the realistic options are the
-  SonarScanner for Gradle (`org.sonarqube`, a build-file change needing the normal ask/spec flow) or
-  the standalone JVM `sonar-scanner` CLI. See `dev-environment.md` §"Milestone static-analysis scan".
+  increasing. Coverage is *not* part of the gate until 4.8 sets the bar; it is **measured** (2.6
+  task 0c/0d): the JaCoCo wiring reached 27.4%, then the owner-approved **Kover migration
+  (2026-09-30)** made Robolectric-sandboxed classes measurable and took the server measure to
+  **53.4%** (4,059/7,035) — 4.8 sets its bar from that.
+- **Scanner:** **resolved 2026-09-28 by 2.6's task 0 — SonarScanner for Gradle** (`org.sonarqube`
+  **7.4.0.8496**, root-applied; host URL and token on the command line, never in the build file).
+  The installed npm `@sonar/scan` is JS/TS-only and is not used. The server token is a **project
+  analysis token scoped to `NexVault`** (never a global one). See `dev-environment.md` §6b.
 - **Findings are triaged, never silently ignored:** each checkpoint's `validation.md` records the
   scan command, the counts, what was fixed, and what was accepted as debt with a named owner.
 - The scan is **not** a replacement for the per-commit gates: `detekt` and `ktlintCheck` stay the
@@ -121,6 +124,23 @@ Policy (owner decisions 2026-09-28):
 > confirmed to build, install, launch, and render on a Pixel 6a, and one prediction
 > (a stray ActionBar) was refuted rather than acted on — which is the whole argument for
 > running the thing instead of reasoning about it.
+
+---
+
+## Funding-suspended verification (wake-up register)
+
+**Owner's rule (2026-09-30):** test cases that need a funded wallet stay **suspended** — never
+failed, never silently dropped — until the owner signals funding with any wording (e.g.
+"funded", "funds ready"). On that signal, resume every row below in one pass, in order.
+
+| Row | Needs | Where it lives / what to run | Resume evidence |
+| --- | --- | --- | --- |
+| 2.0.4b M1 — mainnet history walk | the walk wallet's **Ethereum mainnet** balance > 0 | `specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/validation.md` §Suspended — TokenDetail history for a known-active mainnet address | funded rows render (2.0.4b M1) |
+| 2.0.4b M2 — Polygon history walk | the walk wallet's **Polygon** balance > 0 | same file — the same walk on Polygon (chainid 137) | funded rows render (2.0.4b M2) |
+| 2.0.4b P4 — known-active addresses | rides on M1/M2's wallet | same file, P4 row | addresses recorded + walked |
+| 2.6 TC-INT-002 — funded on-chain send | **Sepolia** faucet to `0x97B633905380C70B1a4c18DDCd56676589bcE147` (walk wallet, PIN 123456) | `specs/features/2026-09-28-2.6-send-transaction-flow/validation.md` Task 0f — re-run `SendFlowE2ETest#sendFlow_submitsAndShowsTheHash` on the device, then verify the tx via the Etherscan V2 API | "Transaction submitted" + hash + on-chain tx (TC-INT-002) |
+
+The 2.10 Phase 2 walk re-reads this register and executes whichever rows the owner funded by then.
 
 ---
 
@@ -576,7 +596,7 @@ Unblocked only after Phase 2.0 closes.
 
 | Item | Scope | Landing module | Acceptance | Status |
 | --- | --- | --- | --- | --- |
-| 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[ ]` |
+| 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[x]` — **closed 2026-09-30 (owner close)**: 29 commits; 417 unit tests + 10/10 instrumented; gates green; coverage 53.4% (Kover migration); 0 criticals; TC-INT-002 mapped (funded submit deferred to 2.10); evidence in `specs/features/2026-09-28-2.6-send-transaction-flow/validation.md` close record |
 | 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[ ]` |
 | 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
 | 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
@@ -667,3 +687,12 @@ Commands run from the repository root; `JAVA_HOME` set to the Android Studio JBR
 
 These numbers are the reference point for every claim in this roadmap. Re-run them before
 asserting that anything has changed.
+> **2.6 (Send transaction flow) CLOSED 2026-09-30 as `[x]` — owner-directed close ("close 2.6"),
+> merged to `main` (`--no-ff`), pushed, the local feature branch deleted.** The send flow
+> (form → review → gas slow/normal/fast → PIN-signed submit → result hash + explorer link,
+> native + ERC-20) is implemented and verified: 417 unit tests / 0 failures, instrumented **10/10**
+> on the Pixel 6a (TC-INT-002 walk automated as `SendFlowE2ETest`), both gates green, SonarQube
+> **coverage 53.4%** with **0 criticals** (Kover 0.9.11 migration, owner-approved 2026-09-30).
+> Deferred: the funded on-chain submit → 2.10's walk (funding register), QR scan → 2.7,
+> address book → 3.4, dispatcher injection → 4.8. **The next open entry point is 2.7**
+> (Receive screen — QR + copy + share).

@@ -12,6 +12,7 @@
     <string name="unlock_try_again_in">Try again in</string>
     <string name="unlock_use_biometric">Use Biometric</string>
     <string name="unlock_use_pin">Use PIN</string>
+    <string name="unlock_biometric_unavailable">Biometric authentication is unavailable right now. Use your PIN instead.</string>
     <string name="unlock_verification_error">Verification error: %1$s</string>
     <string name="unlock_wallet_wiped">Wallet wiped due to too many failed attempts.</string>
 </resources>
