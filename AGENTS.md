@@ -18,8 +18,10 @@ must be answered by the user.
 findings), both gates green, the app device-walked and instrumented-tested, and every `doc/07` TC id
 mapped or registered. **2.6 (Send transaction flow) is CLOSED `[x]` (2026-09-30, owner close)**:
 29 commits, 417 unit tests / 0 failures, instrumented 10/10 on the Pixel 6a, gates green, SonarQube
-coverage 53.4% with 0 criticals. The open entry point is now **Phase 2.7 — Receive screen**
-(QR + copy + share; TC-UI-006 replanned there). Remaining verification debt: 2.0.4b's M1/M2
+coverage 53.4% with 0 criticals. **2.7 (Receive screen) is CLOSED `[x]` (2026-09-30, owner close
+after reviewer verification)**: 443 unit tests / 0 failures / 1 skipped, gates green, SonarQube
+coverage 54.1% with 0 bugs/vulnerabilities/criticals, TC-UI-006 mapped to the send-flow QR scanner.
+The open entry point is now **Phase 2.8 — Transaction history**. Remaining verification debt: 2.0.4b's M1/M2
 (suspended pending funding — see the wake-up register), M5 crash watch owed, and the funded
 TC-INT-002 submit deferred to the 2.10 walk.
 
@@ -120,10 +122,10 @@ See `specs/dev-environment.md` §7.)
 - Never write "done", "complete", or "works" in a validation record without a command
   and its observed result. Baseline 2026-09-21 (kept for contrast): 223 unit tests green
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
-  gates red. Current 2026-09-30: **417** unit tests green (plus **10 instrumented device tests**),
-  the app walked on a Pixel 6a, both gates green, coverage **53.4%** (Kover), **Phase 2.0 closed
-  `[x]`** and **2.6 closed `[x]`** (2026-09-30); 2.0.4b `[~]` for M1/M2/M5; 4 of 5 tabs still
-  placeholders until Phase 2.7–2.8.
+  gates red. Current 2026-09-30: **443** unit tests green (plus **11 instrumented device tests**),
+  the app walked on a Pixel 6a, both gates green, coverage **54.1%** (Kover), **Phase 2.0 closed
+  `[x]`**, **2.6 and 2.7 closed `[x]`**; 2.0.4b `[~]` for M1/M2/M5; owed: a device re-run on 2.7's
+  closed revision and the second-phone QR scan (2.8); 2 of 5 tabs still placeholders until 2.8.
 - **Funding-suspended verification (owner's rule 2026-09-30):** a test case that needs a
   funded wallet is **suspended**, never failed and never silently dropped. The single register
   of suspended cases is `specs/roadmap.md` §"Funding-suspended verification (wake-up

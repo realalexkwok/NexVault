@@ -181,3 +181,29 @@ QR scan) and the owner merge of `feature/2.7-receive-screen` to `main`.
 two refuted with evidence (F-2.7-8 by test, F-2.7-1 by git history — the latter being the
 reviewer's own error, now on the record), one partly fixed with the remainder correctly deferred to
 the close walk (F-2.7-10). Nothing was deferred silently.
+
+## Close record — 2026-09-30, owner-directed close ("Close 2.7", after reviewer verification `d75b328`)
+
+Branch `feature/2.7-receive-screen`, 10 commits ahead of `main` (e502a5d..HEAD), clean tree.
+
+- Suite **443 tests / 0 failures / 0 errors / 1 skipped**; `detekt` + `ktlintCheck` exit 0.
+- SonarQube (`NexVault`): **coverage 54.1%** (2.6 closed at 53.4%), **0 bugs, 0 vulnerabilities,
+  0 blocker/critical**, 66 code smells, duplication 0.3%; **0 open issues in any 2.7 file**.
+- Reviewer pass: findings F-2.7-1..10 filed across `9640fb3`/`17cfc87`/`6d978e6`, all resolved in
+  `69c3796`/`fba7234`, re-verified by the reviewer in `d75b328`.
+
+AC-2.7 matrix: QR encodes the wallet address ✓ (round-trip decode test, 4-module quiet zone);
+address displayed in full, copyable and shareable ✓ (screen tests + clipboard/chooser assertions);
+network-compatibility warning ✓ (mainnet and testnet variants, testnet-pinned); "scans correctly with
+any QR reader" — proven zxing→zxing in CI, the **second-phone scan is owed** (see Handoff).
+
+## Handoff (owed at the next device session)
+
+1. **Device re-run on the closed revision** — the recorded 11/11 instrumented run is from `27110c4`;
+   the reviewer fixes changed `QrScannerScreen`, `ReceiveScreen`, `ReceiveViewModel`. `adb devices` is
+   empty (the phone's wireless-debugging session dropped), so re-run
+   `:app:connectedDebugAndroidTest` when it is back. Owner: **2.8** (or the next device session).
+2. **Second-phone QR scan** — the manual half of AC-2.7's reader-compatibility row: display the
+   receive QR and scan it with another phone; same session as (1). Owner: **2.8**.
+3. EIP-681 payment URIs (`ethereum:0x…@chainId`) remain out of scope; noted in `plan.md` as a later
+   enhancement.

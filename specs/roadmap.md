@@ -597,7 +597,7 @@ Unblocked only after Phase 2.0 closes.
 | Item | Scope | Landing module | Acceptance | Status |
 | --- | --- | --- | --- | --- |
 | 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[x]` — **closed 2026-09-30 (owner close)**: 29 commits; 417 unit tests + 10/10 instrumented; gates green; coverage 53.4% (Kover migration); 0 criticals; TC-INT-002 mapped (funded submit deferred to 2.10); evidence in `specs/features/2026-09-28-2.6-send-transaction-flow/validation.md` close record |
-| 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[ ]` |
+| 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[x]` — **closed 2026-09-30 (owner close after reviewer verification)**: 10 commits; 443 tests + gates green; server coverage 54.1%, 0 bugs/vulnerabilities/criticals; TC-UI-006 mapped (send-form QR scan, CameraX + zxing); handoff — device re-run + second-phone QR scan at 2.8 |
 | 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
 | 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
 | **2.10 Milestone scan & Phase 2 close** | Run the static-analysis scan over everything Phase 2 built (new-code gate), triage the findings, verify the Phase 2 checklist, then record and close the phase | repo-wide (`app`, `feature:*`, `data`) | Phase 2 checklist + the scan gate | `[ ]` — see "Milestone static-analysis scan" above |
@@ -696,3 +696,13 @@ asserting that anything has changed.
 > Deferred: the funded on-chain submit → 2.10's walk (funding register), QR scan → 2.7,
 > address book → 3.4, dispatcher injection → 4.8. **The next open entry point is 2.7**
 > (Receive screen — QR + copy + share).
+
+> **2.7 (Receive screen) CLOSED 2026-09-30 as `[x]` — owner close after reviewer verification,
+> merged to `main` (`--no-ff`), pushed, the local feature branch deleted.** Delivered: the Receive
+> screen (chain badge, QR of the address, full copyable/shareable address, network-compatibility
+> warning) and the send flow's QR scanner (CameraX `Preview`/`ImageAnalysis` + zxing decode, TC-UI-006
+> mapped). Evidence: 443 unit tests / 0 failures / 1 skipped, both gates green, SonarQube **coverage
+> 54.1%** with **0 bugs, 0 vulnerabilities, 0 criticals** and no open issue in any 2.7 file; all ten
+> reviewer findings resolved (`69c3796`, `fba7234`) and re-verified (`d75b328`). Owed: the device
+> suite re-run on the closed revision plus the second-phone QR scan → **2.8**. **The next open
+> entry point is 2.8** (Transaction history).
