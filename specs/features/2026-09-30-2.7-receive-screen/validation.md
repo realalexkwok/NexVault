@@ -53,7 +53,7 @@ Every finding is either fixed in this branch or refuted with evidence; nothing i
 
 | ID | Sev | Resolution |
 | --- | --- | --- |
-| F-2.7-1 | MINOR | **Already addressed before the review** — the caption string was changed to "Swap arrives in Phase 3." (`HomeScreen.kt:395`, `strings.xml:5`) when Send/Receive went live; now pinned by `HomeScreenCoverageTest#homeScreen_onlyTheRemainingPlaceholderIsAdvertised`, which asserts the caption and would fail if it advertised a live action. |
+| F-2.7-1 | MINOR | **Reviewer error — refuted by git evidence.** The caption string was already "Swap arrives in Phase 3." at the reviewed revision `27110c4` (changed by `226d257` itself: "Receive arrives in Phase 2…" → "Swap arrives in Phase 3."). The finding was filed from the 2.0.3-era value without re-reading the string — verified by the reviewer 2026-09-30: `git show 27110c4:…strings.xml`. The only remnant is the stale code comment above the caption (`HomeScreen.kt` "Roadmap 2.0.3: Receive and Swap have no destination yet") — NIT for the next touch. The developer's pin-test is a good lock regardless. |
 | F-2.7-2 | MINOR | **Fixed** — `ReceiveViewModel` now `.catch`es the upstream flow and emits `ReceiveError.LOAD_FAILED` with `isLoading = false`; `ReceiveScreen` renders "Could not load the wallet address." Tests: `ReceiveViewModelTest#a failing upstream flow ends up as a load error instead of loading forever`, `ReceiveScreenTest#receiveScreen_whenTheWalletFlowFails_reportsItInsteadOfLoadingForever`. |
 | F-2.7-3 | NIT | **Fixed** — the hardcoded `NO_ACTIVE_WALLET_MESSAGE` constant is gone; the ViewModel exposes a `ReceiveError` enum and the copy lives in `strings.xml` (`receive_no_wallet`, `receive_load_failed`), so no user-facing text sits in Kotlin. |
 | F-2.7-4 | NIT | **Fixed** — `specs/tech-stack.md` updated: the ZXing row now documents the wired `zxing-core` 3.5.4 (bumped from the previously pinned 3.5.3, matching the version the tech-stack already listed as current), the CameraX row records that 2.7 uses the individual aliases, and the §4d "`zxing` is an orphan version alias" debt row is marked **RESOLVED 2.7**. |
@@ -144,3 +144,40 @@ The SonarQube server-side percentages (53.9%, 0 open issues) are developer-recor
 token-gated. **Findings: 4×MINOR + 6×NIT** (F-2.7-1 … F-2.7-10, table above) — none blocking, each
 with an owner and proof. Remaining for closure: the owner's close walk (including the second-phone
 QR scan) and the owner merge of `feature/2.7-receive-screen` to `main`.
+
+---
+
+## Reviewer verification of the fixes — 69c3796 + fba7234 (2026-09-30)
+
+> The same discipline as the findings pass: every resolution was re-derived, not trusted. Fresh
+> evidence: `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck --continue --rerun-tasks`
+> → **BUILD SUCCESSFUL, exit 0 — 697 tasks executed, 0 failed tasks; 443 tests / 0 failures / 0
+> errors / 1 skipped** (matches the corrected record exactly; all 6 new tests included).
+
+| ID | Resolution | Reviewer verification |
+| --- | --- | --- |
+| F-2.7-1 | Refuted (reviewer error) | confirmed by git: the string was correct at `27110c4`; the finding was filed from stale knowledge. Retracted. |
+| F-2.7-2 | Fixed | verified: `.catch` → `ReceiveError.LOAD_FAILED` + `isLoading = false`; screen maps the error to `receive_load_failed`; both new tests present and green |
+| F-2.7-3 | Fixed | verified: `NO_ACTIVE_WALLET_MESSAGE` deleted; `ReceiveError` enum; copy in `strings.xml` only |
+| F-2.7-4 | Fixed | verified: tech-stack ZXing/CameraX rows updated; §4d orphan-alias row marked RESOLVED 2.7; zxing pinned 3.5.4 with verification metadata |
+| F-2.7-5 | Fixed (record corrected) | **reproduced exactly** by the reviewer: summing the top-level `LINE` counter of each data-carrying `report.xml` gives **4,799 / 9,535 = 50.3%** — matches the corrected record |
+| F-2.7-6 | Fixed (record corrected) | fresh XML sums: **443 / 0 / 0 / 1** — matches |
+| F-2.7-7 | Fixed | verified: `bound.isFailure → onCameraFailed` → `ScannerMessage` with "Try again" that re-binds via the keyed attempt counter; two new strings |
+| F-2.7-8 | Refuted with evidence | accepted: `QrDecoderTest#decodes a frame whose content is rotated a quarter turn` rotates a real matrix and decodes; `fba7234` documents the rotation-invariance rationale. The reviewer's original MINOR was over-claimed (QR finder patterns are orientation-agnostic) |
+| F-2.7-9 | Fixed | verified: `QrCodeImage` returns nothing for blank content; `generateQrBitmap` `require`s non-blank; both tests present |
+| F-2.7-10 | Partly fixed | verified: quiet zone now **4 modules**; the second-phone "any QR reader" scan remains the AC-2.7 manual half at the close walk — recorded |
+
+### What stays open
+
+1. The **device 11/11 re-run on the fixed revision** (the fixes touched `QrScannerScreen`,
+   `ReceiveScreen`, `ReceiveViewModel`): owed at the close walk — the reviewer's attempt also
+   found no adb device attached (the wireless session is down), consistent with the record.
+2. The **stale code comment** above the Home caption (NIT, next touch).
+3. The **second-phone QR scan** (AC-2.7 manual half).
+
+### Verdict on the fix commit
+
+**PASS.** All ten findings are resolved honestly: six fixed (F-2.7-2/3/4/7/9 + records F-2.7-5/6),
+two refuted with evidence (F-2.7-8 by test, F-2.7-1 by git history — the latter being the
+reviewer's own error, now on the record), one partly fixed with the remainder correctly deferred to
+the close walk (F-2.7-10). Nothing was deferred silently.
