@@ -58,7 +58,7 @@
 | TC-UI-003 | **4.18** | `PinInputField` exists in core-ui (finding 1.2-5 residue). |
 | TC-UI-004 | **4.18** | HomeScreen exists. |
 | TC-UI-005 | **4.18** | PullToRefreshBox exists on HomeScreen. |
-| TC-UI-006 | **2.6** | No SendFormScreen / QR scanner. |
+| TC-UI-006 | **2.7** | **Mapped (2026-09-30)** to `SendFlowE2ETest#sendForm_qrButtonNavigatesToTheScanner` — the send form's QR icon opens `QrScannerScreen` and back returns to the form, green on the Pixel 6a (11/11). |
 | TC-UI-007 | **3.2** | NFT gallery screen does not exist. |
 | TC-UI-008 | **2.8** | HistoryListScreen does not exist. |
 | TC-UI-009 | **3.4** | The Settings tab is a `PlaceholderTabScreen`. |
