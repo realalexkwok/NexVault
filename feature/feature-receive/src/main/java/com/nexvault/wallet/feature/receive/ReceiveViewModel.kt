@@ -10,13 +10,20 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Message shown when the app has no active wallet to receive into. */
-internal const val NO_ACTIVE_WALLET_MESSAGE = "No active wallet. Create or import a wallet first."
+/**
+ * Why the screen has no address to show. The copy lives in `strings.xml`
+ * (`receive_no_wallet` / `receive_load_failed`) so the ViewModel carries no user-facing text.
+ */
+enum class ReceiveError {
+    NO_ACTIVE_WALLET,
+    LOAD_FAILED,
+}
 
 /**
  * ViewModel for the receive screen (roadmap 2.7, AC-2.7).
@@ -34,7 +41,7 @@ class ReceiveViewModel @Inject constructor(
         val address: String = "",
         val chain: ChainUi? = null,
         val isLoading: Boolean = true,
-        val errorMessage: String? = null,
+        val error: ReceiveError? = null,
     ) {
         /** QR/share actions are only meaningful once an address is known. */
         val hasAddress: Boolean get() = address.isNotBlank()
@@ -55,9 +62,15 @@ class ReceiveViewModel @Inject constructor(
                     address = address,
                     chain = chain.toChainUi(),
                     isLoading = false,
-                    errorMessage = if (address.isBlank()) NO_ACTIVE_WALLET_MESSAGE else null,
+                    error = if (address.isBlank()) ReceiveError.NO_ACTIVE_WALLET else null,
                 )
-            }.collect { state -> _uiState.update { state } }
+            }
+                // A repository failure used to leave the screen loading forever; surface it instead
+                // (the screen offers the message, the navigation layer offers a way back).
+                .catch { _ ->
+                    _uiState.update { it.copy(isLoading = false, error = ReceiveError.LOAD_FAILED) }
+                }
+                .collect { state -> _uiState.update { state } }
         }
     }
 }

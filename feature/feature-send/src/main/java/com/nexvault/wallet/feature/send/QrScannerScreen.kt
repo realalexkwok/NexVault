@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +62,10 @@ fun QrScannerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // A device can grant CAMERA and still have no usable back camera (the manifest marks the
+    // feature optional), so the bind result is surfaced instead of leaving a black preview.
+    var cameraFailed by remember { mutableStateOf(false) }
+    var bindAttempt by remember { mutableStateOf(0) }
     var hasPermission by
         remember {
             mutableStateOf(
@@ -96,32 +101,63 @@ fun QrScannerScreen(
                     .fillMaxSize()
                     .padding(innerPadding),
         ) {
-            if (hasPermission) {
-                CameraPreview(onPayloadDecoded = viewModel::onPayloadDecoded)
-            } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize().padding(NexVaultDimens.spacingLg),
-                ) {
-                    Text(
-                        text = stringResource(R.string.send_scan_permission_denied),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                    )
-                    NexVaultButton(
-                        text = stringResource(R.string.send_scan_grant_permission),
-                        onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
-                        modifier = Modifier.padding(top = NexVaultDimens.spacingLg),
+            if (hasPermission && !cameraFailed) {
+                key(bindAttempt) {
+                    CameraPreview(
+                        onPayloadDecoded = viewModel::onPayloadDecoded,
+                        onCameraFailed = { cameraFailed = true },
                     )
                 }
+            } else if (cameraFailed) {
+                ScannerMessage(
+                    message = stringResource(R.string.send_scan_camera_failed),
+                    actionLabel = stringResource(R.string.send_scan_retry),
+                    onAction = {
+                        cameraFailed = false
+                        bindAttempt++
+                    },
+                )
+            } else {
+                ScannerMessage(
+                    message = stringResource(R.string.send_scan_permission_denied),
+                    actionLabel = stringResource(R.string.send_scan_grant_permission),
+                    onAction = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                )
             }
         }
     }
 }
 
+/** Centred explanation with a single recovery action, shared by the two failure branches. */
 @Composable
-private fun CameraPreview(onPayloadDecoded: (String) -> Unit) {
+private fun ScannerMessage(
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize().padding(NexVaultDimens.spacingLg),
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+        )
+        NexVaultButton(
+            text = actionLabel,
+            onClick = onAction,
+            modifier = Modifier.padding(top = NexVaultDimens.spacingLg),
+        )
+    }
+}
+
+@Composable
+private fun CameraPreview(
+    onPayloadDecoded: (String) -> Unit,
+    onCameraFailed: () -> Unit,
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val executor = remember { Executors.newSingleThreadExecutor() }
@@ -148,21 +184,23 @@ private fun CameraPreview(onPayloadDecoded: (String) -> Unit) {
         val future = ProcessCameraProvider.getInstance(context)
         future.addListener(
             {
-                runCatching {
-                    val provider = future.get()
-                    providerRef = provider
-                    val preview =
-                        Preview.Builder().build().apply {
-                            surfaceProvider = previewView.surfaceProvider
-                        }
-                    provider.unbindAll()
-                    provider.bindToLifecycle(
-                        lifecycleOwner,
-                        CameraSelector.DEFAULT_BACK_CAMERA,
-                        preview,
-                        analysis,
-                    )
-                }
+                val bound =
+                    runCatching {
+                        val provider = future.get()
+                        providerRef = provider
+                        val preview =
+                            Preview.Builder().build().apply {
+                                surfaceProvider = previewView.surfaceProvider
+                            }
+                        provider.unbindAll()
+                        provider.bindToLifecycle(
+                            lifecycleOwner,
+                            CameraSelector.DEFAULT_BACK_CAMERA,
+                            preview,
+                            analysis,
+                        )
+                    }
+                if (bound.isFailure) onCameraFailed()
             },
             ContextCompat.getMainExecutor(context),
         )

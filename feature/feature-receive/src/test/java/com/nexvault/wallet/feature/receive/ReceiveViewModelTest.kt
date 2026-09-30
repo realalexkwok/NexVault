@@ -11,6 +11,7 @@ import com.nexvault.wallet.domain.usecase.wallet.GetActiveWalletUseCase
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -52,7 +53,7 @@ class ReceiveViewModelTest {
                 assertThat(state.hasAddress).isTrue()
                 assertThat(state.chain?.name).isEqualTo(SupportedChains.ETHEREUM_MAINNET.name)
                 assertThat(state.chain?.isTestnet).isFalse()
-                assertThat(state.errorMessage).isNull()
+                assertThat(state.error).isNull()
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -88,7 +89,7 @@ class ReceiveViewModelTest {
                 val state = awaitItem()
                 assertThat(state.address).isEmpty()
                 assertThat(state.hasAddress).isFalse()
-                assertThat(state.errorMessage).isEqualTo(NO_ACTIVE_WALLET_MESSAGE)
+                assertThat(state.error).isEqualTo(ReceiveError.NO_ACTIVE_WALLET)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -106,7 +107,7 @@ class ReceiveViewModelTest {
                 assertThat(awaitItem().isLoading).isTrue()
                 val state = awaitItem()
                 assertThat(state.hasAddress).isFalse()
-                assertThat(state.errorMessage).isEqualTo(NO_ACTIVE_WALLET_MESSAGE)
+                assertThat(state.error).isEqualTo(ReceiveError.NO_ACTIVE_WALLET)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -134,4 +135,21 @@ class ReceiveViewModelTest {
     private companion object {
         const val ADDRESS = "0x97B633905380C70B1a4c18DDCd56676589bcE147"
     }
+
+    @Test
+    fun `a failing upstream flow ends up as a load error instead of loading forever`() =
+        runTest(dispatcher) {
+            every { getActiveWallet() } returns flow { throw IllegalStateException("boom") }
+            every { getSelectedChain() } returns flowOf(SupportedChains.ETHEREUM_MAINNET)
+
+            val viewModel = ReceiveViewModel(getActiveWallet, getSelectedChain)
+
+            viewModel.uiState.test {
+                assertThat(awaitItem().isLoading).isTrue()
+                val state = awaitItem()
+                assertThat(state.isLoading).isFalse()
+                assertThat(state.error).isEqualTo(ReceiveError.LOAD_FAILED)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }

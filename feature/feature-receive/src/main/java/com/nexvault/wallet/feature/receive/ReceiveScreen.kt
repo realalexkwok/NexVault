@@ -130,7 +130,11 @@ fun ReceiveScreen(
                 }
             } else if (!uiState.isLoading) {
                 Text(
-                    text = uiState.errorMessage ?: stringResource(R.string.receive_no_wallet),
+                    text =
+                        when (uiState.error) {
+                            ReceiveError.LOAD_FAILED -> stringResource(R.string.receive_load_failed)
+                            ReceiveError.NO_ACTIVE_WALLET, null -> stringResource(R.string.receive_no_wallet)
+                        },
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = NexVaultDimens.spacingXl),

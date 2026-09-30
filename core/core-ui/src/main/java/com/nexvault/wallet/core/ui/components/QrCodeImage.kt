@@ -28,8 +28,8 @@ import android.graphics.Color as AndroidColor
 /** Size of the generated bitmap; the QR is rendered at [DEFAULT_QR_SIZE] dp regardless. */
 private const val QR_BITMAP_SIZE_PX = 512
 
-/** Quiet zone (modules) the QR spec wants around the code for reliable scanning. */
-private const val QR_MARGIN_MODULES = 1
+/** Quiet zone (modules) ISO/IEC 18004 asks for around the code; strict readers need all four. */
+private const val QR_MARGIN_MODULES = 4
 
 private val DEFAULT_QR_SIZE = 240.dp
 
@@ -38,6 +38,9 @@ private val DEFAULT_QR_SIZE = 240.dp
  *
  * The code is always drawn black-on-white regardless of the theme: scanners need the light
  * quiet zone, so a dark-theme inversion would break real-world scanning.
+ *
+ * Blank content renders nothing: zxing rejects an empty payload, and a caller that has no
+ * address yet should not crash the screen it is on.
  *
  * @param content Payload to encode (the wallet address).
  * @param size Side length of the rendered code.
@@ -50,6 +53,7 @@ fun QrCodeImage(
     size: Dp = DEFAULT_QR_SIZE,
     contentDescription: String = "Wallet address QR code",
 ) {
+    if (content.isBlank()) return
     val density = LocalDensity.current
     val sizePx = with(density) { size.roundToPx() }.coerceAtLeast(QR_BITMAP_SIZE_PX)
     val bitmap = remember(content, sizePx) { generateQrBitmap(content, QR_BITMAP_SIZE_PX) }
@@ -75,6 +79,7 @@ fun QrCodeImage(
  * can be round-tripped through zxing's decoder in tests to prove it scans.
  */
 internal fun generateQrBitmap(content: String, sizePx: Int = QR_BITMAP_SIZE_PX): Bitmap {
+    require(content.isNotBlank()) { "QR content must not be blank" }
     val hints =
         mapOf(
             EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.M,

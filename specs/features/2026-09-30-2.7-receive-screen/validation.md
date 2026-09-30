@@ -8,7 +8,8 @@ technical plan in `plan.md`. Every claim below carries its command and observed 
 ### Unit + Robolectric suite
 
 `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew testDebugUnitTest :domain:test` →
-BUILD SUCCESSFUL, **437 tests / 0 failures / 0 errors** (2.6 closed at 417; 2.7 adds 20):
+BUILD SUCCESSFUL, **443 tests / 0 failures / 0 errors / 1 skipped** (2.6 closed at 417; 2.7 adds 26;
+the one skip is the pre-existing `@Ignore`d keystore test, unchanged by 2.7):
 
 - `core-ui`: `QrCodeImageTest` (4) — generated QR decodes back with zxing's own reader; quiet zone
   present; both content descriptions render.
@@ -27,7 +28,9 @@ for the new files, no rule was disabled or relaxed.
 ### Instrumented (device)
 
 `ANDROID_SERIAL=<pixel-6a> ./gradlew :app:connectedDebugAndroidTest` → BUILD SUCCESSFUL,
-**11/11 tests on the Pixel 6a**: BackupPolicy 3, ConfirmationDialog 3, CreationFlow E2E 1,
+**11/11 tests on the Pixel 6a** (run on revision `27110c4`; the reviewer fixes below touched
+`QrScannerScreen`, `ReceiveScreen` and `ReceiveViewModel`, so a device re-run on the final revision is
+**owed at the close walk** — the adb wireless session dropped before it could be repeated): BackupPolicy 3, ConfirmationDialog 3, CreationFlow E2E 1,
 Example 1, `SendFlowE2ETest` **3** — the 2.6 pair plus the new
 `sendForm_qrButtonNavigatesToTheScanner` (TC-UI-006): the QR icon opens the scanner route and the
 top-bar back returns to the form. CAMERA is granted to the test process through
@@ -38,7 +41,28 @@ top-bar back returns to the form. CAMERA is granted to the test process through
 `./gradlew testDebugUnitTest :domain:test koverXmlReport sonar` → BUILD SUCCESSFUL. Server measures
 after the scan: **coverage 53.9%** (2.6 closed at 53.4), lines_to_cover 7,339, ncloc 14,234. New code
 is measured: `ReceiveScreen.kt` 85.3%, `QrCodeImage.kt` 91.7%, `QrScannerScreen.kt` 42.1%.
-Local Kover aggregate: 4,775/9,498 (50%).
+Local Kover aggregate — method: sum the top-level `LINE` counter of every
+`<module>/build/reports/kover/report.xml` that carries data (13 modules):
+**covered 4,799 / total 9,535 = 50.3%**. (An earlier revision of this record quoted 4,775/9,498 from
+the pre-reviewer-fix revision; summing *all* counter types in the same files yields ~23.9k/47.5k —
+the percentage is the comparable figure, the absolute pair is only meaningful per counter type.)
+
+### Reviewer findings (2.7) — resolution
+
+Every finding is either fixed in this branch or refuted with evidence; nothing is deferred silently.
+
+| ID | Sev | Resolution |
+| --- | --- | --- |
+| F-2.7-1 | MINOR | **Already addressed before the review** — the caption string was changed to "Swap arrives in Phase 3." (`HomeScreen.kt:395`, `strings.xml:5`) when Send/Receive went live; now pinned by `HomeScreenCoverageTest#homeScreen_onlyTheRemainingPlaceholderIsAdvertised`, which asserts the caption and would fail if it advertised a live action. |
+| F-2.7-2 | MINOR | **Fixed** — `ReceiveViewModel` now `.catch`es the upstream flow and emits `ReceiveError.LOAD_FAILED` with `isLoading = false`; `ReceiveScreen` renders "Could not load the wallet address." Tests: `ReceiveViewModelTest#a failing upstream flow ends up as a load error instead of loading forever`, `ReceiveScreenTest#receiveScreen_whenTheWalletFlowFails_reportsItInsteadOfLoadingForever`. |
+| F-2.7-3 | NIT | **Fixed** — the hardcoded `NO_ACTIVE_WALLET_MESSAGE` constant is gone; the ViewModel exposes a `ReceiveError` enum and the copy lives in `strings.xml` (`receive_no_wallet`, `receive_load_failed`), so no user-facing text sits in Kotlin. |
+| F-2.7-4 | NIT | **Fixed** — `specs/tech-stack.md` updated: the ZXing row now documents the wired `zxing-core` 3.5.4 (bumped from the previously pinned 3.5.3, matching the version the tech-stack already listed as current), the CameraX row records that 2.7 uses the individual aliases, and the §4d "`zxing` is an orphan version alias" debt row is marked **RESOLVED 2.7**. |
+| F-2.7-5 | MINOR | **Fixed (record corrected)** — the aggregate now states its method and the re-derived pair; see the coverage section. The reviewer's percentage (50.3%) matches the LINE-counter derivation exactly. |
+| F-2.7-6 | NIT | **Fixed (record corrected)** — the counts now read 443/0/0/**1**, naming the pre-existing keystore skip. |
+| F-2.7-7 | MINOR | **Fixed** — the camera bind result is no longer swallowed: `CameraPreview` reports failure to `QrScannerScreen`, which renders "The camera could not be started on this device." with a **Try again** action that re-binds via a keyed attempt counter. This matters because the manifest marks the camera optional. |
+| F-2.7-8 | MINOR | **Refuted with evidence** — rotation is not consulted, but QR decoding does not need it: `QrDecoderTest#decodes a frame whose content is rotated a quarter turn` renders the code rotated 90° into the luminance plane and decodes it successfully (zxing locates and orients the symbol itself). A comment in the decoder documents the decision. |
+| F-2.7-9 | NIT | **Fixed** — `QrCodeImage` renders nothing for blank content and `generateQrBitmap` `require`s non-blank, so the reusable core-ui component cannot crash a caller; covered by `blankContent_rendersNothingInsteadOfCrashing` and `generateQrBitmap_rejectsBlankContent`. |
+| F-2.7-10 | NIT | **Partly fixed, partly deferred to the walk** — the quiet zone is now the spec's **4 modules** (was 1). The "scans with any QR reader" claim is still only proven zxing→zxing in CI; the second-phone scan is the AC-2.7 manual half at the close walk and is recorded as such. |
 
 ### SonarQube triage of the new code
 

@@ -40,7 +40,23 @@ class HomeScreenCoverageTest {
     val composeRule = createComposeRule()
 
     @Test
+    fun homeScreen_onlyTheRemainingPlaceholderIsAdvertised() {
+        // Send and Receive are live since 2.6/2.7, so the caption must name Swap only.
+        setHomeContent()
+
+        // Below the fold on a short test viewport, so assert presence.
+        composeRule.onNodeWithText("Swap arrives in Phase 3.").assertExists()
+    }
+
+    @Test
     fun homeScreen_showsBalanceTokensAndQuickActions() {
+        setHomeContent()
+
+        // The LazyColumn only composes what fits, so assert the sections that render at the top.
+        composeRule.onNodeWithText("$1,234.50").assertIsDisplayed()
+    }
+
+    private fun setHomeContent() {
         val getPortfolio = mockk<GetPortfolioUseCase>()
         val refreshBalances = mockk<RefreshBalancesUseCase>()
         val addCustomToken = mockk<AddCustomTokenUseCase>(relaxed = true)
@@ -84,9 +100,6 @@ class HomeScreenCoverageTest {
             }
         }
         composeRule.waitForIdle()
-
-        // The LazyColumn only composes what fits, so assert the sections that render at the top.
-        composeRule.onNodeWithText("$1,234.50").assertIsDisplayed()
     }
 
     private fun ethToken() =

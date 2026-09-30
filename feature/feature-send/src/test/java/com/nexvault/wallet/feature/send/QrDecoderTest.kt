@@ -46,6 +46,22 @@ class QrDecoderTest {
     }
 
     @Test
+    fun `decodes a frame whose content is rotated a quarter turn`() {
+        val matrix = encode(PAYLOAD)
+        val rotated = rotateQuarterTurn(matrix)
+
+        val decoded = decodeQrLuminance(
+            luminance = luminanceOf(rotated),
+            dataWidth = rotated.width,
+            dataHeight = rotated.height,
+            width = rotated.width,
+            height = rotated.height,
+        )
+
+        assertThat(decoded).isEqualTo(PAYLOAD)
+    }
+
+    @Test
     fun `returns null for a plane without a qr code`() {
         val blank = ByteArray(64 * 64) { 0xFF.toByte() }
 
@@ -80,6 +96,17 @@ class QrDecoderTest {
             }
         }
         return plane
+    }
+
+    /** Rotates the bitmap a quarter turn, the way a portrait sensor frame arrives. */
+    private fun rotateQuarterTurn(matrix: BitMatrix): BitMatrix {
+        val rotated = BitMatrix(matrix.height, matrix.width)
+        for (y in 0 until matrix.height) {
+            for (x in 0 until matrix.width) {
+                if (matrix.get(x, y)) rotated.set(matrix.height - 1 - y, x)
+            }
+        }
+        return rotated
     }
 
     private companion object {

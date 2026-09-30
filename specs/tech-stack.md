@@ -153,7 +153,7 @@ Re-check this pairing before any future Kotlin bump: KSP publishes per-Kotlin-ve
 | Room (G2) | **2.8.5** (was 2.8.4) | Local database (`core-database`, schema JSON in `core/core-database/schemas/`) |
 | DataStore Preferences | 1.2.1 | Settings, wallet metadata, secure app state — 1.3.0-alpha11 exists; stay on stable |
 | WorkManager (G2) | **2.11.2** (was 2.11.1) | Background sync (Phase 3, not yet used) |
-| CameraX | 1.5.3 | QR scanning — 1.6.2 available but the `camerax` bundle is referenced by nothing; see §4d |
+| CameraX | 1.5.3 | **In use since 2.7** — the QR scanner binds `Preview` + `ImageAnalysis` with the individual aliases (`camera-core/camera2/lifecycle/view`); the `camerax` *bundle* is still unreferenced (1.6.2 available) |
 | Biometric | **1.4.0-alpha07** (was 1.4.0-alpha05) | Unlock. Already on the alpha line; the stable line (1.1.0) is older than what the code uses |
 | `androidx.core:core-ktx` (G2) | **1.19.0** (was 1.18.0) | Core extensions |
 | AppCompat (G2) | **1.8.0** (was 1.7.1) | Theme base |
@@ -202,7 +202,7 @@ Implemented in `core:core-security`: `EncryptionManager`, `KeyStoreManager`,
 | Lottie Compose | 6.7.1 | Animated illustrations — already latest |
 | Vico Compose (G2) | **3.3.1** (was 3.0.3) | Portfolio charts |
 | ML Kit barcode-scanning | 17.3.0 | QR scanning — already latest |
-| ZXing | **3.5.4** (was an orphan alias) | QR generation — see §4d |
+| ZXing core | **3.5.4** | **Wired 2.7**: `zxing-core` generates the receive QR (`QrCodeImage`) and decodes scanner frames (`QrScannerScreen`); `journeyapps` was rejected in favour of CameraX + core (owner decision) |
 | Accompanist permissions / systemuicontroller | 0.37.3 | Permissions, system bars — already latest |
 | Shimmer | **0.5.0** (was a non-existent 1.2.0) | Loading placeholders — see §4d |
 | LeakCanary (`debugImplementation`) | 2.14 | Leak detection — already latest stable (3.0 is alpha) |
@@ -215,7 +215,7 @@ so nothing failed.
 | Finding | Detail | Resolution |
 | --- | --- | --- |
 | **`shimmer = "1.2.0"` does not exist** | `com.facebook.shimmer:shimmer` tops out at **0.5.0** on Maven Central. With zero references it never failed — the first person to write `implementation(libs.shimmer)` would have hit an unresolvable dependency. | Pin the real latest (0.5.0) or delete the entry |
-| **`zxing` is an orphan version alias** | A `[versions]` entry with **no matching library entry at all**; `libs.zxing` cannot resolve. Real latest is 3.5.4. | Add the library entry or delete the alias |
+| **`zxing` was an orphan version alias** | A `[versions]` entry with **no matching library entry at all**; `libs.zxing` could not resolve. | **RESOLVED 2.7** — `zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }`, pinned to 3.5.4 |
 | **`compose-compiler = "1.5.12"` is dead config** | Under Kotlin 2.x the Compose compiler comes from `org.jetbrains.kotlin.plugin.compose`. `composeOptions.kotlinCompilerExtensionVersion` in `app` and `core:core-ui` is inert. | Delete both the property and the two `composeOptions` blocks |
 | **4 unused bundles** | `blockchain`, `camerax`, `testing`, `debug` are declared and referenced by nothing; only `compose`, `compose.testing`, `compose.navigation`, `networking` are used. | Keep if Phase 3 will use them, else delete |
 | **3 redundant library entries** | `detekt`, `ktlint`, `spotless` library aliases are unused — those tools are applied as plugins via `libs.plugins.*`. | Delete the library aliases |

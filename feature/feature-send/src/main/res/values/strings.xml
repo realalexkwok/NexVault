@@ -35,4 +35,6 @@
     <string name="send_scan_title">Scan QR code</string>
     <string name="send_scan_permission_denied">Camera access is needed to scan a QR code.</string>
     <string name="send_scan_grant_permission">Allow camera</string>
+    <string name="send_scan_camera_failed">The camera could not be started on this device.</string>
+    <string name="send_scan_retry">Try again</string>
 </resources>

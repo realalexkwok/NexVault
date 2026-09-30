@@ -22,6 +22,7 @@ import com.nexvault.wallet.domain.usecase.chain.GetSelectedChainUseCase
 import com.nexvault.wallet.domain.usecase.wallet.GetActiveWalletUseCase
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -46,10 +47,19 @@ class ReceiveScreenTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
-    private fun setContent(chain: Chain = SupportedChains.ETHEREUM_MAINNET, withWallet: Boolean = true) {
+    private fun setContent(
+        chain: Chain = SupportedChains.ETHEREUM_MAINNET,
+        withWallet: Boolean = true,
+        walletFlowFails: Boolean = false,
+    ) {
         val getActiveWallet = mockk<GetActiveWalletUseCase>()
         val getSelectedChain = mockk<GetSelectedChainUseCase>()
-        every { getActiveWallet() } returns flowOf(if (withWallet) wallet() else null)
+        every { getActiveWallet() } returns
+            if (walletFlowFails) {
+                flow { throw IllegalStateException("boom") }
+            } else {
+                flowOf(if (withWallet) wallet() else null)
+            }
         every { getSelectedChain() } returns flowOf(chain)
 
         composeRule.setContent {
@@ -91,7 +101,14 @@ class ReceiveScreenTest {
     fun receiveScreen_withoutAWallet_explainsInsteadOfShowingAVoidQr() {
         setContent(withWallet = false)
 
-        composeRule.onNodeWithText(NO_ACTIVE_WALLET_MESSAGE).assertIsDisplayed()
+        composeRule.onNodeWithText("No active wallet. Create or import a wallet first.").assertIsDisplayed()
+    }
+
+    @Test
+    fun receiveScreen_whenTheWalletFlowFails_reportsItInsteadOfLoadingForever() {
+        setContent(walletFlowFails = true)
+
+        composeRule.onNodeWithText("Could not load the wallet address.").assertIsDisplayed()
     }
 
     @Test

@@ -65,6 +65,22 @@ class QrCodeImageTest {
         composeRule.onNodeWithContentDescription("Sepolia address code").assertIsDisplayed()
     }
 
+    @Test
+    fun blankContent_rendersNothingInsteadOfCrashing() {
+        composeRule.setContent {
+            NexVaultTheme(darkTheme = true) {
+                QrCodeImage(content = "")
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Wallet address QR code").assertDoesNotExist()
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun generateQrBitmap_rejectsBlankContent() {
+        generateQrBitmap("  ")
+    }
+
     private fun decode(bitmap: android.graphics.Bitmap): String {
         val width = bitmap.width
         val height = bitmap.height
