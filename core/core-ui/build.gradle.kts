@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // QR generation (roadmap 2.7)
+    implementation(libs.zxing.core)
+
     // Compose BOM
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)

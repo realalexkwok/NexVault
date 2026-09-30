@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -32,9 +33,14 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import com.nexvault.wallet.feature.home.HomeScreen
+import com.nexvault.wallet.feature.receive.ReceiveScreen
+import com.nexvault.wallet.feature.send.QrScannerScreen
 import com.nexvault.wallet.feature.send.SendScreen
 import com.nexvault.wallet.feature.tokens.TokenDetailScreen
 import com.nexvault.wallet.navigation.MainTab
+
+/** Saved-state key carrying a scanned QR payload from the scanner route back to the send form. */
+private const val SCANNED_ADDRESS_KEY = "scanned_address"
 
 /**
  * Main screen scaffold with bottom navigation bar and a nested NavHost
@@ -132,8 +138,9 @@ fun MainScreen(
                         onNavigateToTokenDetail = { contractAddress, chainId ->
                             tabNavController.navigate("token_detail/$contractAddress/$chainId")
                         },
-                        // Roadmap 2.6: Send now has a destination; Receive and Swap follow 2.7/3.3.
+                        // Roadmap 2.6/2.7: Send and Receive have destinations; Swap follows 3.3.
                         onSendClicked = { tabNavController.navigate("send") },
+                        onReceiveClicked = { tabNavController.navigate("receive") },
                     )
                 }
                 composable(
@@ -160,8 +167,35 @@ fun MainScreen(
                                 defaultValue = null
                             },
                         ),
-                ) {
-                    SendScreen(onNavigateBack = { tabNavController.popBackStack() })
+                ) { sendEntry ->
+                    // Roadmap 2.7: the scanner writes its payload into this entry's state, which
+                    // SendScreen consumes once and clears.
+                    val scannedAddress by
+                        sendEntry.savedStateHandle
+                            .getStateFlow<String?>(SCANNED_ADDRESS_KEY, null)
+                            .collectAsStateWithLifecycle()
+                    SendScreen(
+                        onNavigateBack = { tabNavController.popBackStack() },
+                        onScanClicked = { tabNavController.navigate("scan_qr") },
+                        scannedAddress = scannedAddress,
+                        onScannedAddressConsumed = {
+                            sendEntry.savedStateHandle[SCANNED_ADDRESS_KEY] = null
+                        },
+                    )
+                }
+                composable("scan_qr") {
+                    QrScannerScreen(
+                        onNavigateBack = { tabNavController.popBackStack() },
+                        onQrDetected = { address ->
+                            tabNavController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(SCANNED_ADDRESS_KEY, address)
+                            tabNavController.popBackStack()
+                        },
+                    )
+                }
+                composable("receive") {
+                    ReceiveScreen(onNavigateBack = { tabNavController.popBackStack() })
                 }
             }
 

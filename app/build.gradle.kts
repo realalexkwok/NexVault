@@ -152,6 +152,7 @@ dependencies {
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.bundles.compose.testing)

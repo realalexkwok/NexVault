@@ -43,6 +43,16 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            // Roadmap 2.7: Robolectric Compose tests cover the receive screen on the JVM.
+            isIncludeAndroidResources = true
+            all { test ->
+                // Robolectric's FileDescriptor interceptor needs module access on JDK 17.
+                test.jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -70,6 +80,14 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.junit)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.bundles.compose.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))

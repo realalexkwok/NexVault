@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.ConfirmationDialog
 import com.nexvault.wallet.core.ui.components.NexVaultButton
@@ -46,15 +48,27 @@ import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 /**
  * The send flow (roadmap 2.6): form -> review -> PIN-confirmed submit -> result with a
  * "View on Explorer" link. TC-UI-010's [ConfirmationDialog] hosts the PIN step.
+ *
+ * Roadmap 2.7 adds the QR button: [onScanClicked] opens the scanner and a returned
+ * [scannedAddress] fills the recipient field exactly once ([onScannedAddressConsumed]).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendScreen(
     onNavigateBack: () -> Unit,
     viewModel: SendViewModel = hiltViewModel(),
+    onScanClicked: () -> Unit = {},
+    scannedAddress: String? = null,
+    onScannedAddressConsumed: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showReview by remember { mutableStateOf(false) }
+
+    ScannedAddressEffect(
+        scannedAddress = scannedAddress,
+        viewModel = viewModel,
+        onConsumed = onScannedAddressConsumed,
+    )
 
     val submittedHash = uiState.submittedHash
     if (submittedHash != null) {
@@ -100,6 +114,7 @@ fun SendScreen(
                 )
             } else {
                 FormSection(
+                    onScanClicked = onScanClicked,
                     uiState = uiState,
                     viewModel = viewModel,
                     onReview = { showReview = true },
@@ -154,11 +169,27 @@ fun SendScreen(
     }
 }
 
+/** Fills the recipient field once with the payload the scanner returned. */
+@Composable
+private fun ScannedAddressEffect(
+    scannedAddress: String?,
+    viewModel: SendViewModel,
+    onConsumed: () -> Unit,
+) {
+    LaunchedEffect(scannedAddress) {
+        if (!scannedAddress.isNullOrBlank()) {
+            viewModel.onToAddressChanged(scannedAddress)
+            onConsumed()
+        }
+    }
+}
+
 @Composable
 private fun FormSection(
     uiState: SendUiState,
     viewModel: SendViewModel,
     onReview: () -> Unit,
+    onScanClicked: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(NexVaultDimens.spacingMd))
@@ -196,6 +227,14 @@ private fun FormSection(
             label = stringResource(R.string.send_to_label),
             placeholder = stringResource(R.string.send_to_placeholder),
             error = uiState.addressErrorRes?.let { stringResource(it) },
+            trailingIcon = {
+                IconButton(onClick = onScanClicked) {
+                    Icon(
+                        imageVector = Icons.Default.QrCodeScanner,
+                        contentDescription = stringResource(R.string.send_scan_qr),
+                    )
+                }
+            },
         )
 
         Spacer(modifier = Modifier.height(NexVaultDimens.spacingSm))

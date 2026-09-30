@@ -1,10 +1,11 @@
 package com.nexvault.wallet
 
+import android.Manifest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -34,7 +36,11 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class SendFlowE2ETest {
-    @get:Rule
+    // The scanner binds a real camera, so the permission is granted before the activity starts.
+    @get:Rule(order = 0)
+    val cameraPermission: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA)
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     private fun unlockWithPin() {
@@ -153,5 +159,24 @@ class SendFlowE2ETest {
         // The hash is a 0x-prefixed 64-hex string rendered on the result screen.
         val hashNodes = composeRule.onAllNodes(hasText("0x", substring = true)).fetchSemanticsNodes()
         assertTrue("Result hash not found", hashNodes.isNotEmpty())
+    }
+
+    // TC-UI-006: the send form's QR button opens the scanner screen.
+    @Test
+    fun sendForm_qrButtonNavigatesToTheScanner() {
+        unlockWithPin()
+        switchToSepolia()
+        openSendForm()
+
+        composeRule.onNodeWithContentDescription("Scan QR code").performClick()
+        composeRule.waitUntil(timeoutMillis = 15_000) {
+            composeRule.onAllNodesWithText("Scan QR code").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        // Back to the form: the scanner is a pushed route, not a tab replacement.
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.waitUntil(timeoutMillis = 15_000) {
+            composeRule.onAllNodesWithText("Confirm and send").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 }
