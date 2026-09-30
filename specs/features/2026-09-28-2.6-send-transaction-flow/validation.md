@@ -147,6 +147,35 @@ Known follow-ups from the post-migration scan (2.6 code):
   analysis re-created the issue instances (fingerprint change), so they are OPEN again and need the
   owner's acceptance once more (the analysis token cannot transition issues, HTTP 403).
 
+## Task 0f — TC-INT-002 device walk (agent-executed, 2026-09-30; authorized "just go ahead")
+
+The send flow was driven on the Pixel 6a (mDNS serial, screen kept awake via `svc power stayon true`).
+Wallet created by the standard recipe (CreationFlowE2ETest, PIN 123456) — address
+`0x97B633905380C70B1a4c18DDCd56676589bcE147`, verified via the Etherscan V2 balance API
+(`https://api.etherscan.io/v2/api?chainid=11155111...`, result 0).
+
+Walk observations (uiautomator dumps, app = the real-key debug build):
+- Unlock screen renders and unlocks with the PIN (crypto-bound biometric path not exercised: the
+  device reports no enrolled biometrics, so the unlock screen correctly offers the PIN pad only).
+- Home → chain selector → **Sepolia Testnet** selected; Home reloads with the Sepolia seed tokens.
+- Send form opens from the Home quick action; typed via adb the form fired both on-device
+  validations: **"Invalid Ethereum address"** and **"Amount exceeds your balance"** (the Gboard IME
+  mangled adb-typed `x`, so the walk automation uses Compose `performTextInput` instead).
+- The review button stays disabled while the form is invalid/unfunded — asserted by the new test.
+
+New automation committed for the walk: `app/src/androidTest/.../SendFlowE2ETest.kt` (TC-INT-002)
+— `sendForm_validatesAndDisablesSubmitWithoutFunds` (always green) and
+`sendFlow_submitsAndShowsTheHash` (self-gates on the wallet balance; the funded run submits
+0.0001 ETH to `0x0000...0001` and asserts "Transaction submitted" + "View on Explorer" + a 0x hash).
+Device suite grows 8 → 10 tests. Notable device-UI facts captured in the test: Home restores its
+scroll position (the chain selector can sit above the fold), and the quick-action labels sit
+outside their clickable icon buttons.
+
+**Outstanding (owner):** fund `0x97B633905380C70B1a4c18DDCd56676589bcE147` on Sepolia (all
+scriptable faucets tried — QuickNode/1inch/thirdweb/Chainlink/Bware/Ethercluster are
+captcha-walled or defunct) → re-run `sendFlow_submitsAndShowsTheHash` for the on-chain hash,
+then verify the transaction via the Etherscan V2 API.
+
 ## Task 1 — data layer (implemented, automatic half green)
 
 - `ChainRpcClient` + `Web3jChainRpcClient` (core-network) — the mockable seam over web3j's final
