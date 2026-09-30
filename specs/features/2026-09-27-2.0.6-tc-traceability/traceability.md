@@ -68,7 +68,7 @@
 | TC-SECTEST-003 | **4.7** | `FLAG_SECURE` on sensitive screens is 4.7's stated scope. |
 | TC-SECTEST-004 | **4.13** | Device file-inspection test alongside the AndroidKeyStore test porting. |
 | TC-SECTEST-005 | **3.4** | The auto-lock setting lives in Settings (3.4). |
-| TC-INT-002 | **2.6** | Full send flow needs 2.6 (and 2.7's receive). |
+| TC-INT-002 | **2.6** | **Mapped (2026-09-30)** to `SendFlowE2ETest` — the form walk (PIN unlock, Sepolia switch, on-device validations, disabled submit) is green on the Pixel 6a; the **funded on-chain submit** (hash + explorer) is deferred to the **2.10** Phase 2 walk — the faucet is captcha-walled (owner decision, 2.6 validation.md Task 0f). |
 | TC-INT-003 | **3.1** | WalletConnect pairing is 3.1. |
 | TC-INT-004 | **3.4** | Needs the Settings export + delete-wallet UI (3.4). |
 

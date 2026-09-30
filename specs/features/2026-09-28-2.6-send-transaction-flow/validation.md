@@ -171,10 +171,11 @@ Device suite grows 8 → 10 tests. Notable device-UI facts captured in the test:
 scroll position (the chain selector can sit above the fold), and the quick-action labels sit
 outside their clickable icon buttons.
 
-**Outstanding (owner):** fund `0x97B633905380C70B1a4c18DDCd56676589bcE147` on Sepolia (all
-scriptable faucets tried — QuickNode/1inch/thirdweb/Chainlink/Bware/Ethercluster are
-captcha-walled or defunct) → re-run `sendFlow_submitsAndShowsTheHash` for the on-chain hash,
-then verify the transaction via the Etherscan V2 API.
+**Owner decision 2026-09-30:** TC-INT-002 is accepted on the un-funded evidence (option
+"Accept the un-funded evidence instead"). The funded on-chain submit — re-run
+`sendFlow_submitsAndShowsTheHash` on a funded wallet, then verify the transaction via the
+Etherscan V2 API — is deferred to the **2.10 Phase 2 walk** (the faucet is captcha-walled;
+the address to fund is `0x97B633905380C70B1a4c18DDCd56676589bcE147`, PIN 123456, Sepolia).
 
 ## Task 1 — data layer (implemented, automatic half green)
 
