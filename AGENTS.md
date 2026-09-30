@@ -121,6 +121,12 @@ See `specs/dev-environment.md` §7.)
   app walked on a Pixel 6a, both gates green, **Phase 2.0 closed `[x]` (2.0.1–2.0.6 verified,
   Phase 0 re-graded, 2.0.7 closed)**; 2.0.4b `[~]` for M1/M2/M5; 4 of 5 tabs still
   placeholders until Phase 2.6–2.8.
+- **Funding-suspended verification (owner's rule 2026-09-30):** a test case that needs a
+  funded wallet is **suspended**, never failed and never silently dropped. The single register
+  of suspended cases is `specs/roadmap.md` §"Funding-suspended verification (wake-up
+  register)" — every row states what funding it needs and what to run. When the owner signals
+  funding in any wording ("funded", "funds ready", ...), re-read that section and resume the
+  funded rows in one pass; the 2.10 Phase 2 walk consumes whatever is funded by then.
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes

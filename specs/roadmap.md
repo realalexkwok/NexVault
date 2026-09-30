@@ -127,6 +127,23 @@ Policy (owner decisions 2026-09-28):
 
 ---
 
+## Funding-suspended verification (wake-up register)
+
+**Owner's rule (2026-09-30):** test cases that need a funded wallet stay **suspended** — never
+failed, never silently dropped — until the owner signals funding with any wording (e.g.
+"funded", "funds ready"). On that signal, resume every row below in one pass, in order.
+
+| Row | Needs | Where it lives / what to run | Resume evidence |
+| --- | --- | --- | --- |
+| 2.0.4b M1 — mainnet history walk | the walk wallet's **Ethereum mainnet** balance > 0 | `specs/features/2026-09-26-2.0.4b-etherscan-v2-migration/validation.md` §Suspended — TokenDetail history for a known-active mainnet address | funded rows render (2.0.4b M1) |
+| 2.0.4b M2 — Polygon history walk | the walk wallet's **Polygon** balance > 0 | same file — the same walk on Polygon (chainid 137) | funded rows render (2.0.4b M2) |
+| 2.0.4b P4 — known-active addresses | rides on M1/M2's wallet | same file, P4 row | addresses recorded + walked |
+| 2.6 TC-INT-002 — funded on-chain send | **Sepolia** faucet to `0x97B633905380C70B1a4c18DDCd56676589bcE147` (walk wallet, PIN 123456) | `specs/features/2026-09-28-2.6-send-transaction-flow/validation.md` Task 0f — re-run `SendFlowE2ETest#sendFlow_submitsAndShowsTheHash` on the device, then verify the tx via the Etherscan V2 API | "Transaction submitted" + hash + on-chain tx (TC-INT-002) |
+
+The 2.10 Phase 2 walk re-reads this register and executes whichever rows the owner funded by then.
+
+---
+
 ## Phase 0 — Historical: the prompt-driven era (retired)
 
 Tasks 1.1–2.5 were implemented by feeding `doc/prompts/01…15` to an agent, one file per
