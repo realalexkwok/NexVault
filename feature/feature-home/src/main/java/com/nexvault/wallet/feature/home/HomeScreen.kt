@@ -46,7 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.ChainSelectorDropdown
 import com.nexvault.wallet.core.ui.components.NexVaultCard
@@ -69,6 +69,7 @@ import com.nexvault.wallet.feature.home.R
 fun HomeScreen(
     onNavigateToTokenDetail: (contractAddress: String, chainId: Int) -> Unit,
     onSendClicked: () -> Unit = {},
+    onReceiveClicked: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -110,6 +111,7 @@ fun HomeScreen(
                 uiState = uiState,
                 onNavigateToTokenDetail = onNavigateToTokenDetail,
                 onSendClicked = onSendClicked,
+                onReceiveClicked = onReceiveClicked,
                 viewModel = viewModel,
             )
         }
@@ -121,6 +123,7 @@ private fun HomeListContent(
     uiState: HomeUiState,
     onNavigateToTokenDetail: (contractAddress: String, chainId: Int) -> Unit,
     onSendClicked: () -> Unit,
+    onReceiveClicked: () -> Unit,
     viewModel: HomeViewModel,
 ) {
     LazyColumn(
@@ -149,7 +152,10 @@ private fun HomeListContent(
             )
         }
         item(key = "actions") {
-            QuickActionsRow(onSendClicked = onSendClicked)
+            QuickActionsRow(
+                onSendClicked = onSendClicked,
+                onReceiveClicked = onReceiveClicked,
+            )
         }
         if (uiState.isRpcNotConfigured) {
             // Roadmap 2.0.4: key-absent is a persistent state, not a transient snackbar.
@@ -354,6 +360,7 @@ private fun PortfolioChartSection(
 @Composable
 private fun QuickActionsRow(
     onSendClicked: () -> Unit,
+    onReceiveClicked: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -362,7 +369,7 @@ private fun QuickActionsRow(
                 .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            // Roadmap 2.6: Send now navigates; Receive (2.7) and Swap (3.3) stay disabled.
+            // Roadmap 2.6/2.7: Send and Receive navigate; Swap (3.3) stays disabled.
             QuickActionButton(
                 icon = Icons.Default.ArrowUpward,
                 label = stringResource(R.string.home_action_send),
@@ -372,8 +379,8 @@ private fun QuickActionsRow(
             QuickActionButton(
                 icon = Icons.Default.ArrowDownward,
                 label = stringResource(R.string.home_action_receive),
-                enabled = false,
-                onClick = { },
+                enabled = true,
+                onClick = onReceiveClicked,
             )
             QuickActionButton(
                 icon = Icons.Default.SwapHoriz,

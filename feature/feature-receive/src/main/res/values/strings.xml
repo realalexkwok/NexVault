@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="receive_title">Receive</string>
+    <string name="receive_copy">Copy</string>
+    <string name="receive_share">Share</string>
+    <string name="receive_copied">Address copied</string>
+    <string name="receive_no_wallet">No active wallet. Create or import a wallet first.</string>
+    <string name="receive_warning_network">Only send assets on %1$s to this address. Funds sent on another network may be lost.</string>
+    <string name="receive_warning_testnet">You are receiving on %1$s, a test network. These funds have no value.</string>
+</resources>
