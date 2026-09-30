@@ -61,3 +61,52 @@ vulnerabilities, 0 blocker/critical, 66 code smells (from 73), duplication 0.3%*
   enhancement.
 - The scanner lives in `feature-send`; if a later item needs scanning elsewhere, it moves to a
   shared module (3.x).
+
+---
+
+## Reviewer verification — commits 226d257 + 773f0fc + 27110c4 (2026-09-30)
+
+> Code-reviewer session (read-only on production code; record files only). Re-verified from the
+> tree, by fresh runs, and by a device rerun; nothing taken on trust.
+
+### Diff review — verdicts
+
+| # | Area | Check | Verdict |
+| --- | --- | --- | --- |
+| R1 | Receive screen (AC-2.7) | `ReceiveScreen`: chain badge, `QrCodeImage` (240dp, black-on-white), full address with test tag, Copy → `ClipboardManager` + snackbar, Share → `ACTION_SEND` chooser, no-wallet fallback, testnet-aware network warning; `ReceiveViewModel` combines `GetActiveWalletUseCase` + `GetSelectedChainUseCase` (active account address, `toChainUi()`) | ✅ |
+| R2 | QR image | `QrCodeImage`: zxing `QRCodeWriter`, quiet zone, error correction M, forced black-on-white (scanner reliability), semantics contentDescription, round-trip decode test; `core-ui` depends on `libs.zxing.core` with verification metadata for 3.5.3 | ✅ |
+| R3 | Scanner (TC-UI-006) | `QrScannerScreen`: CameraX `ImageAnalysis` + zxing decode from the luminance plane (rowStride/width/height correct, `image.close()` in finally), permission auto-request + denial branch with retry, camera bound while composed and unbound on dispose; `QrScannerViewModel` keeps only the first non-blank payload (single navigation); validation stays in the send form | ✅ |
+| R4 | Nav wiring | `MainScreen`: `receive` + `scan_qr` routes; scanner payload → `previousBackStackEntry.savedStateHandle` → `SendScreen` fills once via `ScannedAddressEffect` and clears; Home Receive quick action enabled and routed | ✅ |
+| R5 | Manifest | `CAMERA` permission + `uses-feature camera required=false` — installable without a camera; scanner degrades to a notice | ✅ |
+| R6 | Sonar fixes present in code | S3776 → `ScannedAddressEffect` extraction ✓; S6619 → `chain.toChainUi()` (no useless `?.`) ✓; S6518 → indexed accessor loop in `decodeQr` ✓; S1874 ×4 → `androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel` in ReceiveScreen, QrScannerScreen, SendScreen, HomeScreen ✓ (all four verified by grep) | ✅ |
+| R7 | Traceability | TC-UI-006 row moved **registered → mapped** to `SendFlowE2ETest#sendForm_qrButtonNavigatesToTheScanner` | ✅ |
+
+### Fresh evidence (reviewer's own runs)
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| R8 | Suite + gates + build | `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck :app:assembleDebug --continue --rerun-tasks` | **BUILD SUCCESSFUL, exit 0 — 776 tasks executed, 0 failed tasks**; **437 tests / 0 failures / 0 errors / 1 skipped** (417 → 437, +20 — matches claim) |
+| R9 | Instrumented | Pixel 6a, wake + `pm clear` + pinned serial → `:app:connectedDebugAndroidTest` | **11/11 pass** (BackupPolicy 3, ConfirmationDialog 3, CreationFlow 1, Example 1, SendFlowE2E **3** incl. the scanner test) — first attempt hit a Gradle-daemon crash (environment, no test ran); the clean rerun passed |
+| R10 | Coverage input | `./gradlew koverXmlReport` + my own parse of the Kover XML | new-file line coverage confirms the direction (my local basis: ReceiveScreen 97%, QrCodeImage 100%, QrScannerScreen 45% — the scanner's camera-binding block is Robolectric-hostile, which is why it trails); the server-side 53.9% and the "0 open issues" re-scan numbers are **token-gated** (SonarQube API returns 401 anonymously) and remain developer-recorded | ⚠️ server numbers developer-recorded |
+
+### Reviewer notes (Low, not blocking)
+
+1. **tech-stack §4d rows are now stale** (4.4-era defects table): "zxing is an orphan version alias"
+   is resolved (the `zxing-core` library entry exists since this item) and "4 unused bundles"
+   no longer includes `camerax` (feature-send references it). The defect table needs its rows
+   updated or cleared — worth a one-line follow-up in the next planning round.
+2. `NO_ACTIVE_WALLET_MESSAGE` in `ReceiveViewModel` is a hardcoded user-facing string; the
+   module's other copy lives in `values/strings.xml`. 4.17's sweep should adopt it.
+3. `QrCodeImage` computes `sizePx` only as a `remember` key while the bitmap is always 512px —
+   harmless, but the key could just be `content`.
+
+### Verdict
+
+**PASS (automatic + diff + device).** The receive screen and the send-flow scanner implement the
+owner decisions (Q1–Q3) and AC-2.7 faithfully: QR/copy/share/warning verified in code and by the
+Robolectric tests, the scanner is a CameraX+zxing implementation with a sound permission flow, the
+TC-UI-006 test is mapped and green on the device (11/11), the suite is 437/0/0/1 from a fresh
+776-task run, both gates exit 0, and all seven SonarQube new-code findings are fixed in the tree.
+The SonarQube server-side percentages (53.9%, 0 open issues) are developer-recorded — the API is
+token-gated. Remaining for closure: the owner's close walk (including the second-phone QR scan) and
+the owner merge of `feature/2.7-receive-screen` to `main`.
