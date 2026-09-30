@@ -249,6 +249,10 @@ internal fun decodeQr(image: ImageProxy): String? {
 /**
  * Pure decoder used by [decodeQr] and by the unit tests: [luminance] is a Y plane whose rows are
  * [dataWidth] bytes wide while only the left [width]x[height] window carries the image.
+ *
+ * The frame's rotation is deliberately not applied: zxing locates the three finder patterns and
+ * samples the symbol in its own coordinate space, so a quarter-turned frame decodes as-is
+ * (`QrDecoderTest` pins that with a rotated fixture).
  */
 internal fun decodeQrLuminance(
     luminance: ByteArray,
