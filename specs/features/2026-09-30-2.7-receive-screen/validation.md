@@ -89,14 +89,20 @@ vulnerabilities, 0 blocker/critical, 66 code smells (from 73), duplication 0.3%*
 | R9 | Instrumented | Pixel 6a, wake + `pm clear` + pinned serial → `:app:connectedDebugAndroidTest` | **11/11 pass** (BackupPolicy 3, ConfirmationDialog 3, CreationFlow 1, Example 1, SendFlowE2E **3** incl. the scanner test) — first attempt hit a Gradle-daemon crash (environment, no test ran); the clean rerun passed |
 | R10 | Coverage input | `./gradlew koverXmlReport` + my own parse of the Kover XML | new-file line coverage confirms the direction (my local basis: ReceiveScreen 97%, QrCodeImage 100%, QrScannerScreen 45% — the scanner's camera-binding block is Robolectric-hostile, which is why it trails); the server-side 53.9% and the "0 open issues" re-scan numbers are **token-gated** (SonarQube API returns 401 anonymously) and remain developer-recorded | ⚠️ server numbers developer-recorded |
 
-### Findings (reviewer, filed 2026-09-30 — all Low, none blocking)
+### Findings (reviewer, adversarial re-pass 2026-09-30 — scale BLOCKER/MAJOR/MINOR/NIT)
 
-| ID | Severity | Location | Finding | Owner |
-| --- | --- | --- | --- | --- |
-| F-2.7-1 | Low (user-facing) | `HomeScreen.kt:394-401` + `home_actions_coming_soon` | The caption **"Send and receive arrive in Phase 2; swap in Phase 3."** renders unconditionally directly under the now-**live** Send and Receive buttons (enabled since 2.6/2.7) — stale, self-contradictory copy (the 2.0.3 comment above it is stale too). Reword to cover only Swap ("Swap arrives in Phase 3.") or remove. | next feature round (copy fix) |
-| F-2.7-2 | Low (robustness) | `ReceiveViewModel.observeWalletAndChain` | No error handling around the combined flow: an upstream failure (e.g. wallet/chain flow error) leaves `isLoading = true` forever → the screen's content area stays blank with no error state and no retry. | next receive-screen touch |
-| F-2.7-3 | Low (discipline) | `ReceiveViewModel` `NO_ACTIVE_WALLET_MESSAGE` | Hardcoded user-facing string; the module's other copy lives in `values/strings.xml` (string-adoption discipline). | **4.17** |
-| F-2.7-4 | Low (records) | `specs/tech-stack.md` §4d defect table | Two rows are now stale: "zxing is an orphan version alias" (resolved — the `zxing-core` library entry exists since this item) and "4 unused bundles" (no longer includes `camerax` — feature-send references it). Update or clear the rows. | next planning round |
+| ID | Severity | Location | Finding | Proof | Owner |
+| --- | --- | --- | --- | --- | --- |
+| F-2.7-1 | **MINOR** | `HomeScreen.kt:394-401` + `home_actions_coming_soon` | The caption **"Send and receive arrive in Phase 2; swap in Phase 3."** renders unconditionally directly under the now-**live** Send and Receive buttons (enabled since 2.6/2.7) — stale, self-contradictory user-facing copy; the 2.0.3 comment above it is stale too | read the file: buttons `enabled = true` at :376/:382, caption unconditional at :395 | next feature round (copy fix) |
+| F-2.7-2 | **MINOR** | `ReceiveViewModel.observeWalletAndChain` | No error handling around the combined flow: an upstream failure leaves `isLoading = true` forever → blank content area, no error state, no retry | code trace: `isLoading` is only cleared inside the `combine` lambda; no `catch` anywhere in the VM | next receive-screen touch |
+| F-2.7-5 | **MINOR** | `validation.md` §Automatic ("Local Kover aggregate: 4,775/9,498") | **Recorded number does not reproduce.** Re-derived by summing the 19 per-module `report.xml` LINE counters: **23,905 / 47,525 (50.3%)**. The percentage direction matches; the absolute pair does not match any subset of the current reports. | own re-derivation (scripted, this review) | next planning round (correct the record) |
+| F-2.7-7 | **MINOR** | `QrScannerScreen.kt:151` `CameraPreview` | Bind failure is swallowed by `runCatching`: on a device with **no back camera** (the manifest declares camera `required=false`) or any `bindToLifecycle` failure, the user gets a **silent black preview** — no error message, unlike the permission-denied branch which has one. | code trace: `runCatching { … bindToLifecycle } ` has no `onFailure` and there is no error state in `CameraPreview` | next scanner touch |
+| F-2.7-8 | **MINOR** | `QrScannerScreen.kt` decode path | `imageInfo.rotationDegrees` is **never consulted** — the luminance plane is fed to zxing unrotated. On sensors that deliver rotated frames the QR will not decode. Evidence coverage does not catch it: `QrDecoderTest` feeds synthetic unrotated frames and the E2E only asserts **navigation**, never a real decode. | `grep -rn rotation` in the module → 0 hits; test inventory read | next scanner touch (consult rotation, add a rotated-frame test) |
+| F-2.7-3 | NIT | `ReceiveViewModel` `NO_ACTIVE_WALLET_MESSAGE` | Hardcoded user-facing string; the module's other copy lives in `values/strings.xml` | code read | **4.17** |
+| F-2.7-4 | NIT | `specs/tech-stack.md` §4d | Two rows stale: "zxing is an orphan version alias" (resolved by this item's `zxing-core` entry) and "4 unused bundles" (no longer includes `camerax` — feature-send references it) | file read | next planning round |
+| F-2.7-6 | NIT | `validation.md` §Automatic | "437 tests / 0 failures / 0 errors" omits the **1 pre-existing skip** (the `@Ignore`d AndroidKeyStore test); the reviewer's fresh sum is 437 / 0 / 0 / **1** | fresh XML sums (776-task run) | next planning round |
+| F-2.7-9 | NIT | `QrCodeImage` (core-ui reusable component) | No guard on blank `content`: `QRCodeWriter.encode("")` throws `IllegalArgumentException` inside `remember` → crash. The only current caller guards (`hasAddress`), but the reusable component's contract is unguarded and untested for the empty input | code read; `QrCodeImageTest` has no blank-content case | core-ui touch (guard or document) |
+| F-2.7-10 | NIT | `QrCodeImage` quiet zone | `EncodeHintType.MARGIN` is explicitly **1 module**; the QR spec recommends 4 for real-world reader compatibility. AC-2.7's "scans correctly with any QR reader" is currently proven only zxing→zxing (round-trip test); the owner's second-phone scan is deferred to the close walk. Consider MARGIN 4 before that walk. | `hints` map read | this item's close walk |
 
 ### Reviewer nit (not a finding)
 
@@ -111,6 +117,6 @@ Robolectric tests, the scanner is a CameraX+zxing implementation with a sound pe
 TC-UI-006 test is mapped and green on the device (11/11), the suite is 437/0/0/1 from a fresh
 776-task run, both gates exit 0, and all seven SonarQube new-code findings are fixed in the tree.
 The SonarQube server-side percentages (53.9%, 0 open issues) are developer-recorded — the API is
-token-gated. **Four Low findings filed** (F-2.7-1 … F-2.7-4, table above) — none blocking; each has
-an owner. Remaining for closure: the owner's close walk (including the second-phone QR scan) and
-the owner merge of `feature/2.7-receive-screen` to `main`.
+token-gated. **Findings: 4×MINOR + 6×NIT** (F-2.7-1 … F-2.7-10, table above) — none blocking, each
+with an owner and proof. Remaining for closure: the owner's close walk (including the second-phone
+QR scan) and the owner merge of `feature/2.7-receive-screen` to `main`.
