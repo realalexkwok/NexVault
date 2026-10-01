@@ -97,6 +97,9 @@ class TokenDetailViewModel @Inject constructor(
                 historyPlanGated = result.exception is ExplorerPlanUnsupportedException
             }
         } catch (_: Exception) {
+            // A thrown refresh is already represented by the error state the caller inspects via
+            // `result`; failing the whole screen because the explorer hiccuped would hide the
+            // cached rows that are still worth showing.
         }
         val transactions = getRecentTokenTransactionsUseCase(
             chainId = chainId,
@@ -133,6 +136,7 @@ class TokenDetailViewModel @Inject constructor(
             try {
                 refreshTransactionHistoryUseCase(chainId)
             } catch (_: Exception) {
+                // Pull-to-refresh: a failed explorer call must not abort the local reload below.
             }
             loadChartDataSync()
             loadRecentTransactionsSync()

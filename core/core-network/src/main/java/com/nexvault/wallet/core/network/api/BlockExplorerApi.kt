@@ -3,6 +3,7 @@ package com.nexvault.wallet.core.network.api
 import com.nexvault.wallet.core.network.dto.EtherscanBalanceResponse
 import com.nexvault.wallet.core.network.dto.EtherscanTokenTransferListResponse
 import com.nexvault.wallet.core.network.dto.EtherscanTransactionListResponse
+import com.nexvault.wallet.core.network.dto.EtherscanTxReceiptStatusResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -63,6 +64,23 @@ interface BlockExplorerApi {
         @Query("sort") sort: String = "desc",
         @Query("apikey") apiKey: String,
     ): EtherscanTokenTransferListResponse
+
+    /**
+     * Fetches the receipt status of a mined transaction (roadmap 2.8).
+     *
+     * Used to move a locally pending row to confirmed/failed without trusting the cached row.
+     *
+     * @param chainId Chain to query; required by V2
+     * @param txHash Transaction hash to look up
+     */
+    @GET("api")
+    suspend fun getTxReceiptStatus(
+        @Query("chainid") chainId: Int,
+        @Query("module") module: String = "transaction",
+        @Query("action") action: String = "gettxreceiptstatus",
+        @Query("txhash") txHash: String,
+        @Query("apikey") apiKey: String,
+    ): EtherscanTxReceiptStatusResponse
 
     /**
      * Fetches the native coin balance for an address.

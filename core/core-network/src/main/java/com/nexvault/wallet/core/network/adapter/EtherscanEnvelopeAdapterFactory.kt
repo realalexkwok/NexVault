@@ -2,6 +2,8 @@ package com.nexvault.wallet.core.network.adapter
 
 import com.nexvault.wallet.core.network.dto.EtherscanTokenTransferListResponse
 import com.nexvault.wallet.core.network.dto.EtherscanTransactionListResponse
+import com.nexvault.wallet.core.network.dto.EtherscanTxReceiptStatusResponse
+import com.nexvault.wallet.core.network.dto.ReceiptStatusDto
 import com.nexvault.wallet.core.network.dto.TokenTransferDto
 import com.nexvault.wallet.core.network.dto.TransactionDto
 import com.squareup.moshi.JsonAdapter
@@ -74,15 +76,45 @@ class EtherscanEnvelopeAdapterFactory : JsonAdapter.Factory {
                     },
                 )
 
+            EtherscanTxReceiptStatusResponse::class.java ->
+                LenientObjectEnvelopeAdapter(
+                    moshi = moshi,
+                    itemType = ReceiptStatusDto::class.java,
+                    build = { parts ->
+                        EtherscanTxReceiptStatusResponse(
+                            status = parts.status,
+                            message = parts.message,
+                            result = parts.result,
+                            resultText = parts.resultText,
+                        )
+                    },
+                    parts = { value ->
+                        ObjectEnvelopeParts(
+                            status = value.status,
+                            message = value.message,
+                            result = value.result,
+                            resultText = value.resultText,
+                        )
+                    },
+                )
+
             else -> null
         }
 }
 
-/** The envelope fields that do not depend on the row type. */
+/** The envelope fields that do not depend on the payload type. */
 internal data class EnvelopeParts<T>(
     val status: String,
     val message: String,
-    val result: List<T>?,
+    val result: List<T>? = null,
+    val resultText: String? = null,
+)
+
+/** Parts of an envelope whose `result` is a single object (receipt status). */
+internal data class ObjectEnvelopeParts<T>(
+    val status: String,
+    val message: String,
+    val result: T?,
     val resultText: String?,
 )
 
@@ -147,6 +179,80 @@ internal class LenientListEnvelopeAdapter<T, R : Any>(
         when {
             parts.result != null -> resultAdapter.toJson(writer, parts.result)
             parts.resultText != null -> writer.value(parts.resultText)
+            else -> writer.nullValue()
+        }
+        writer.endObject()
+    }
+
+    private fun JsonReader.nextStringOrEmpty(): String =
+        if (peek() == JsonReader.Token.STRING) {
+            nextString()
+        } else {
+            skipValue()
+            ""
+        }
+}
+
+/**
+ * Reads an Etherscan envelope whose `result` is either a single object of [T] or a rejection String
+ * (roadmap 2.8, `transaction/gettxreceiptstatus`).
+ *
+ * @param moshi used to resolve the payload adapter lazily, once Moshi is fully built
+ * @param itemType payload type (`ReceiptStatusDto`)
+ * @param build wraps parsed parts into the concrete response type
+ * @param parts unwraps a response for the symmetric write path
+ */
+internal class LenientObjectEnvelopeAdapter<T : Any, R : Any>(
+    private val moshi: Moshi,
+    private val itemType: Class<T>,
+    private val build: (ObjectEnvelopeParts<T>) -> R,
+    private val parts: (R) -> ObjectEnvelopeParts<T>,
+) : JsonAdapter<R>() {
+    private val resultAdapter: JsonAdapter<T> by lazy { moshi.adapter(itemType) }
+
+    override fun fromJson(reader: JsonReader): R {
+        var status = "0"
+        var message = ""
+        var result: T? = null
+        var resultText: String? = null
+        reader.beginObject()
+        while (reader.hasNext()) {
+            when (reader.nextName()) {
+                "status" -> status = reader.nextStringOrEmpty()
+                "message" -> message = reader.nextStringOrEmpty()
+                "result" ->
+                    when (reader.peek()) {
+                        JsonReader.Token.BEGIN_OBJECT -> result = resultAdapter.fromJson(reader)
+                        JsonReader.Token.STRING -> resultText = reader.nextString()
+                        JsonReader.Token.NULL -> reader.nextNull<Unit>()
+                        else -> reader.skipValue()
+                    }
+
+                else -> reader.skipValue()
+            }
+        }
+        reader.endObject()
+        return build(
+            ObjectEnvelopeParts(status = status, message = message, result = result, resultText = resultText),
+        )
+    }
+
+    override fun toJson(
+        writer: JsonWriter,
+        value: R?,
+    ) {
+        if (value == null) {
+            writer.nullValue()
+            return
+        }
+        val parsed = parts(value)
+        writer.beginObject()
+        writer.name("status").value(parsed.status)
+        writer.name("message").value(parsed.message)
+        writer.name("result")
+        when {
+            parsed.result != null -> resultAdapter.toJson(writer, parsed.result)
+            parsed.resultText != null -> writer.value(parsed.resultText)
             else -> writer.nullValue()
         }
         writer.endObject()

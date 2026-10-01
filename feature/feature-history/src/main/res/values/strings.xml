@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_title">History</string>
+    <string name="history_filter_all">All</string>
+    <string name="history_filter_sent">Sent</string>
+    <string name="history_filter_received">Received</string>
+    <string name="history_filter_swap">Swap</string>
+    <string name="history_filter_failed">Failed</string>
+    <string name="history_empty_title">No transactions yet</string>
+    <string name="history_empty_subtitle">Transactions for this wallet on the selected network will appear here.</string>
+    <string name="history_error_title">Could not load history</string>
+    <string name="history_all_loaded">All transactions loaded</string>
+    <string name="history_explorer_not_configured">The block explorer API is not configured, so only locally stored transactions are shown.</string>
+    <string name="history_explorer_plan_gated">Your explorer plan does not cover this network, so its history cannot be loaded.</string>
+    <string name="history_detail_title">Transaction</string>
+    <string name="history_detail_not_found">Transaction not found</string>
+    <string name="history_detail_status">Status</string>
+    <string name="history_detail_amount">Amount</string>
+    <string name="history_detail_date">Date</string>
+    <string name="history_detail_from">From</string>
+    <string name="history_detail_to">To</string>
+    <string name="history_detail_block">Block</string>
+    <string name="history_detail_gas_used">Gas used</string>
+    <string name="history_detail_hash">Hash</string>
+    <string name="history_detail_check_receipt">Check status now</string>
+    <string name="history_detail_view_on_explorer">View on Explorer</string>
+    <string name="history_status_pending">Pending</string>
+    <string name="history_status_confirmed">Confirmed</string>
+    <string name="history_status_failed">Failed</string>
+</resources>

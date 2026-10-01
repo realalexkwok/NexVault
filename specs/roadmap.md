@@ -142,6 +142,22 @@ failed, never silently dropped — until the owner signals funding with any word
 
 The 2.10 Phase 2 walk re-reads this register and executes whichever rows the owner funded by then.
 
+
+
+> **2.8 (Transaction history) CLOSED 2026-10-02 as `[x]` — owner close after the reviewer's PASS and
+> the re-verification of the fixes (`039bfc8`, re-checked in `29f1d41`), merged to `main` (`--no-ff`),
+> pushed, the local feature branch deleted.** Delivered: the history tab (sticky date groups, the AC's
+> five chips, pull-to-refresh, fetch-on-scroll capped at 50 explorer pages, empty/notice states) and the
+> transaction detail screen (full fields, "Check status now", chain-correct "View on Explorer"), plus
+> the two data-layer shortcuts the roadmap flagged — `getTransactionHistory` now honours
+> `page`/`pageSize`, `refreshTransactionHistory` pages the explorer, and `updateTransactionStatus` asks
+> the chain through the new V2 `gettxreceiptstatus` endpoint (a blank inner status stays PENDING; the
+> reviewer's MAJOR finding on that mapping was fixed). Evidence: 473 tests / 0 failures / 1 skipped
+> (reviewer re-run), both gates green, SonarQube **coverage 56.4%** with **0 bugs, 0 vulnerabilities,
+> 0 criticals** and no open issue in any 2.8 file. **The next open entry point is 2.10** (milestone
+> scan and Phase 2 close), which also owns the owed device items (instrumented re-run, History walk,
+> second-phone QR scan).
+
 ---
 
 ## Phase 0 — Historical: the prompt-driven era (retired)
@@ -598,7 +614,7 @@ Unblocked only after Phase 2.0 closes.
 | --- | --- | --- | --- | --- |
 | 2.6 Send transaction flow | Form → review (gas slow/normal/fast) → submit → result, native + ERC-20 | `feature:feature-send` + `TransactionRepositoryImpl` | `AC-2.6` | `[x]` — **closed 2026-09-30 (owner close)**: 29 commits; 417 unit tests + 10/10 instrumented; gates green; coverage 53.4% (Kover migration); 0 criticals; TC-INT-002 mapped (funded submit deferred to 2.10); evidence in `specs/features/2026-09-28-2.6-send-transaction-flow/validation.md` close record |
 | 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[x]` — **closed 2026-09-30 (owner close after reviewer verification)**: 10 commits; 443 tests + gates green; server coverage 54.1%, 0 bugs/vulnerabilities/criticals; TC-UI-006 mapped (send-form QR scan, CameraX + zxing); handoff — device re-run + second-phone QR scan at 2.8 |
-| 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[ ]` |
+| 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[x]` — **closed 2026-10-02 (owner close after reviewer PASS + fix re-verification)**: 473 tests / 0 failures / 1 skipped; gates green; server coverage 56.4%, 0 bugs/vulnerabilities/criticals; both roadmap shortcuts (paging, chain receipt checks) closed with tests; handoff — device re-run + walk + second-phone QR scan at 2.10 |
 | 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
 | **2.10 Milestone scan & Phase 2 close** | Run the static-analysis scan over everything Phase 2 built (new-code gate), triage the findings, verify the Phase 2 checklist, then record and close the phase | repo-wide (`app`, `feature:*`, `data`) | Phase 2 checklist + the scan gate | `[ ]` — see "Milestone static-analysis scan" above |
 

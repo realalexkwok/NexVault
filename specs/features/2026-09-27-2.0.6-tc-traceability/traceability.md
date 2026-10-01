@@ -48,7 +48,7 @@
 | TC-REPO-002 | **4.8** | Same constraint for the ERC-20 metadata happy path; partial: key-gate test + `AddCustomTokenUseCaseTest`. |
 | TC-REPO-003 | **2.6** | `sendNativeTransaction` throws `UnsupportedOperationException`. |
 | TC-REPO-004 | **2.6** | Same — send flow is 2.6. |
-| TC-REPO-005 | **2.8** | `page`/`pageSize` still ignored (2.0.4b handoff). |
+| TC-REPO-005 | **2.8** | **Mapped (2026-10-02)** — `page`/`pageSize` are honoured end-to-end (DAO limit/offset) and the explorer refresh forwards its page; `TransactionHistoryPagingTest` pins page 3 → offset 40, the page forwarded to the explorer and the absurd-page clamp. |
 | TC-VM-003 | **2.6** | No `SendViewModel` (feature-send is an empty module). |
 | TC-VM-004 | **2.6** | Same. |
 | TC-VM-005 | **2.6** | Same (MAX button + gas math arrive with 2.6). |
@@ -60,7 +60,7 @@
 | TC-UI-005 | **4.18** | PullToRefreshBox exists on HomeScreen. |
 | TC-UI-006 | **2.7** | **Mapped (2026-09-30)** to `SendFlowE2ETest#sendForm_qrButtonNavigatesToTheScanner` — the send form's QR icon opens `QrScannerScreen` and back returns to the form, green on the Pixel 6a (11/11). |
 | TC-UI-007 | **3.2** | NFT gallery screen does not exist. |
-| TC-UI-008 | **2.8** | HistoryListScreen does not exist. |
+| TC-UI-008 | **2.8** | **Mapped (2026-10-02)** — `HistoryScreen` exists with sticky date groups, the AC's five chips, fetch-on-scroll and the detail route; `HistoryScreenTest` + `HistoryViewModelTest` pin the behaviour. |
 | TC-UI-009 | **3.4** | The Settings tab is a `PlaceholderTabScreen`. |
 | TC-UI-010 | **2.6** | No `ConfirmationDialog` component exists; the send review step will build it. |
 | TC-SECTEST-001 | **4.7** | Logcat scan around the creation flow — pairs with the 4.7 security pass. |

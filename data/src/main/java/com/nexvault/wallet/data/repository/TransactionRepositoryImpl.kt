@@ -360,39 +360,70 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Emits the full observed list for [address] whenever Room updates.
-     * [page] and [pageSize] are reserved for future true pagination; callers receive the full list for now.
+     * One page of the stored history, newest first (roadmap 2.8 shortcut fix).
+     *
+     * The page arguments used to be ignored; they now map onto the DAO's limit/offset query so the
+     * screen can grow the list as the user scrolls without re-reading every stored row.
      */
-    override fun getTransactionHistory(
+    override suspend fun getTransactionHistory(
         chainId: Int,
         address: String,
         page: Int,
         pageSize: Int,
-    ): Flow<List<Transaction>> {
-        return transactionDao.observeTransactions(chainId, address).map { entities ->
-            entities.map { it.toDomain(address) }
+    ): DataResult<List<Transaction>> = withContext(Dispatchers.IO) {
+        try {
+            val safePageSize = pageSize.coerceIn(1, MAX_PAGE_SIZE)
+            // Clamped before the multiplication: an absurd page would otherwise overflow the Int
+            // and hand the DAO a negative offset.
+            val safePage = page.coerceIn(1, MAX_PAGE_NUMBER)
+            val entities =
+                transactionDao.getTransactions(
+                    chainId = chainId,
+                    address = address,
+                    limit = safePageSize,
+                    offset = (safePage - 1) * safePageSize,
+                )
+            DataResult.Success(entities.map { it.toDomain(address) })
+        } catch (e: Exception) {
+            DataResult.Error(e, e.message)
         }
     }
 
     override suspend fun refreshTransactionHistory(
         chainId: Int,
         address: String,
+        page: Int,
+        pageSize: Int,
     ): DataResult<Unit> = withContext(Dispatchers.IO) {
         try {
             // Roadmap 2.0.4: fail explicitly instead of calling an explorer API with no key.
             if (!chainConfigProvider.isExplorerConfigured(chainId)) {
                 return@withContext DataResult.Error(
-                    ApiKeyNotConfiguredException("Block explorer API is not configured"),
+                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
                 )
             }
             val api = blockExplorerApiFactory.getApi(chainId)
             val apiKey = blockExplorerApiFactory.getApiKey(chainId)
             // Roadmap 2.0.4b: Etherscan V2 requires the chain id on every call.
-            val native = api.getTransactions(chainId = chainId, address = address, apiKey = apiKey, offset = 100)
+            val native =
+                api.getTransactions(
+                    chainId = chainId,
+                    address = address,
+                    apiKey = apiKey,
+                    page = page.coerceAtLeast(1),
+                    offset = pageSize.coerceIn(1, MAX_PAGE_SIZE),
+                )
             // Roadmap 2.0.4b: a rejected envelope (bad key, plan gate, …) is an error with the
             // explorer's own message — never a silently empty history.
             native.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
-            val tokenTx = api.getTokenTransfers(chainId = chainId, address = address, apiKey = apiKey, offset = 100)
+            val tokenTx =
+                api.getTokenTransfers(
+                    chainId = chainId,
+                    address = address,
+                    apiKey = apiKey,
+                    page = page.coerceAtLeast(1),
+                    offset = pageSize.coerceIn(1, MAX_PAGE_SIZE),
+                )
             tokenTx.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
             val merged = buildList {
                 addAll(native.result.orEmpty().map { it.toEntity(chainId, address) })
@@ -437,7 +468,36 @@ class TransactionRepositoryImpl @Inject constructor(
                     IllegalArgumentException(TRANSACTION_NOT_FOUND_MESSAGE),
                     TRANSACTION_NOT_FOUND_MESSAGE,
                 )
-            DataResult.Success(entity.toDomain(address))
+            // Roadmap 2.8 shortcut fix: a settled row is returned as-is, a pending one is checked
+            // against the chain instead of trusting the cached status.
+            if (entity.status != STATUS_PENDING) {
+                return@withContext DataResult.Success(entity.toDomain(address))
+            }
+            if (!chainConfigProvider.isExplorerConfigured(chainId)) {
+                return@withContext DataResult.Error(
+                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
+                )
+            }
+            val api = blockExplorerApiFactory.getApi(chainId)
+            val receipt =
+                api.getTxReceiptStatus(
+                    chainId = chainId,
+                    txHash = txHash,
+                    apiKey = blockExplorerApiFactory.getApiKey(chainId),
+                )
+            receipt.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
+            val confirmed = receipt.receiptSucceeded
+            // No receipt yet: the transaction is still in the mempool, so it stays pending.
+            if (confirmed != null) {
+                transactionDao.updateTransactionStatus(
+                    txHash = txHash,
+                    chainId = chainId,
+                    status = if (confirmed) STATUS_CONFIRMED else STATUS_FAILED,
+                    gasUsed = entity.gasUsed,
+                )
+            }
+            val updated = transactionDao.getTransaction(txHash, chainId) ?: entity
+            DataResult.Success(updated.toDomain(address))
         } catch (e: Exception) {
             DataResult.Error(e, e.message)
         }
@@ -464,7 +524,36 @@ class TransactionRepositoryImpl @Inject constructor(
                     IllegalArgumentException(TRANSACTION_NOT_FOUND_MESSAGE),
                     TRANSACTION_NOT_FOUND_MESSAGE,
                 )
-            DataResult.Success(entity.toDomain(address))
+            // Roadmap 2.8 shortcut fix: a settled row is returned as-is, a pending one is checked
+            // against the chain instead of trusting the cached status.
+            if (entity.status != STATUS_PENDING) {
+                return@withContext DataResult.Success(entity.toDomain(address))
+            }
+            if (!chainConfigProvider.isExplorerConfigured(chainId)) {
+                return@withContext DataResult.Error(
+                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
+                )
+            }
+            val api = blockExplorerApiFactory.getApi(chainId)
+            val receipt =
+                api.getTxReceiptStatus(
+                    chainId = chainId,
+                    txHash = txHash,
+                    apiKey = blockExplorerApiFactory.getApiKey(chainId),
+                )
+            receipt.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
+            val confirmed = receipt.receiptSucceeded
+            // No receipt yet: the transaction is still in the mempool, so it stays pending.
+            if (confirmed != null) {
+                transactionDao.updateTransactionStatus(
+                    txHash = txHash,
+                    chainId = chainId,
+                    status = if (confirmed) STATUS_CONFIRMED else STATUS_FAILED,
+                    gasUsed = entity.gasUsed,
+                )
+            }
+            val updated = transactionDao.getTransaction(txHash, chainId) ?: entity
+            DataResult.Success(updated.toDomain(address))
         } catch (e: Exception) {
             DataResult.Error(e, e.message)
         }
@@ -472,6 +561,12 @@ class TransactionRepositoryImpl @Inject constructor(
 
     private companion object {
         const val NATIVE_DECIMALS = 18
+        const val MAX_PAGE_SIZE = 100
+        const val MAX_PAGE_NUMBER = 10_000
+        const val EXPLORER_NOT_CONFIGURED_MESSAGE = "Block explorer API is not configured"
+        const val STATUS_PENDING = 0
+        const val STATUS_CONFIRMED = 1
+        const val STATUS_FAILED = 2
         const val NO_ACTIVE_WALLET_MESSAGE = "No active wallet"
         const val TRANSACTION_NOT_FOUND_MESSAGE = "Transaction not found"
     }
