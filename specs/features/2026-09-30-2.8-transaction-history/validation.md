@@ -57,3 +57,44 @@ second-phone QR scan) are executed in the next device session and recorded here.
    owner funds the wallet, the history tab is the screen that proves them; owner: **2.10**.
 2. Background status polling — deliberately out of scope; owner: **3.5** (WorkManager sync).
 3. Device half of this item plus the 2.7 handoff items — next device session (see above).
+
+---
+
+## Reviewer verification — fcf039a + 97da158 + 89f1762 (2026-09-30)
+
+> Code-reviewer session. Every claim re-derived; two findings filed with live-probe proof.
+
+### Fresh evidence (reviewer's own runs)
+
+| # | Check | Command | Result |
+| --- | --- | --- | --- |
+| R1 | Suite + gates + build | `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck :app:assembleDebug --continue --rerun-tasks` | **BUILD SUCCESSFUL, exit 0 — 798 tasks executed, 0 failed tasks; 470 tests / 0 failures / 0 errors / 1 skipped** (matches; per-file `@Test` counts sum to +27: repo 9, VM 7 incl. grouping, screen 4, detail screen 3, detail VM 4) |
+| R2 | Instrumented | Pixel 6a (connected during the review): wake + `pm clear` + pinned serial → `:app:connectedDebugAndroidTest` | **11/11 pass** on this revision — also closes the 2.7 handoff item #1 (instrumented re-run) |
+| R3 | AC-2.8 code checks | reads | paging maps page→offset with clamps, 50-page cap (`MAX_PAGES = 50`), fetch-on-scroll `loadMore`, chain-switch reload via `combine`, 5 chips (`HistoryFilter.matches`; CONTRACT_INTERACTION/APPROVAL match only All), `stickyHeader` date groups, detail screen with status/amount/date/from/to/block/hash, explorer link `$explorerUrl/tx/{hash}` with chain-correct frontends (etherscan.io / sepolia.etherscan.io / bscscan.com / polygonscan.com) |
+| R4 | Sonar code-fixes | reads | S1192 → `EXPLORER_NOT_CONFIGURED_MESSAGE` (3 sites, 1 literal); S1172 → `loadPage` param removed; S1481 ×2 → guard rewrites — all present in the tree. Server-side measures (55.3%, 0 open issues) remain token-gated/developer-recorded |
+| R5 | Masked live probe (receipt wire shapes) | `gettxreceiptstatus` with a confirmed-successful tx, a reverted tx, and a no-receipt hash (key length 34, never printed) | success → `result.status "1"`; revert → `"0"`; **no receipt → `{"status": ""}` (an object with an EMPTY string)** — see F-2.8-1 |
+
+### Findings
+
+| ID | Severity | Location | Finding | Proof |
+| --- | --- | --- | --- | --- |
+| F-2.8-1 | **MAJOR** | `EtherscanTxReceiptStatusResponse.receiptSucceeded` + `TransactionRepositoryImpl.updateTransactionStatus` | **Pending transactions get labelled FAILED and persisted as FAILED.** The real V2 no-receipt response is `{"status":"","message":"OK","result":{"status":""}}` — the DTO maps the empty string to `false` (`status == "1"`), the repository then writes FAILED, and the "no receipt → stays PENDING" branch requires `result == null`, which the real API never returns. Triggered by pull-to-refresh (`checkPendingReceipts`) and the detail screen's "Check status now". | masked live probe (R5); test fixture `TransactionHistoryPagingTest` seeds `result = null` for the pending case — the real wire shape is not seeded. Fix direction: `result?.status?.takeIf { it.isNotBlank() }?.let { it == "1" }` |
+| F-2.8-2 | MINOR | `TokenDetailScreen` See All + caption; `MainScreen` | **The consolidated-handoff row "See All" (owner 2.8) is only half-closed.** The history tab and its nested graph landed, but TokenDetail's See All is still `enabled = false` with `onClick = { }` and no wiring to the new `history` route — a dead affordance next to a live destination. The token-detail caption (`token_detail_actions_coming_soon`) still claims full transaction history "arrives in Phase 2", which is now false. | file reads: `TokenDetailScreen.kt:236` (`enabled = false`), `strings.xml:7`; `97da158` wires only the tab graph |
+
+### NIT
+
+`TransactionRepositoryImpl.getTransactionHistory`: `offset = (page - 1) * pageSize` can overflow `Int` for absurd page values (e.g. `Int.MAX_VALUE` → negative offset). SQLite treats a negative OFFSET as 0, so the effect is benign; a `coerceIn` would make the clamp explicit.
+
+### Device half status
+
+Instrumented 11/11 **passed on-device during this review** (the phone reconnected). The interactive
+walk items (History tab rendered on-device with real explorer responses, the BSC plan-gate notice on
+the history screen, and the second-phone QR scan of the receive QR) could not be run: the owner was
+actively using the phone (another app held the foreground) — they stay owed for the close walk and
+remain in the record.
+
+### Verdict
+
+**PASS with findings — F-2.8-1 (MAJOR) should be fixed before the item closes.** The receipt
+mislabel corrupts persisted transaction state from the two most user-visible actions; the rest of the
+item (paging, chips, groups, detail, explorer links, gates, suite, device suite) verifies cleanly.
