@@ -51,22 +51,30 @@ interface TransactionRepository {
     ): DataResult<String>
 
     /**
-     * Get transaction history for an address on a chain.
-     * Paginated — returns a page of transactions.
+     * Get one page of transaction history for an address on a chain, newest first.
+     *
+     * Roadmap 2.8: the page arguments are honoured (they used to be ignored, so every call
+     * returned the full stored list). [page] is 1-based; [DataResult] carries the failure instead
+     * of an empty list.
      */
-    fun getTransactionHistory(
+    suspend fun getTransactionHistory(
         chainId: Int,
         address: String,
         page: Int,
         pageSize: Int,
-    ): Flow<List<Transaction>>
+    ): DataResult<List<Transaction>>
 
     /**
-     * Force refresh transaction history from the block explorer API.
+     * Fetch a page of history from the block explorer and store it.
+     *
+     * Roadmap 2.8: paging reaches the explorer (it used to fetch a single 100-row page), so the
+     * history screen can load more as the user scrolls.
      */
     suspend fun refreshTransactionHistory(
         chainId: Int,
         address: String,
+        page: Int = 1,
+        pageSize: Int = 20,
     ): DataResult<Unit>
 
     /**
