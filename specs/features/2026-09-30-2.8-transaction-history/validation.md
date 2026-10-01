@@ -8,9 +8,9 @@ Branch `feature/2.8-transaction-history` (from `main` bbe7f0e). Owner decisions 
 ### Suite and gates
 
 `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew testDebugUnitTest :domain:test detekt ktlintCheck`
-→ BUILD SUCCESSFUL, **470 tests / 0 failures / 0 errors / 1 skipped** (2.7 closed at 443; 2.8 adds 27:
-9 repository paging/receipt tests, 7 history ViewModel tests + the grouping test, 4 history screen
-tests, 4 detail ViewModel tests, 3 detail screen tests). The skip is the pre-existing `@Ignore`d
+→ BUILD SUCCESSFUL, **473 tests / 0 failures / 0 errors / 1 skipped** (2.7 closed at 443; 2.8 adds 30:
+11 repository paging/receipt tests, 7 history ViewModel tests + the grouping test, 4 history screen
+tests, 4 detail ViewModel tests, 3 detail screen tests, and the token-detail actions test). The skip is the pre-existing `@Ignore`d
 keystore test.
 
 ### The two roadmap shortcuts, closed with tests
@@ -21,9 +21,25 @@ keystore test.
 | `updateTransactionStatus` returned the cached row | asks the chain via the new V2 `transaction/gettxreceiptstatus`: receipt `1` → CONFIRMED, `0` → FAILED, no receipt → stays PENDING, rejection → `ExplorerApiException`, no key → `ApiKeyNotConfiguredException`, settled row → no network call | `TransactionHistoryPagingTest` |
 | `refreshTransactionHistory` fetched one fixed 100-row page | forwards `page`/`offset` (default 20/page) so the screen can load more on scroll, capped at 50 pages | `TransactionHistoryPagingTest` |
 
+### Reviewer findings (2.8) — resolution
+
+| ID | Sev | Resolution |
+| --- | --- | --- |
+| F-2.8-1 | MAJOR | **Real bug, fixed.** The live no-receipt envelope is `{"status":"1","result":{"status":""}}` (re-probed 2026-09-30 against the V2 host), and the DTO mapped `"" == "1"` → `false` → the repository persisted **FAILED** for a transaction that has simply not been mined yet. `receiptSucceeded` now treats a blank inner status as **unknown** (`takeIf { it.isNotBlank() }`), so the row stays PENDING; the invented `result = null` fixture was replaced by the verbatim live shape and a second test keeps the null payload case. Covered by `TransactionHistoryPagingTest#a pending row stays pending on the live no-receipt envelope` (and asserts the DAO update never runs). |
+| F-2.8-2 | MINOR | **Fixed, and the sibling dead affordance with it.** TokenDetail's "See All" was disabled with no route while the history destination existed; its **Receive** button was in the same state even though 2.7 shipped the receive screen. Both now navigate (`onSeeAllClicked` switches to the history tab, `onReceiveClicked` opens the receive route), and the stale caption "Receive and full transaction history arrive in Phase 2." is gone (string deleted). Pinned by `TokenDetailActionsTest#receiveAndSeeAll_bothNavigate`. |
+| NIT (page overflow) | NIT | **Fixed** — the page is clamped (`MAX_PAGE_NUMBER = 10_000`) before the `Int` multiplication, so an absurd page can no longer produce a negative offset; `TransactionHistoryPagingTest#an absurd page cannot overflow the offset` pins it. |
+
+The follow-up scan also surfaced four findings in the files this work touched, all fixed rather than
+accepted: `kotlin:S1874` x2 in `TokenDetailScreen` (deprecated `hiltViewModel` import, non-mirrored
+`ArrowForward` icon) and `kotlin:S108` x2 (the two swallowing catches in `TokenDetailViewModel` now
+explain why a failed explorer refresh must not abort the local reload). Server after the fixes:
+**coverage 56.4%**, 0 bugs, 0 vulnerabilities, 0 criticals, 63 code smells, **0 open issues in any 2.8
+file**.
+
 ### SonarQube (server `NexVault`)
 
-`./gradlew sonar` → BUILD SUCCESSFUL. Measures: **coverage 55.3%** (2.7 closed at 54.1),
+`./gradlew sonar` → BUILD SUCCESSFUL. Measures after the reviewer fixes: **coverage 56.4%**
+(2.7 closed at 54.1; the first 2.8 scan read 55.3%),
 lines_to_cover 7,951, **0 bugs, 0 vulnerabilities, 0 blocker/critical**, 67 code smells,
 duplication **0.5%** (2.7: 0.3% — recorded, the 2.10 phase scan owns the duplication judgement),
 **0 open issues in any 2.8 file**. Findings raised by the first scans were all fixed, none accepted:

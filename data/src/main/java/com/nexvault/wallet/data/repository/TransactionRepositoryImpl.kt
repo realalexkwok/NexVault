@@ -372,12 +372,16 @@ class TransactionRepositoryImpl @Inject constructor(
         pageSize: Int,
     ): DataResult<List<Transaction>> = withContext(Dispatchers.IO) {
         try {
+            val safePageSize = pageSize.coerceIn(1, MAX_PAGE_SIZE)
+            // Clamped before the multiplication: an absurd page would otherwise overflow the Int
+            // and hand the DAO a negative offset.
+            val safePage = page.coerceIn(1, MAX_PAGE_NUMBER)
             val entities =
                 transactionDao.getTransactions(
                     chainId = chainId,
                     address = address,
-                    limit = pageSize.coerceAtLeast(1),
-                    offset = ((page.coerceAtLeast(1)) - 1) * pageSize.coerceAtLeast(1),
+                    limit = safePageSize,
+                    offset = (safePage - 1) * safePageSize,
                 )
             DataResult.Success(entities.map { it.toDomain(address) })
         } catch (e: Exception) {
@@ -558,6 +562,7 @@ class TransactionRepositoryImpl @Inject constructor(
     private companion object {
         const val NATIVE_DECIMALS = 18
         const val MAX_PAGE_SIZE = 100
+        const val MAX_PAGE_NUMBER = 10_000
         const val EXPLORER_NOT_CONFIGURED_MESSAGE = "Block explorer API is not configured"
         const val STATUS_PENDING = 0
         const val STATUS_CONFIRMED = 1

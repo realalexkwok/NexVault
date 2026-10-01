@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -43,7 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.NexVaultCard
 import com.nexvault.wallet.core.ui.components.SimpleLineChart
@@ -71,6 +72,8 @@ import com.nexvault.wallet.feature.tokens.R
 fun TokenDetailScreen(
     onNavigateBack: () -> Unit,
     onSendClicked: (contractAddress: String) -> Unit = {},
+    onReceiveClicked: () -> Unit = {},
+    onSeeAllClicked: () -> Unit = {},
     viewModel: TokenDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -107,6 +110,8 @@ fun TokenDetailScreen(
             when {
                 uiState.isLoading && token == null -> TokenDetailLoading()
                 token != null -> TokenDetailContent(
+                    onReceiveClicked = onReceiveClicked,
+                    onSeeAllClicked = onSeeAllClicked,
                     token = token,
                     uiState = uiState,
                     onSendClicked = onSendClicked,
@@ -130,6 +135,8 @@ private fun TokenDetailLoading() {
 
 @Composable
 private fun TokenDetailContent(
+    onReceiveClicked: () -> Unit,
+    onSeeAllClicked: () -> Unit,
     token: Token,
     uiState: TokenDetailUiState,
     onSendClicked: (contractAddress: String) -> Unit,
@@ -155,6 +162,7 @@ private fun TokenDetailContent(
         }
         item(key = "actions") {
             TokenActionButtons(
+                onReceiveClicked = onReceiveClicked,
                 onSendClicked = { onSendClicked(token.contractAddress) },
             )
         }
@@ -173,7 +181,7 @@ private fun TokenDetailContent(
         }
         if (uiState.recentTransactions.isNotEmpty()) {
             item(key = "tx_header") {
-                RecentTransactionsHeader()
+                RecentTransactionsHeader(onSeeAllClicked = onSeeAllClicked)
             }
             items(
                 items = uiState.recentTransactions,
@@ -217,7 +225,7 @@ private fun HistoryNotice(text: String) {
 }
 
 @Composable
-private fun RecentTransactionsHeader() {
+private fun RecentTransactionsHeader(onSeeAllClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -231,14 +239,11 @@ private fun RecentTransactionsHeader() {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
-        TextButton(
-            onClick = { },
-            enabled = false,
-        ) {
+        TextButton(onClick = onSeeAllClicked) {
             Text(stringResource(R.string.token_detail_see_all))
             Spacer(modifier = Modifier.width(NexVaultDimens.spacingXs))
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription =
                     stringResource(R.string.token_detail_see_all_transactions),
                 modifier = Modifier.size(NexVaultDimens.spacingMd),
@@ -439,6 +444,7 @@ private fun TokenStatRow(
 @Composable
 private fun TokenActionButtons(
     onSendClicked: () -> Unit,
+    onReceiveClicked: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -447,7 +453,7 @@ private fun TokenActionButtons(
                 .padding(horizontal = NexVaultDimens.spacingMd, vertical = NexVaultDimens.spacing12),
             horizontalArrangement = Arrangement.spacedBy(NexVaultDimens.spacing12),
         ) {
-            // Roadmap 2.6: Send now navigates; Receive (2.7) stays disabled.
+            // Roadmap 2.6/2.7: Send and Receive both navigate.
             Button(
                 onClick = onSendClicked,
                 enabled = true,
@@ -462,8 +468,7 @@ private fun TokenActionButtons(
                 Text(stringResource(R.string.token_detail_send))
             }
             OutlinedButton(
-                onClick = { },
-                enabled = false,
+                onClick = onReceiveClicked,
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(
@@ -475,14 +480,5 @@ private fun TokenActionButtons(
                 Text(stringResource(R.string.token_detail_receive))
             }
         }
-        // Roadmap 2.0.3: Send (2.6), Receive (2.7) and full history (2.8) have no destination
-        // yet, so their controls are disabled and the reason is stated right under them.
-        Text(
-            text = stringResource(R.string.token_detail_actions_coming_soon),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = NexVaultDimens.spacingMd),
-            textAlign = TextAlign.Center,
-        )
     }
 }

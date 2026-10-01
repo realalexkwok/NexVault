@@ -185,7 +185,23 @@ class TransactionHistoryPagingTest {
         }
 
     @Test
-    fun `a pending row stays pending while the transaction has no receipt yet`() =
+    fun `a pending row stays pending on the live no-receipt envelope`() =
+        runTest {
+            stubConfiguredExplorer()
+            coEvery { transactionDao.getTransaction(TX_HASH, CHAIN_ID) } returns pendingEntity()
+            // Verbatim live probe of an unknown hash (2026-09-30): the call succeeds and the inner
+            // status is empty. Treating "" as a revert would persist FAILED for a pending row.
+            coEvery { explorerApi.getTxReceiptStatus(chainId = CHAIN_ID, txHash = TX_HASH, apiKey = KEY) } returns
+                EtherscanTxReceiptStatusResponse(status = "1", message = "OK", result = ReceiptStatusDto(status = ""))
+
+            val result = repository.updateTransactionStatus(TX_HASH, CHAIN_ID)
+
+            assertThat((result as DataResult.Success).data.status).isEqualTo(TransactionStatus.PENDING)
+            coVerify(exactly = 0) { transactionDao.updateTransactionStatus(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `a pending row also stays pending when the envelope carries no payload at all`() =
         runTest {
             stubConfiguredExplorer()
             coEvery { transactionDao.getTransaction(TX_HASH, CHAIN_ID) } returns pendingEntity()
@@ -196,6 +212,24 @@ class TransactionHistoryPagingTest {
 
             assertThat((result as DataResult.Success).data.status).isEqualTo(TransactionStatus.PENDING)
             coVerify(exactly = 0) { transactionDao.updateTransactionStatus(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `an absurd page cannot overflow the offset`() =
+        runTest {
+            val offset = slot<Int>()
+            coEvery {
+                transactionDao.getTransactions(
+                    chainId = CHAIN_ID,
+                    address = ADDRESS,
+                    limit = any(),
+                    offset = capture(offset),
+                )
+            } returns emptyList()
+
+            repository.getTransactionHistory(CHAIN_ID, ADDRESS, page = Int.MAX_VALUE, pageSize = 20)
+
+            assertThat(offset.captured).isAtLeast(0)
         }
 
     @Test

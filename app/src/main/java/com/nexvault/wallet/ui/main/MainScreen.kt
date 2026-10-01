@@ -161,6 +161,15 @@ fun MainScreen(
                         onSendClicked = { contractAddress ->
                             tabNavController.navigate("send?tokenAddress=$contractAddress")
                         },
+                        // Roadmap 2.8: Receive (2.7) and the full history (2.8) both exist now, so
+                        // the token detail no longer shows disabled controls without a reason.
+                        onReceiveClicked = { tabNavController.navigate("receive") },
+                        onSeeAllClicked = {
+                            tabNavController.navigate(MainTab.HISTORY.route) {
+                                popUpTo(MainTab.HOME.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 }
                 composable(

@@ -27,9 +27,14 @@ data class EtherscanTxReceiptStatusResponse(
 
     /**
      * The transaction's own receipt status: `true` when it was mined successfully, `false` when it
-     * reverted, null when the envelope carries no receipt payload.
+     * reverted, **null while the transaction has no receipt yet**.
+     *
+     * The live no-receipt shape is `{"status":"1","message":"OK","result":{"status":""}}` (probed
+     * 2026-09-30): the call succeeds but the inner status is empty, so a blank status must stay
+     * "unknown" — treating it as `false` would persist a pending transaction as FAILED.
      */
-    val receiptSucceeded: Boolean? get() = result?.status?.let { it == "1" }
+    val receiptSucceeded: Boolean?
+        get() = result?.status?.takeIf { it.isNotBlank() }?.let { it == "1" }
 
     /** The explorer's rejection as a domain exception, or null when the envelope carries data. */
     fun errorOrNull(): NexVaultException? = envelopeErrorOrNull(isSuccess, message, result, resultText)
