@@ -142,3 +142,38 @@ item (paging, chips, groups, detail, explorer links, gates, suite, device suite)
 shapes; the fresh suite (473/0/0/1, gates exit 0) matches the claims. The device re-run on the fixed
 revision is owed at the close walk for an environmental reason (the phone dozes on battery), not a
 code reason.
+
+## Close record — 2026-10-02, owner-directed close ("Close 2.8")
+
+Branch `feature/2.8-transaction-history`, commits `fcf039a` → `29f1d41`, clean tree.
+
+**Reviewer trail:** findings pass `3e1d05c` (checks R1–R5, verdict "PASS with findings", F-2.8-1 MAJOR
+flagged before close) → fixes `039bfc8` → re-verification `29f1d41`, which re-derived every resolution
+in code and tests rather than trusting the claims.
+
+**Evidence at close:**
+- Suite + gates (the reviewer's own `--rerun-tasks` run, R1): **473 tests / 0 failures / 0 errors /
+  1 skipped**, BUILD SUCCESSFUL, exit 0.
+- SonarQube: **coverage 56.4%** (2.7 closed at 54.1), **0 bugs, 0 vulnerabilities, 0
+  blocker/critical**, 63 code smells, duplication 0.5%, **0 open issues in any 2.8 file**.
+- The two roadmap-flagged shortcuts are closed with tests (paging honoured end-to-end, receipt checks
+  against the chain), and the three reviewer items (F-2.8-1, F-2.8-2, offset NIT) are fixed and
+  re-verified.
+
+**AC-2.8 matrix:** all six rows verified by tests — chain-scoped history, sticky date groups, the five
+chips, fetch-on-scroll pagination, the detail view with full info, and the chain-correct explorer link
+(`etherscan.io` / `sepolia.etherscan.io` / `bscscan.com` / `polygonscan.com`).
+
+**Device status:** instrumented **11/11 on the Pixel 6a at the pre-fix revision** (reviewer-run, R2 of
+`3e1d05c`) — this also closed 2.7's handoff item 1. The post-fix re-run was blocked by the device
+dozing on battery (three attempts, `mWakefulness` Awake → Dozing mid-run, no app crash; reviewer R2 of
+`29f1d41`). It, the interactive History walk, and the second-phone QR scan move to the handoff below.
+
+## Handoff
+
+1. **Device items** — instrumented re-run on the closed revision (phone kept awake / plugged in), the
+   interactive History walk on-device, and 2.7's second-phone QR scan. Owner: **2.10** (the Phase 2
+   walk), which must re-read this list.
+2. Funded history rows — the funding-suspended register in `specs/roadmap.md` (2.0.4b M1/M2). Owner:
+   2.10 (resumed on the owner's "funded" signal).
+3. Background status polling — deliberately out of scope for 2.8; owner: **3.5**.
