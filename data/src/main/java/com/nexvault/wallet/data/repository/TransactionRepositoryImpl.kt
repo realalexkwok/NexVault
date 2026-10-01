@@ -395,7 +395,7 @@ class TransactionRepositoryImpl @Inject constructor(
             // Roadmap 2.0.4: fail explicitly instead of calling an explorer API with no key.
             if (!chainConfigProvider.isExplorerConfigured(chainId)) {
                 return@withContext DataResult.Error(
-                    ApiKeyNotConfiguredException("Block explorer API is not configured"),
+                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
                 )
             }
             val api = blockExplorerApiFactory.getApi(chainId)
@@ -471,7 +471,7 @@ class TransactionRepositoryImpl @Inject constructor(
             }
             if (!chainConfigProvider.isExplorerConfigured(chainId)) {
                 return@withContext DataResult.Error(
-                    ApiKeyNotConfiguredException("Block explorer API is not configured"),
+                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
                 )
             }
             val api = blockExplorerApiFactory.getApi(chainId)
@@ -527,7 +527,7 @@ class TransactionRepositoryImpl @Inject constructor(
             }
             if (!chainConfigProvider.isExplorerConfigured(chainId)) {
                 return@withContext DataResult.Error(
-                    ApiKeyNotConfiguredException("Block explorer API is not configured"),
+                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
                 )
             }
             val api = blockExplorerApiFactory.getApi(chainId)
@@ -558,6 +558,7 @@ class TransactionRepositoryImpl @Inject constructor(
     private companion object {
         const val NATIVE_DECIMALS = 18
         const val MAX_PAGE_SIZE = 100
+        const val EXPLORER_NOT_CONFIGURED_MESSAGE = "Block explorer API is not configured"
         const val STATUS_PENDING = 0
         const val STATUS_CONFIRMED = 1
         const val STATUS_FAILED = 2

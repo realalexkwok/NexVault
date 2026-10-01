@@ -80,7 +80,7 @@ class HistoryViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             val chain = chainId ?: return@launch
-            val activeAddress = address ?: return@launch
+            if (address == null) return@launch
             _uiState.update { it.copy(isRefreshing = true, errorMessage = null) }
             val result = refreshTransactionHistoryUseCase(chain, page = 1, pageSize = PAGE_SIZE)
             applyExplorerResult(result)
@@ -94,7 +94,7 @@ class HistoryViewModel @Inject constructor(
     /** Called when the list reaches its end; fetches the next explorer page until [MAX_PAGES]. */
     fun loadMore() {
         val chain = chainId ?: return
-        val activeAddress = address ?: return
+        if (address == null) return
         val state = _uiState.value
         val busy = state.isLoadingMore || state.isRefreshing
         if (busy || !state.hasMore) return
