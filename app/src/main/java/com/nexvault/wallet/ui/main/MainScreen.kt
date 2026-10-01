@@ -32,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
+import com.nexvault.wallet.feature.history.HistoryScreen
+import com.nexvault.wallet.feature.history.TransactionDetailScreen
 import com.nexvault.wallet.feature.home.HomeScreen
 import com.nexvault.wallet.feature.receive.ReceiveScreen
 import com.nexvault.wallet.feature.send.QrScannerScreen
@@ -41,6 +43,10 @@ import com.nexvault.wallet.navigation.MainTab
 
 /** Saved-state key carrying a scanned QR payload from the scanner route back to the send form. */
 private const val SCANNED_ADDRESS_KEY = "scanned_address"
+
+/** History tab routes (roadmap 2.8). */
+private const val HISTORY_LIST_ROUTE = "history_list"
+private const val HISTORY_DETAIL_ROUTE = "tx_detail"
 
 /**
  * Main screen scaffold with bottom navigation bar and a nested NavHost
@@ -199,12 +205,28 @@ fun MainScreen(
                 }
             }
 
-            composable(MainTab.HISTORY.route) {
-                PlaceholderTabScreen(
-                    tabName = "History",
-                    description = "Transaction history with filters and pagination.\nComing in Phase 2.",
-                    emoji = "\uD83D\uDCDC",
-                )
+            // Roadmap 2.8: the history tab owns a nested graph (list -> transaction detail).
+            navigation(
+                route = MainTab.HISTORY.route,
+                startDestination = HISTORY_LIST_ROUTE,
+            ) {
+                composable(HISTORY_LIST_ROUTE) {
+                    HistoryScreen(
+                        onNavigateToDetail = { txHash, chainId ->
+                            tabNavController.navigate("$HISTORY_DETAIL_ROUTE/$txHash/$chainId")
+                        },
+                    )
+                }
+                composable(
+                    route = "$HISTORY_DETAIL_ROUTE/{txHash}/{chainId}",
+                    arguments =
+                        listOf(
+                            navArgument("txHash") { type = NavType.StringType },
+                            navArgument("chainId") { type = NavType.IntType },
+                        ),
+                ) {
+                    TransactionDetailScreen(onNavigateBack = { tabNavController.popBackStack() })
+                }
             }
 
             composable(MainTab.DAPP.route) {

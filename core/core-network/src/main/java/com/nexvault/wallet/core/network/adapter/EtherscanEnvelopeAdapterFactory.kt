@@ -1,9 +1,9 @@
 package com.nexvault.wallet.core.network.adapter
 
 import com.nexvault.wallet.core.network.dto.EtherscanTokenTransferListResponse
+import com.nexvault.wallet.core.network.dto.EtherscanTransactionListResponse
 import com.nexvault.wallet.core.network.dto.EtherscanTxReceiptStatusResponse
 import com.nexvault.wallet.core.network.dto.ReceiptStatusDto
-import com.nexvault.wallet.core.network.dto.EtherscanTransactionListResponse
 import com.nexvault.wallet.core.network.dto.TokenTransferDto
 import com.nexvault.wallet.core.network.dto.TransactionDto
 import com.squareup.moshi.JsonAdapter

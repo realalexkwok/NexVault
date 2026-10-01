@@ -432,6 +432,7 @@ class TransactionRepositoryImplTest {
         const val RECIPIENT = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
         const val TOKEN_ADDRESS = "0x1111111111111111111111111111111111111111"
         const val KEY = "test-key"
+
         /** Default explorer page size since roadmap 2.8 (`refreshTransactionHistory`). */
         const val OFFSET = 20
 

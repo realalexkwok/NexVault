@@ -6,8 +6,8 @@ import com.nexvault.wallet.domain.model.transaction.Transaction
 import com.nexvault.wallet.domain.repository.TransactionRepository
 import com.nexvault.wallet.domain.repository.WalletRepository
 import com.nexvault.wallet.domain.usecase.token.RefreshTransactionHistoryUseCase
-import javax.inject.Inject
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
 /**
  * Reads one page of the stored transaction history for the active wallet (roadmap 2.8).
