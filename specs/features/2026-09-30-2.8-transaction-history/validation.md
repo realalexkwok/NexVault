@@ -114,3 +114,31 @@ remain in the record.
 **PASS with findings — F-2.8-1 (MAJOR) should be fixed before the item closes.** The receipt
 mislabel corrupts persisted transaction state from the two most user-visible actions; the rest of the
 item (paging, chips, groups, detail, explorer links, gates, suite, device suite) verifies cleanly.
+
+---
+
+## Reviewer verification of the fixes — 039bfc8 (2026-10-01/02)
+
+> Same discipline as the findings pass: every resolution re-derived, not trusted.
+
+### Verdicts
+
+| ID | Resolution | Reviewer verification |
+| --- | --- | --- |
+| F-2.8-1 | Fixed | verified in code: `receiptSucceeded = result?.status?.takeIf { it.isNotBlank() }?.let { it == "1" }` — the live `""` shape now maps to null → stays PENDING. The new test `a pending row stays pending on the live no-receipt envelope` seeds the **verbatim live wire shape** (`{"status":"1","message":"OK","result":{"status":""}}`) and pins `coVerify(exactly = 0)` on the status write; the null-payload case is kept too. KDoc documents the probed shape. |
+| F-2.8-2 | Fixed | verified: TokenDetail See All → `onSeeAllClicked` → navigates to the History tab (`popUpTo(Home) { inclusive = false } + launchSingleTop`); the dead Receive button is now wired to `receive`; the stale caption and its string resource are deleted; `TokenDetailActionsTest` (145 lines) pins the wiring; S1874/S108 follow-ups in the touched files fixed |
+| NIT (offset overflow) | Fixed | verified: `safePage = page.coerceIn(1, MAX_PAGE_NUMBER)` **before** the multiplication; new test `an absurd page cannot overflow the offset` asserts `offset >= 0` for `Int.MAX_VALUE` |
+
+### Fresh evidence
+
+| # | Check | Result |
+| --- | --- | --- |
+| R1 | `./gradlew testDebugUnitTest :domain:test detekt ktlintCheck --continue --rerun-tasks` | **BUILD SUCCESSFUL, exit 0 — 720 tasks, 0 failed; 473 tests / 0 failures / 0 errors / 1 skipped** (matches the fix claim) |
+| R2 | Instrumented on the Pixel 6a (post-fix revision) | **Blocked by the environment, documented precisely:** three attempts failed the same 7 Compose tests with `No compose hierarchies found` while the 4 non-UI tests passed each time. Cause isolated to the device, not the code: `mWakefulness` was observed **Awake → Dozing within each run** (the phone is on battery; `svc power stayon true` does not apply unplugged; a keep-alive loop did not hold it); `logcat` shows **no NexVault FATAL**; the single-test repro also dozed mid-run. The same suite passed **11/11 on this device at the pre-fix revision** during the previous review, and the fix touches no activity-launch path. The 11/11 re-run on the fixed revision stays **owed at the close walk** (plug in / keep awake), consistent with `dev-environment.md` §5. |
+
+### Verdict
+
+**PASS.** Both findings and the NIT are fixed correctly and locked by tests that seed the real
+shapes; the fresh suite (473/0/0/1, gates exit 0) matches the claims. The device re-run on the fixed
+revision is owed at the close walk for an environmental reason (the phone dozes on battery), not a
+code reason.
