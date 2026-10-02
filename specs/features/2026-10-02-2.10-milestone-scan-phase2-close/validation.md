@@ -218,9 +218,30 @@ portrait for the walk; the unrelated reading app's overlay was force-stopped and
 
 ## Reviewer verification
 
-**Pending — the owner will send the reviewer's result.** This branch has not had a
-reviewer pass yet. On receipt, the result (checks, verdict, any findings and their
-resolution) is recorded here before the close.
+**VERIFIED 2026-10-02 — PASS, no findings.** The reviewer (code-reviewer session) re-derived the
+automatic, device and on-chain evidence independently; nothing below was taken on trust.
+
+| # | Claim | Reviewer's re-derivation | Verdict |
+| --- | --- | --- | --- |
+| R1 | Suite 473/0/0/1 + gates + build | fresh `--rerun-tasks` run: XML sums **473 tests / 0 failures / 0 errors / 1 skipped**; detekt 0 failed tasks, ktlint 0 failed tasks; assembleDebug green. One environment note: the forced full rerun hit `feature-history:compileDebugJavaWithJavac` "cannot find symbol" on Hilt-KSP-generated Java (the known stale-generated-cache class; KT-73255 warnings alongside). The tree compiles: an incremental rerun of the same task set and the connected-device build both passed — recorded as an environment artifact, not a code defect | ✅ |
+| R2 | Instrumented 11/11 on the fixed tree | re-run by the reviewer on the Pixel 6a (keep-awake held; the device was on battery): **BUILD SUCCESSFUL — 11 tests, 0 failures** (BackupPolicy 3, ConfirmationDialog 3 — exercising the S107 refactor —, CreationFlow 1, Example 1, SendFlowE2E 3) | ✅ |
+| R3 | On-chain funded-send evidence | independent masked Etherscan V2 probes: send tx `0xc4db4903…298f83` receipt → `{"status":"1","result":{"status":"1"}}`; faucet tx `0x0d78d7c2…8b76` receipt → `"1"`; walk-wallet balance → **49,873,221,369,448,000 wei** — matches the record's post-send figure to the wei | ✅ |
+| R4 | Scan fixes in code | S107 → `ConfirmationDialogTexts` bundling (dialog renders the same three strings; SendScreen + both test files updated); duplication → both public methods are one-line delegates to `resolveTransactionStatus` whose body is the verbatim pre-refactor logic (behavior-preserving; the receipt tests incl. the live-shape case cover both callers); S1874 ×6 → `androidx.hilt…hiltViewModel` imports in Unlock + 5 onboarding screens | ✅ |
+| R5 | Funded test fix | `SendFlowE2ETest` +7 lines: waits for and clicks the review screen's "Confirm" before the PIN wait — the AC-2.6-required step; no assertion weakened; production untouched (test-only commit) | ✅ |
+| R6 | Records | `pending-manual-test-cases.md` coherent: MAN-001 `[x]` (zbar decode, owner-approved substitute), MAN-005 `[x]` (funded send with on-chain evidence), MAN-002…004 suspended with preconditions; roadmap/AGENTS carry 2.10 `[~]` + the register reference; the scan's accepted-debt lists name owners (S6310 → 4.8, 30 legacy smells → 4.19) | ✅ |
+| R7 | Server-side scan numbers | `/api/measures/component` is token-gated from the reviewer (401 anonymous); the post-fix measures (duplication 0.1%, coverage 56.4%, 0 blockers/criticals/hotspots) remain developer-recorded. The code-side fixes behind them are verified in R4, and the duplication attribution was checkable: the only duplicated files named match the refactor's targets | ⚠️ developer-recorded, code fixes verified |
+| R8 | Diff scope | `git diff --name-only main...HEAD` minus records/AGENTS = exactly the 12 files of the scan fixes + the funded-test fix — no scope creep | ✅ |
+
+### Verdict
+
+**PASS — the 2.10 records are truthful and the milestone gate holds on everything the reviewer
+could independently reproduce.** On-chain evidence reproduces to the wei, the device suite passes
+11/11 on the fixed tree, the suite/gates/build are green (the forced-rerun javac artifact is
+environment, recorded above), and the scan fixes are present and behavior-preserving in code. The
+only non-reproducible-by-reviewer items are the SonarQube server-side percentages (token-gated,
+correctly labeled). Remaining before the close: the owner confirmation, then the owner close —
+flip 2.10 → `[x]`, mark Phase 2 closed, update roadmap/AGENTS in the same pass (the owner's
+standing procedure).
 
 ## Close status
 
