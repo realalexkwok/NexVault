@@ -47,7 +47,6 @@
 
 ## Ownership of the next pass
 
-MAN-001 and MAN-005 are closed. The remaining funded rows (MAN-002…MAN-004) are resumed in
-one pass on the owner's funding signal, whichever roadmap item is current at that time.
-The 2.10 close now waits only on the reviewer result the owner will send, then the owner
-close.
+MAN-001 and MAN-005 are closed. **Roadmap 2.10 is closed `[x]` (2026-10-02) and Phase 2 is
+complete.** The remaining funded rows (MAN-002…MAN-004) are resumed in one pass on the
+owner's funding signal, whichever roadmap item is current at that time.

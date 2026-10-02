@@ -24,17 +24,16 @@ coverage 54.1% with 0 bugs/vulnerabilities/criticals, TC-UI-006 mapped to the se
 **2.8 (Transaction history) is CLOSED `[x]` (2026-10-02, owner close after reviewer PASS and fix
 re-verification)**: 473 unit tests / 0 failures / 1 skipped, gates green, SonarQube coverage 56.4% with
 0 bugs/vulnerabilities/criticals, and the two roadmap-flagged data shortcuts (history paging, chain
-receipt checks) closed with tests. **2.10 (milestone scan & Phase 2 close) is IN PROGRESS `[~]`
-(2026-10-02)** on `feature/2.10-milestone-scan-phase2-close`: scan gate green vs the pre-2.6
-baseline (duplication 0.5 → 0.1, 0 new blockers/criticals/hotspots, coverage 56.4%), the new S107
-and the 2.8 duplication fixed, 473 unit tests / 0 failures / 1 skipped, both gates fresh green,
-instrumented 11/11 on the closed and fixed revisions, the interactive History walk and the BSC plan
-notice recorded, M5 crash watch 0 crashes, the funded Sepolia send closed on-chain (MAN-005
-`[x]`; send tx `0xc4db4903…298f83`), and the QR reader row closed (MAN-001 `[x]` — owner-approved
-zbar decode of the Pixel QR). **Waiting for the reviewer result the owner will send before the
-2.10 close** — see `specs/features/2026-10-02-2.10-milestone-scan-phase2-close/validation.md`.
-Remaining verification debt: 2.0.4b's M1/M2 and P4 (suspended pending funding — see the
-register, MAN-002…MAN-004).
+receipt checks) closed with tests. **2.10 (milestone scan & Phase 2 close) is CLOSED `[x]`
+(2026-10-02, owner close after reviewer PASS, no findings) — PHASE 2 IS COMPLETE.** Scan gate green
+vs the pre-2.6 baseline (duplication 0.5 → 0.1, 0 new blockers/criticals/hotspots, coverage 56.4%),
+the new S107 and the 2.8 duplication fixed, 473 unit tests / 0 failures / 1 skipped, both gates
+fresh green, instrumented 11/11 on the closed and fixed revisions, History walk + BSC plan notice +
+M5 crash watch done, funded Sepolia send closed on-chain (MAN-005 `[x]`; tx `0xc4db4903…298f83`),
+and the QR reader row closed (MAN-001 `[x]` — owner-approved zbar decode). Evidence:
+`specs/features/2026-10-02-2.10-milestone-scan-phase2-close/validation.md`. **The next open entry
+point is 3.1.** Remaining verification debt: 2.0.4b's M1/M2 and P4 (suspended pending funding —
+see the register, MAN-002…MAN-004).
 
 ## Part B — Project Constitution (authoritative)
 
@@ -138,10 +137,9 @@ See `specs/dev-environment.md` §7.)
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
   gates red. Current 2026-10-02: **473** unit tests green (plus **11 instrumented device tests**),
   the app walked on a Pixel 6a, both gates green, coverage **56.4%** (Kover), **Phase 2.0 closed
-  `[x]`**, **2.6, 2.7 and 2.8 closed `[x]`**, **2.10 in progress `[~]`**; 2.0.4b `[~]` for M1/M2/M5;
-  the instrumented re-run, interactive History walk, BSC plan notice and M5 crash watch are done;
-  the only open manual row is the second-phone QR scan — see the register below; 2 of 5 tabs still
-  placeholders (DApp/NFT — Phase 3).
+  `[x]`**, **2.6, 2.7, 2.8 and 2.10 closed `[x]` — Phase 2 is complete**; 2.0.4b `[~]` for M1/M2/P4
+  (funding-suspended only — M3/M4/M5 closed); MAN-001 and MAN-005 closed in 2.10; 2 of 5 tabs
+  still placeholders (DApp/NFT — Phase 3). **Next entry point: 3.1.**
 - **Pending manual test cases (single global register, adopted 2026-10-02):**
   every pending or suspended manual/device test case — funding rows, the second-phone QR scan,
   and all future manual cases — lives in **`specs/pending-manual-test-cases.md`**. A case is

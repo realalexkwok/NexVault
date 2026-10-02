@@ -243,12 +243,16 @@ correctly labeled). Remaining before the close: the owner confirmation, then the
 flip 2.10 → `[x]`, mark Phase 2 closed, update roadmap/AGENTS in the same pass (the owner's
 standing procedure).
 
-## Close status
+## Close / sign-off
 
-**Not closed — waiting for the reviewer result the owner will send.** Automatic half:
-recorded above (suite 473/0/0/1, both gates fresh exit 0, build green, instrumented 11/11
-on both the closed and fixed revisions, scan gate green). Manual/device half: all items
-closed — the History/BSC walks, M5 crash watch, MAN-005 (funded Sepolia send, on-chain
-evidence), and MAN-001 (independent zbar decode, owner-approved substitute). On the
-owner's reviewer result and confirmation: record it here, flip 2.10 → `[x]`, and mark
-Phase 2 closed in the same pass.
+**CLOSED 2026-10-02 as `[x]` — owner-directed close ("Verified. Close 2.10.") after the
+reviewer's PASS, no findings (`2b3a31c`).** Both halves hold: the automatic half (suite
+**473 tests / 0 failures / 0 errors / 1 skipped**, both gates fresh exit 0,
+`:app:assembleDebug` green, instrumented **11/11** on the closed and fixed revisions, the
+milestone scan green vs the pre-2.6 baseline with duplication 0.5 → 0.1) and the
+manual/device half (History walk, BSC plan notice, M5 crash watch, MAN-005 funded Sepolia
+send with on-chain evidence, MAN-001 independent zbar QR decode — owner-approved
+substitute). Roadmap 2.10 flipped to `[x]`, Phase 2 marked closed, and AGENTS/roadmap
+updated in the same pass. Branch commits `e11faef` → `61651a3` → `acea17f` → `2b3a31c`
+plus the close-record commit; merged to `main` (`--no-ff`), pushed, and the local feature
+branch deleted per the standing close procedure.

@@ -152,8 +152,11 @@ funded or released by then.
 > the chain through the new V2 `gettxreceiptstatus` endpoint (a blank inner status stays PENDING; the
 > reviewer's MAJOR finding on that mapping was fixed). Evidence: 473 tests / 0 failures / 1 skipped
 > (reviewer re-run), both gates green, SonarQube **coverage 56.4%** with **0 bugs, 0 vulnerabilities,
-> 0 criticals** and no open issue in any 2.8 file. **2.10 is now in progress `[~]`** (milestone scan
-> and Phase 2 close) — see the 2.10 row below and its `validation.md`.
+> 0 criticals** and no open issue in any 2.8 file. **2.10 is CLOSED `[x]` (2026-10-02, owner close
+> after the reviewer's PASS, no findings) — PHASE 2 IS COMPLETE.** See the 2.10 row below and its
+> `validation.md`. **The next open entry point is 3.1** (WalletConnect v2); the only verification
+> debt left for later phases is 2.0.4b's M1/M2/P4 (suspended pending funding) in
+> `specs/pending-manual-test-cases.md`.
 
 ---
 
@@ -603,9 +606,11 @@ refuted.
 
 ---
 
-## Phase 2 — Core features (remaining)
+## Phase 2 — Core features (remaining) `✓ CLOSED 2026-10-02 by 2.10`
 
-Unblocked only after Phase 2.0 closes.
+Unblocked only after Phase 2.0 closes. **The phase is complete: 2.6, 2.7, 2.8, 2.9 and
+2.10 are `[x]`; 2.0.4b's M1/M2/P4 stay suspended pending funding (the global register:
+`specs/pending-manual-test-cases.md`).**
 
 | Item | Scope | Landing module | Acceptance | Status |
 | --- | --- | --- | --- | --- |
@@ -613,7 +618,7 @@ Unblocked only after Phase 2.0 closes.
 | 2.7 Receive screen | QR (ZXing) + copy + share, chain badge | `feature:feature-receive` | `AC-2.7` | `[x]` — **closed 2026-09-30 (owner close after reviewer verification)**: 10 commits; 443 tests + gates green; server coverage 54.1%, 0 bugs/vulnerabilities/criticals; TC-UI-006 mapped (send-form QR scan, CameraX + zxing); handoff — device re-run + second-phone QR scan at 2.8 |
 | 2.8 Transaction history | Date-grouped list, filters, pagination, detail screen | `feature:feature-history` | `AC-2.8` | `[x]` — **closed 2026-10-02 (owner close after reviewer PASS + fix re-verification)**: 473 tests / 0 failures / 1 skipped; gates green; server coverage 56.4%, 0 bugs/vulnerabilities/criticals; both roadmap shortcuts (paging, chain receipt checks) closed with tests; handoff — device re-run + walk + second-phone QR scan at 2.10 |
 | 2.9 Default token list | Seed tokens on wallet creation / chain switch | `data` + `core:core-database` | Phase 2 checklist | `[x]` — implemented by the legacy CR 1.5 fix round (creation paths + `RefreshBalancesUseCase` chain-switch seeding); closed by 2.0.7 on the device evidence (seeded ETH/USDC rows rendered in the 2.0.5 walk) + `RefreshBalancesUseCaseTest` |
-| **2.10 Milestone scan & Phase 2 close** | Run the static-analysis scan over everything Phase 2 built (new-code gate), triage the findings, verify the Phase 2 checklist, then record and close the phase | repo-wide (`app`, `feature:*`, `data`) | Phase 2 checklist + the scan gate | `[~]` — **in progress 2026-10-02** on `feature/2.10-milestone-scan-phase2-close`: scan gate green (duplication 0.5 → 0.1, 0 new blockers/criticals/hotspots; coverage 56.4%), new S107 + 2.8 duplication fixed, 473 unit tests / 0 fail / 1 skip, both gates fresh green, instrumented 11/11 on the closed and fixed revisions, History walk + BSC plan notice + M5 crash watch done, the funded Sepolia send closed on-chain (MAN-005 `[x]`; send tx `0xc4db4903…298f83`), and the QR reader row closed (MAN-001 `[x]` — owner-approved zbar decode of the Pixel QR). **Waiting for the reviewer result the owner will send before close** — see the item's `validation.md` |
+| **2.10 Milestone scan & Phase 2 close** | Run the static-analysis scan over everything Phase 2 built (new-code gate), triage the findings, verify the Phase 2 checklist, then record and close the phase | repo-wide (`app`, `feature:*`, `data`) | Phase 2 checklist + the scan gate | `[x]` — **closed 2026-10-02 (owner close after reviewer PASS, no findings)**: scan gate green (duplication 0.5 → 0.1, 0 new blockers/criticals/hotspots; coverage 56.4%), new S107 + 2.8 duplication fixed, 473 unit tests / 0 fail / 1 skip, both gates fresh green, instrumented 11/11 on the closed and fixed revisions, History walk + BSC plan notice + M5 crash watch done, funded Sepolia send closed on-chain (MAN-005 `[x]`; tx `0xc4db4903…298f83`), QR reader row closed (MAN-001 `[x]` — owner-approved zbar decode). Evidence: `specs/features/2026-10-02-2.10-milestone-scan-phase2-close/validation.md` |
 
 **2.6 entry conditions (verified in code):** `GasEstimate`, `GasOption` and
 `SendTransactionParams` already exist in `domain/model/transaction/`, and

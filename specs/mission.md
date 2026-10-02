@@ -121,6 +121,10 @@ Recorded here so no reader mistakes intent for achievement. The plain lines are 
   → **Phase 2.0 is closed `[x]`** (2.0.7, 2026-09-27): 2.0.1–2.0.6 verified, the Phase 0 rows
     re-graded, and every deferred item handed to a named Phase 2.6+ / Phase 4 owner in the
     consolidated Handoff.
+  → **Phase 2 (core features) is closed `[x]`** (2.10, 2026-10-02): 2.6–2.8 and the 2.10
+    milestone scan all verified, 473 unit tests green, instrumented 11/11, the funded Sepolia
+    send verified on-chain, and the QR reader row closed; 2.0.4b's mainnet/Polygon funded
+    rows stay suspended in `specs/pending-manual-test-cases.md`.
 - The app has **never been run on a device or emulator** — no emulator is installed and
   no AVD exists. Every "the screen works" claim in the archive is therefore unverified.
   → **refuted 2026-09-21**: a physical Pixel 6a is attached, and the app has been built,
