@@ -24,11 +24,17 @@ coverage 54.1% with 0 bugs/vulnerabilities/criticals, TC-UI-006 mapped to the se
 **2.8 (Transaction history) is CLOSED `[x]` (2026-10-02, owner close after reviewer PASS and fix
 re-verification)**: 473 unit tests / 0 failures / 1 skipped, gates green, SonarQube coverage 56.4% with
 0 bugs/vulnerabilities/criticals, and the two roadmap-flagged data shortcuts (history paging, chain
-receipt checks) closed with tests. The open entry point is now **2.10 — milestone scan and Phase 2
-close**, which also owns the owed device items (instrumented re-run, the interactive History walk and
-2.7's second-phone QR scan). Remaining verification debt: 2.0.4b's M1/M2
-(suspended pending funding — see the wake-up register), M5 crash watch owed, and the funded
-TC-INT-002 submit deferred to the 2.10 walk.
+receipt checks) closed with tests. **2.10 (milestone scan & Phase 2 close) is IN PROGRESS `[~]`
+(2026-10-02)** on `feature/2.10-milestone-scan-phase2-close`: scan gate green vs the pre-2.6
+baseline (duplication 0.5 → 0.1, 0 new blockers/criticals/hotspots, coverage 56.4%), the new S107
+and the 2.8 duplication fixed, 473 unit tests / 0 failures / 1 skipped, both gates fresh green,
+instrumented 11/11 on the closed and fixed revisions, the interactive History walk and the BSC plan
+notice recorded, M5 crash watch 0 crashes, the funded Sepolia send closed on-chain (MAN-005
+`[x]`; send tx `0xc4db4903…298f83`), and the QR reader row closed (MAN-001 `[x]` — owner-approved
+zbar decode of the Pixel QR). **Waiting for the reviewer result the owner will send before the
+2.10 close** — see `specs/features/2026-10-02-2.10-milestone-scan-phase2-close/validation.md`.
+Remaining verification debt: 2.0.4b's M1/M2 and P4 (suspended pending funding — see the
+register, MAN-002…MAN-004).
 
 ## Part B — Project Constitution (authoritative)
 
@@ -39,6 +45,9 @@ TC-INT-002 submit deferred to the 2.10 walk.
   versions, conventions, quality gates.
 - **Dev Environment:** `specs/dev-environment.md` — JDK, Android SDK, emulator,
   API keys, command reference.
+- **Pending Manual Test Cases:** `specs/pending-manual-test-cases.md` — the single global
+  register of every pending/suspended manual or device test case (funded rows,
+  second-phone QR scan, and all future manual cases).
 - **Read-only archive:** `doc/` (design docs 01–09) and `doc/prompts/` (historical
   prompt record, prompts 01–15). The specs supersede both. **Never start work from a
   `doc/prompts/` file again** — the prompt-driven workflow is retired; use it only to
@@ -129,15 +138,17 @@ See `specs/dev-environment.md` §7.)
   (1 skipped), the app never run on a device, 4 of 5 main tabs placeholders, both quality
   gates red. Current 2026-10-02: **473** unit tests green (plus **11 instrumented device tests**),
   the app walked on a Pixel 6a, both gates green, coverage **56.4%** (Kover), **Phase 2.0 closed
-  `[x]`**, **2.6, 2.7 and 2.8 closed `[x]`**; 2.0.4b `[~]` for M1/M2/M5; owed: the instrumented re-run
-  on 2.8's closed revision, the interactive History walk and the second-phone QR scan (2.10); 2 of 5
-  tabs still placeholders (DApp/NFT — Phase 3).
-- **Funding-suspended verification (owner's rule 2026-09-30):** a test case that needs a
-  funded wallet is **suspended**, never failed and never silently dropped. The single register
-  of suspended cases is `specs/roadmap.md` §"Funding-suspended verification (wake-up
-  register)" — every row states what funding it needs and what to run. When the owner signals
-  funding in any wording ("funded", "funds ready", ...), re-read that section and resume the
-  funded rows in one pass; the 2.10 Phase 2 walk consumes whatever is funded by then.
+  `[x]`**, **2.6, 2.7 and 2.8 closed `[x]`**, **2.10 in progress `[~]`**; 2.0.4b `[~]` for M1/M2/M5;
+  the instrumented re-run, interactive History walk, BSC plan notice and M5 crash watch are done;
+  the only open manual row is the second-phone QR scan — see the register below; 2 of 5 tabs still
+  placeholders (DApp/NFT — Phase 3).
+- **Pending manual test cases (single global register, adopted 2026-10-02):**
+  every pending or suspended manual/device test case — funding rows, the second-phone QR scan,
+  and all future manual cases — lives in **`specs/pending-manual-test-cases.md`**. A case is
+  **never failed and never silently dropped**. When the owner signals funding in any wording
+  ("funded", "funds ready", ...), re-read that file first and resume every funded row in one
+  pass, in order; the 2.10 Phase 2 close consumes whatever is funded or owner-released by then
+  (the QR row, MAN-001, is currently the only blocker for the 2.10 close).
 
 ### Two-sided verification (BOTH halves required)
 1. **Automatic** — the agent runs the relevant Gradle test/build/gate tasks and pastes
