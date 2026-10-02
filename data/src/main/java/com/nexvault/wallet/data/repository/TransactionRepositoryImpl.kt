@@ -456,52 +456,7 @@ class TransactionRepositoryImpl @Inject constructor(
     override suspend fun getTransactionDetail(
         txHash: String,
         chainId: Int,
-    ): DataResult<Transaction> = withContext(Dispatchers.IO) {
-        try {
-            val address = walletRepository.getActiveAddress().first()
-                ?: return@withContext DataResult.Error(
-                    IllegalStateException(NO_ACTIVE_WALLET_MESSAGE),
-                    NO_ACTIVE_WALLET_MESSAGE,
-                )
-            val entity = transactionDao.getTransaction(txHash, chainId)
-                ?: return@withContext DataResult.Error(
-                    IllegalArgumentException(TRANSACTION_NOT_FOUND_MESSAGE),
-                    TRANSACTION_NOT_FOUND_MESSAGE,
-                )
-            // Roadmap 2.8 shortcut fix: a settled row is returned as-is, a pending one is checked
-            // against the chain instead of trusting the cached status.
-            if (entity.status != STATUS_PENDING) {
-                return@withContext DataResult.Success(entity.toDomain(address))
-            }
-            if (!chainConfigProvider.isExplorerConfigured(chainId)) {
-                return@withContext DataResult.Error(
-                    ApiKeyNotConfiguredException(EXPLORER_NOT_CONFIGURED_MESSAGE),
-                )
-            }
-            val api = blockExplorerApiFactory.getApi(chainId)
-            val receipt =
-                api.getTxReceiptStatus(
-                    chainId = chainId,
-                    txHash = txHash,
-                    apiKey = blockExplorerApiFactory.getApiKey(chainId),
-                )
-            receipt.errorOrNull()?.let { return@withContext DataResult.Error(it, it.message) }
-            val confirmed = receipt.receiptSucceeded
-            // No receipt yet: the transaction is still in the mempool, so it stays pending.
-            if (confirmed != null) {
-                transactionDao.updateTransactionStatus(
-                    txHash = txHash,
-                    chainId = chainId,
-                    status = if (confirmed) STATUS_CONFIRMED else STATUS_FAILED,
-                    gasUsed = entity.gasUsed,
-                )
-            }
-            val updated = transactionDao.getTransaction(txHash, chainId) ?: entity
-            DataResult.Success(updated.toDomain(address))
-        } catch (e: Exception) {
-            DataResult.Error(e, e.message)
-        }
-    }
+    ): DataResult<Transaction> = resolveTransactionStatus(txHash, chainId)
 
     override fun getPendingTransactions(chainId: Int, address: String): Flow<List<Transaction>> {
         return transactionDao.observeTransactions(chainId, address).map { entities ->
@@ -510,6 +465,16 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateTransactionStatus(
+        txHash: String,
+        chainId: Int,
+    ): DataResult<Transaction> = resolveTransactionStatus(txHash, chainId)
+
+    /**
+     * Loads a stored transaction and, when it is still pending, reconciles its status with the
+     * chain before returning the row (roadmap 2.8 shortcut fix). Shared by the detail query and
+     * the explicit status refresh so the chain-check logic cannot drift between the two callers.
+     */
+    private suspend fun resolveTransactionStatus(
         txHash: String,
         chainId: Int,
     ): DataResult<Transaction> = withContext(Dispatchers.IO) {

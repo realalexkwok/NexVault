@@ -123,9 +123,12 @@ class CoreUiComponentsTest {
         composeRule.setContent {
             NexVaultTheme(darkTheme = true) {
                 ConfirmationDialog(
-                    title = "Review",
-                    confirmText = "Confirm",
-                    dismissText = "Cancel",
+                    texts =
+                        ConfirmationDialogTexts(
+                            title = "Review",
+                            confirmText = "Confirm",
+                            dismissText = "Cancel",
+                        ),
                     onConfirm = { confirmed += 1 },
                     onDismiss = { dismissed = true },
                     body = { androidx.compose.material3.Text("Body text") },

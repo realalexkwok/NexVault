@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexvault.wallet.core.ui.components.ConfirmationDialog
+import com.nexvault.wallet.core.ui.components.ConfirmationDialogTexts
 import com.nexvault.wallet.core.ui.components.NexVaultButton
 import com.nexvault.wallet.core.ui.components.NexVaultTextField
 import com.nexvault.wallet.core.ui.components.PinInputField
@@ -126,9 +127,12 @@ fun SendScreen(
 
     if (uiState.showPinDialog) {
         ConfirmationDialog(
-            title = stringResource(R.string.send_confirm_dialog_title),
-            confirmText = stringResource(R.string.send_confirm_dialog_confirm),
-            dismissText = stringResource(R.string.send_confirm_dialog_cancel),
+            texts =
+                ConfirmationDialogTexts(
+                    title = stringResource(R.string.send_confirm_dialog_title),
+                    confirmText = stringResource(R.string.send_confirm_dialog_confirm),
+                    dismissText = stringResource(R.string.send_confirm_dialog_cancel),
+                ),
             onConfirm = { },
             onDismiss = viewModel::onPinDialogDismissed,
             confirmEnabled = false,
