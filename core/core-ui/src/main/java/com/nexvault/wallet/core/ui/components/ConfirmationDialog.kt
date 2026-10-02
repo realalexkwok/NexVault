@@ -11,6 +11,20 @@ import com.nexvault.wallet.core.ui.preview.ThemePreviewWrapper
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 
 /**
+ * The three user-facing strings of a [ConfirmationDialog], bundled so the dialog's parameter
+ * list stays readable (roadmap 2.10 scan fix, `kotlin:S107`).
+ *
+ * @property title Dialog title
+ * @property confirmText Label of the confirm action
+ * @property dismissText Label of the dismiss action
+ */
+data class ConfirmationDialogTexts(
+    val title: String,
+    val confirmText: String,
+    val dismissText: String,
+)
+
+/**
  * Generic confirmation dialog: a title, an optional body slot, and confirm/dismiss actions.
  *
  * Roadmap 2.6 (TC-UI-010): the send review embeds its PIN entry in [body]; the dialog itself
@@ -19,9 +33,7 @@ import com.nexvault.wallet.core.ui.theme.NexVaultTheme
  */
 @Composable
 fun ConfirmationDialog(
-    title: String,
-    confirmText: String,
-    dismissText: String,
+    texts: ConfirmationDialogTexts,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -31,16 +43,16 @@ fun ConfirmationDialog(
     AlertDialog(
         modifier = modifier,
         onDismissRequest = onDismiss,
-        title = { Text(text = title, style = MaterialTheme.typography.titleLarge) },
+        title = { Text(text = texts.title, style = MaterialTheme.typography.titleLarge) },
         text = { body() },
         confirmButton = {
             TextButton(onClick = onConfirm, enabled = confirmEnabled) {
-                Text(confirmText)
+                Text(texts.confirmText)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(dismissText)
+                Text(texts.dismissText)
             }
         },
     )
@@ -52,9 +64,12 @@ private fun ConfirmationDialogPreview() {
     ThemePreviewWrapper {
         NexVaultTheme(darkTheme = true) {
             ConfirmationDialog(
-                title = "Confirm",
-                confirmText = "Confirm",
-                dismissText = "Cancel",
+                texts =
+                    ConfirmationDialogTexts(
+                        title = "Confirm",
+                        confirmText = "Confirm",
+                        dismissText = "Cancel",
+                    ),
                 onConfirm = {},
                 onDismiss = {},
                 body = { Text("Are you sure?") },

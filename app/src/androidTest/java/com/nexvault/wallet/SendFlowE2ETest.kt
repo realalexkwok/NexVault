@@ -143,6 +143,13 @@ class SendFlowE2ETest {
         }
 
         composeRule.onNodeWithText("Confirm and send").performClick()
+        // AC-2.6: the next step is the review screen ("Confirm" shows the transaction details
+        // again); the PIN dialog opens only after that Confirm — first funded run (2.10) exposed
+        // that the old wait skipped this step and timed out on the review screen.
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("Confirm").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Confirm").performClick()
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithText("Enter your PIN to sign and submit.").fetchSemanticsNodes().isNotEmpty()
         }

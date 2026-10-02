@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nexvault.wallet.core.ui.components.ConfirmationDialog
+import com.nexvault.wallet.core.ui.components.ConfirmationDialogTexts
 import com.nexvault.wallet.core.ui.theme.NexVaultTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -34,9 +35,12 @@ class ConfirmationDialogTest {
         composeRule.setContent {
             NexVaultTheme(darkTheme = true) {
                 ConfirmationDialog(
-                    title = "Confirm transaction",
-                    confirmText = "Confirm",
-                    dismissText = "Cancel",
+                    texts =
+                        ConfirmationDialogTexts(
+                            title = "Confirm transaction",
+                            confirmText = "Confirm",
+                            dismissText = "Cancel",
+                        ),
                     onConfirm = { },
                     onDismiss = { },
                     body = { androidx.compose.material3.Text("Enter your PIN") },
@@ -57,9 +61,12 @@ class ConfirmationDialogTest {
         composeRule.setContent {
             NexVaultTheme(darkTheme = true) {
                 ConfirmationDialog(
-                    title = "Confirm transaction",
-                    confirmText = "Confirm",
-                    dismissText = "Cancel",
+                    texts =
+                        ConfirmationDialogTexts(
+                            title = "Confirm transaction",
+                            confirmText = "Confirm",
+                            dismissText = "Cancel",
+                        ),
                     onConfirm = { confirmed = true },
                     onDismiss = { },
                 )
@@ -80,9 +87,12 @@ class ConfirmationDialogTest {
         composeRule.setContent {
             NexVaultTheme(darkTheme = true) {
                 ConfirmationDialog(
-                    title = "Confirm transaction",
-                    confirmText = "Confirm",
-                    dismissText = "Cancel",
+                    texts =
+                        ConfirmationDialogTexts(
+                            title = "Confirm transaction",
+                            confirmText = "Confirm",
+                            dismissText = "Cancel",
+                        ),
                     onConfirm = { confirmed += 1 },
                     onDismiss = { dismissed = true },
                     confirmEnabled = false,
